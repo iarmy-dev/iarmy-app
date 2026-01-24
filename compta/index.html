@@ -915,6 +915,44 @@
       return fromUrl || sdkDetected;
     }
 
+    // Rafraichir le token de session via initData (si disponible)
+    async function refreshSessionToken() {
+      const tg = window.Telegram?.WebApp;
+      const initData = tg?.initData;
+
+      if (!initData || !telegramUserId) {
+        console.log('[TG] Cannot refresh: no initData or telegramUserId');
+        return false;
+      }
+
+      try {
+        console.log('[TG] Refreshing session token...');
+        const response = await fetch(SUPABASE_URL + '/functions/v1/telegram-auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            initData: initData,
+            telegramUserId: telegramUserId
+          })
+        });
+
+        const authData = await response.json();
+        if (!response.ok || authData.error) {
+          console.log('[TG] Refresh failed:', authData.error);
+          return false;
+        }
+
+        // Stocker le nouveau token
+        sessionStorage.setItem('tg_session_token', authData.sessionToken);
+        window.telegramSessionToken = authData.sessionToken;
+        console.log('[TG] Session refreshed successfully');
+        return true;
+      } catch (err) {
+        console.error('[TG] Refresh error:', err);
+        return false;
+      }
+    }
+
     // Init depuis Telegram Mini App
     async function initFromTelegram() {
       console.log('[TG] initFromTelegram() called');
@@ -2085,14 +2123,7 @@
 
       // Mode Telegram: utiliser Edge Function securisee
       if (isTelegramMode) {
-        // Get token from multiple sources (fallback)
-        const token = window.telegramSessionToken || sessionStorage.getItem('tg_session_token');
-        if (!token) {
-          toast('Session perdue. Retourne au menu.', true);
-          setTimeout(() => { window.location.href = '/?tg=1&tguid=' + telegramUserId; }, 1500);
-          return;
-        }
-        try {
+        const saveWithToken = async (token) => {
           const response = await fetch(SUPABASE_URL + '/functions/v1/telegram-module-action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2104,16 +2135,41 @@
               data: { config: newCfg }
             })
           });
+          return response.json().then(result => ({ ok: response.ok, result }));
+        };
 
-          const result = await response.json();
-          if (!response.ok || result.error) {
-            const errMsg = result.error || 'Erreur serveur';
-            if (errMsg.includes('Session') || errMsg.includes('token') || errMsg.includes('auth')) {
-              toast('Session expirée. Retourne au menu.', true);
-              setTimeout(() => { window.location.href = '/?tg=1&tguid=' + telegramUserId; }, 2000);
-            } else {
-              toast('Erreur: ' + errMsg, true);
+        // Get token from multiple sources
+        let token = window.telegramSessionToken || sessionStorage.getItem('tg_session_token');
+
+        if (!token) {
+          // Pas de token, essayer de rafraichir avec initData
+          const refreshed = await refreshSessionToken();
+          if (!refreshed) {
+            toast('Session perdue. Retourne au menu.', true);
+            setTimeout(() => { window.location.href = '/?tg=1&tguid=' + telegramUserId; }, 1500);
+            return;
+          }
+          token = sessionStorage.getItem('tg_session_token');
+        }
+
+        try {
+          let { ok, result } = await saveWithToken(token);
+
+          // Si session invalide, essayer de rafraichir
+          if (!ok && result.code === 'INVALID_SESSION') {
+            console.log('[TG] Session invalid, trying refresh...');
+            const refreshed = await refreshSessionToken();
+            if (refreshed) {
+              token = sessionStorage.getItem('tg_session_token');
+              const retry = await saveWithToken(token);
+              ok = retry.ok;
+              result = retry.result;
             }
+          }
+
+          if (!ok || result.error) {
+            const errMsg = result.error || 'Erreur serveur';
+            toast('Erreur: ' + errMsg, true);
             return;
           }
 
