@@ -1239,8 +1239,16 @@
 
       const user = session.user;
       userEmail = user.email || '';
-      const userName = user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || user.email?.split('@')[0] || 'User';
-      const userAvatar = user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${userName}&background=FF6B35&color=fff`;
+
+      // Charger le profil depuis user_profiles (source de vérité)
+      const { data: profile } = await supabaseClient
+        .from('user_profiles')
+        .select('display_name, avatar_url')
+        .eq('user_id', user.id)
+        .single();
+
+      const userName = profile?.display_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || user.email?.split('@')[0] || 'User';
+      const userAvatar = profile?.avatar_url || user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${userName}&background=FF6B35&color=fff`;
 
       document.getElementById('auth-section').innerHTML = `
         <div class="nav-user-section">
