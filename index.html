@@ -563,13 +563,12 @@
       }
     }
 
-    // Detecter Telegram Mini App
+    // Detecter Telegram Mini App - EXIGE le SDK avec des donnees valides
     function detectTelegram() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const fromUrl = urlParams.get('tg') === '1';
       const tg = window.Telegram?.WebApp;
-      const sdkDetected = tg && (tg.initData || (tg.platform && tg.platform !== 'unknown') || window.TelegramWebviewProxy);
-      return fromUrl || sdkDetected;
+      // Le SDK doit etre present ET avoir des donnees (initData ou platform valide)
+      // Ne pas se fier uniquement au param URL ?tg=1
+      return tg && (tg.initData || (tg.platform && tg.platform !== 'unknown') || window.TelegramWebviewProxy);
     }
 
     // Init depuis Telegram avec validation HMAC
@@ -753,6 +752,20 @@
       // Mode Telegram ?
       if (detectTelegram()) {
         return initFromTelegram();
+      }
+
+      // Si ?tg=1 mais SDK pas detecte = ouvert hors de Telegram
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('tg') === '1') {
+        document.querySelector('.container').innerHTML = `
+          <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">📱</div>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Ouvre depuis Telegram</h2>
+            <p style="color: rgba(255,255,255,0.5); font-size: 14px;">Cette page doit etre ouverte depuis l'app Telegram.</p>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #FF6B35; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Reessayer</button>
+          </div>
+        `;
+        return;
       }
 
       const { data: { session } } = await supabaseClient.auth.getSession();
