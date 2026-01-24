@@ -757,7 +757,12 @@
 
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
-        window.location.href = 'https://iarmy.fr';
+        // Pas de session - lancer OAuth directement depuis app.iarmy.fr
+        console.log('[INIT] Pas de session, lancement OAuth...');
+        await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin + '/auth/callback' }
+        });
         return;
       }
 
