@@ -857,6 +857,9 @@
         telegramUserId = actualTelegramId;
         // SECURITY: Store token in sessionStorage instead of URL
         sessionStorage.setItem('tg_session_token', authData.sessionToken);
+        sessionStorage.setItem('tg_user_id', actualTelegramId.toString());
+        // Stocker initData pour refresh sur autres pages (si dispo)
+        if (initData) sessionStorage.setItem('tg_init_data', initData);
         window.telegramSessionToken = authData.sessionToken; // Keep for compatibility
 
         // Afficher badge de securite si valide par HMAC

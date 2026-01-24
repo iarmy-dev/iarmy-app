@@ -917,10 +917,12 @@
 
     // Rafraichir le token de session via initData (si disponible)
     async function refreshSessionToken() {
+      // Essayer d'abord l'initData live de Telegram, sinon celui stocké
       const tg = window.Telegram?.WebApp;
-      const initData = tg?.initData;
+      const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
+      const tgUserId = telegramUserId || sessionStorage.getItem('tg_user_id');
 
-      if (!initData || !telegramUserId) {
+      if (!initData || !tgUserId) {
         console.log('[TG] Cannot refresh: no initData or telegramUserId');
         return false;
       }
@@ -932,7 +934,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             initData: initData,
-            telegramUserId: telegramUserId
+            telegramUserId: tgUserId
           })
         });
 
@@ -1013,11 +1015,13 @@
       // Log pour debug (console uniquement)
       console.log('[TG] initData:', !!initData, 'token:', !!tokenFromStorage, 'tguid:', tguidFromUrl);
 
-      // Determiner le telegramUserId
+      // Determiner le telegramUserId (plusieurs sources possibles)
       if (tguidFromUrl) {
         telegramUserId = tguidFromUrl;
       } else if (telegramUser?.id) {
         telegramUserId = telegramUser.id;
+      } else if (sessionStorage.getItem('tg_user_id')) {
+        telegramUserId = sessionStorage.getItem('tg_user_id');
       } else {
         showTelegramError('Impossible de recuperer votre compte Telegram');
         return;
