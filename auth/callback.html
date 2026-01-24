@@ -67,7 +67,15 @@
       document.getElementById('subtitle').textContent = message;
       document.getElementById('dots').style.display = 'none';
       const errorDiv = document.getElementById('error');
-      errorDiv.innerHTML = message + '<br><a href="https://iarmy.fr" class="btn">Retour</a>';
+      // Sécurité: éviter XSS en utilisant textContent + createElement
+      errorDiv.textContent = message;
+      const br = document.createElement('br');
+      const link = document.createElement('a');
+      link.href = 'https://iarmy.fr';
+      link.className = 'btn';
+      link.textContent = 'Retour';
+      errorDiv.appendChild(br);
+      errorDiv.appendChild(link);
       errorDiv.classList.add('show');
     }
 

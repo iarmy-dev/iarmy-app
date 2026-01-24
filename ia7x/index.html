@@ -154,6 +154,14 @@
 
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
 
+    // Fonction d'échappement HTML pour prévenir XSS
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     let allUsers = [];
     let currentUser = null;
     let currentTab = 'users';
@@ -579,12 +587,13 @@
           else if (s.status === 'active') cls = 'active';
           else if (s.status === 'trialing') cls = 'trialing';
           else if (s.status === 'canceled') cls = 'canceled';
-          return `<span class="module-badge ${cls}">${s.module_name}: ${s.is_tester ? 'Testeur' : s.status}</span>`;
+          return `<span class="module-badge ${cls}">${escapeHtml(s.module_name)}: ${s.is_tester ? 'Testeur' : escapeHtml(s.status)}</span>`;
         }).join('') || '<span class="module-badge none">Aucun</span>';
 
-        const moduleBadges = u.modules.map(m => `<span class="module-badge active">${m}</span>`).join('') || '<span class="module-badge none">-</span>';
+        const moduleBadges = u.modules.map(m => `<span class="module-badge active">${escapeHtml(m)}</span>`).join('') || '<span class="module-badge none">-</span>';
 
-        const displayName = u.full_name || u.email?.split('@')[0] || 'Utilisateur';
+        const displayName = escapeHtml(u.full_name || u.email?.split('@')[0] || 'Utilisateur');
+        const safeEmail = escapeHtml(u.email || '');
         const avatarUrl = u.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=FF6B35&color=fff&size=36`;
         const testerBadge = hasTester ? '<span class="tester-badge">TESTEUR</span>' : '';
 
@@ -592,10 +601,10 @@
           <tr class="${hasTester ? 'row-tester' : ''}">
             <td>
               <div class="user-cell">
-                <img src="${avatarUrl}" class="user-avatar ${hasTester ? 'avatar-tester' : ''}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=333&color=fff&size=36'">
+                <img src="${escapeHtml(avatarUrl)}" class="user-avatar ${hasTester ? 'avatar-tester' : ''}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=333&color=fff&size=36'">
                 <div class="user-info">
                   <div class="user-name">${displayName} ${testerBadge}</div>
-                  <div class="user-email">${u.email || u.user_id.substring(0, 12) + '...'}</div>
+                  <div class="user-email">${safeEmail || u.user_id.substring(0, 12) + '...'}</div>
                 </div>
               </div>
             </td>
@@ -603,13 +612,13 @@
             <td><div class="module-badges">${subBadges}</div></td>
             <td>${u.telegram ? 'Oui' : 'Non'}</td>
             <td class="actions-cell">
-              <button class="btn-action btn-tester ${hasTester ? 'active' : ''}" onclick="toggleTester('${u.user_id}', 'compta', ${!hasTester})">
+              <button class="btn-action btn-tester ${hasTester ? 'active' : ''}" onclick="toggleTester('${escapeHtml(u.user_id)}', 'compta', ${!hasTester})">
                 ${hasTester ? 'Retirer' : '+ Testeur'}
               </button>
-              <button class="btn-action btn-reset" onclick="resetUserData('${u.user_id}', '${u.email || 'cet utilisateur'}')" title="Effacer les données">
+              <button class="btn-action btn-reset" onclick="resetUserData('${escapeHtml(u.user_id)}', '${safeEmail || 'cet utilisateur'}')" title="Effacer les données">
                 Reset
               </button>
-              <button class="btn-action btn-delete" onclick="deleteUser('${u.user_id}', '${u.email || 'cet utilisateur'}')" title="Supprimer le compte">
+              <button class="btn-action btn-delete" onclick="deleteUser('${escapeHtml(u.user_id)}', '${safeEmail || 'cet utilisateur'}')" title="Supprimer le compte">
                 ✕
               </button>
             </td>
