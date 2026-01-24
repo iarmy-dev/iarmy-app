@@ -82,12 +82,11 @@
             const firstName = session.user.user_metadata?.full_name?.split(' ')[0] ||
                             session.user.user_metadata?.name?.split(' ')[0] ||
                             session.user.email?.split('@')[0] || 'toi';
-            showSuccess(firstName);
-
             // Créer profil si nécessaire
             await createProfileIfNeeded(session.user);
 
-            setTimeout(() => { window.location.href = '/compta/setup/'; }, 1500);
+            // Redirection directe vers dashboard (pas de délai)
+            window.location.href = '/';
             return;
           }
 
@@ -127,13 +126,11 @@
                          user.user_metadata?.name?.split(' ')[0] ||
                          user.email?.split('@')[0] || 'toi';
 
-        showSuccess(firstName);
-
         // Créer profil si nécessaire
         await createProfileIfNeeded(user);
 
-        // Redirection vers la page compta
-        setTimeout(() => { window.location.href = '/compta/setup/'; }, 1500);
+        // Redirection directe vers dashboard (pas de délai)
+        window.location.href = '/';
 
       } catch (err) {
         console.error('[CALLBACK] ❌ Erreur inattendue:', err);

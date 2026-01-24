@@ -5842,12 +5842,9 @@
         var { data, error } = await supabaseClient.from('telegram_links').select('telegram_user_id').eq('user_id', currentUser.id).maybeSingle();
         console.log('[TELEGRAM] Query result - data:', data, 'error:', error);
         if (data?.telegram_user_id) {
-          console.log('[TELEGRAM] User already connected! Redirecting to compte.html...');
-          // User déjà connecté → redirection directe vers son espace
-          showToast('Telegram déjà connecté ! Redirection...');
-          setTimeout(function() {
-            window.location.href = '/';
-          }, 1500);
+          console.log('[TELEGRAM] User already connected! Redirecting...');
+          // User déjà connecté → redirection directe (pas de délai)
+          window.location.href = '/';
           return;
         } else {
           console.log('[TELEGRAM] Has subscription, showing Telegram connect');
