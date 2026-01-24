@@ -1254,6 +1254,12 @@
           data: { avatar_url: avatarUrl }
         });
 
+        // Sync with telegram_links for Telegram mini app
+        await supabaseClient
+          .from('telegram_links')
+          .update({ avatar_url: avatarUrl })
+          .eq('user_id', currentUser.id);
+
         // Update UI (URL from Supabase storage is trusted)
         const avatarContainer = document.getElementById('avatar');
         avatarContainer.innerHTML = '';
