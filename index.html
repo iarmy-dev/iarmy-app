@@ -886,14 +886,9 @@
           document.getElementById('telegram-status').classList.add('ok');
         }
 
-        // Stats (placeholder for now)
-        if (config?.sheet_id) {
-          document.getElementById('stats-section').style.display = 'block';
-          // TODO: Load real stats from edge function
-          document.getElementById('stat-entries').textContent = '-';
-          document.getElementById('stat-revenue').textContent = '-';
-          document.getElementById('stat-days').textContent = '-';
-        }
+        // Stats - ne pas afficher si pas de donnees
+        // TODO: Load real stats from edge function quand disponible
+        // document.getElementById('stats-section').style.display = 'block';
 
       } catch (err) {
         console.log('No config');
