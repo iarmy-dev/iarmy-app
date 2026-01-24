@@ -1015,17 +1015,18 @@
       // Log pour debug (console uniquement)
       console.log('[TG] initData:', !!initData, 'token:', !!tokenFromStorage, 'tguid:', tguidFromUrl);
 
-      // Determiner le telegramUserId (plusieurs sources possibles)
+      // Determiner le telegramUserId (plusieurs sources possibles) - TOUJOURS STRING
       if (tguidFromUrl) {
-        telegramUserId = tguidFromUrl;
+        telegramUserId = String(tguidFromUrl);
       } else if (telegramUser?.id) {
-        telegramUserId = telegramUser.id;
+        telegramUserId = String(telegramUser.id);
       } else if (sessionStorage.getItem('tg_user_id')) {
         telegramUserId = sessionStorage.getItem('tg_user_id');
       } else {
         showTelegramError('Impossible de recuperer votre compte Telegram');
         return;
       }
+      console.log('[TG] telegramUserId:', telegramUserId, typeof telegramUserId);
 
       // Verifier qu'on a soit initData soit sessionToken
       if (!initData && !tokenFromStorage) {
@@ -2134,7 +2135,7 @@
             body: JSON.stringify({
               action: 'save_config',
               sessionToken: token,
-              telegramUserId: telegramUserId,
+              telegramUserId: String(telegramUserId), // Toujours string
               moduleName: 'compta',
               data: { config: newCfg }
             })
@@ -2157,21 +2158,31 @@
         }
 
         try {
+          console.log('[TG] Saving with token:', token ? token.substring(0, 8) + '...' : 'NONE');
           let { ok, result } = await saveWithToken(token);
+          console.log('[TG] Save result:', ok, result);
 
           // Si session invalide, essayer de rafraichir
           if (!ok && result.code === 'INVALID_SESSION') {
             console.log('[TG] Session invalid, trying refresh...');
+            toast('Refresh session...', false);
             const refreshed = await refreshSessionToken();
+            console.log('[TG] Refresh result:', refreshed);
             if (refreshed) {
               token = sessionStorage.getItem('tg_session_token');
+              console.log('[TG] Retrying with new token:', token ? token.substring(0, 8) + '...' : 'NONE');
               const retry = await saveWithToken(token);
               ok = retry.ok;
               result = retry.result;
+              console.log('[TG] Retry result:', ok, result);
+            } else {
+              toast('Impossible de rafraîchir la session', true);
+              return;
             }
           }
 
           if (!ok || result.error) {
+            console.log('[TG] Final error:', result);
             const errMsg = result.error || 'Erreur serveur';
             toast('Erreur: ' + errMsg, true);
             return;
