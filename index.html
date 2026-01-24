@@ -961,15 +961,38 @@
           return;
         }
 
-        const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-billing', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + session.access_token
-          }
-        });
+        // D'abord verifier le statut dans Supabase (testeur, etc)
+        const { data: supabaseSub } = await supabaseClient
+          .from('subscriptions')
+          .select('status, is_tester')
+          .eq('user_id', currentUser.id)
+          .eq('module_name', 'compta')
+          .maybeSingle();
 
-        billingData = await response.json();
+        const isTester = supabaseSub?.is_tester || supabaseSub?.status === 'tester';
+
+        if (isTester) {
+          // Testeur: pas besoin d'appeler Stripe
+          billingData = {
+            subscription: {
+              isTester: true,
+              status: 'tester',
+              productName: 'iArmy Compta'
+            },
+            paymentMethod: null,
+            invoices: []
+          };
+        } else {
+          // Pas testeur: appeler Stripe pour les vraies donnees
+          const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-billing', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + session.access_token
+            }
+          });
+          billingData = await response.json();
+        }
 
         document.getElementById('billing-loading').style.display = 'none';
         document.getElementById('billing-content').style.display = 'block';
