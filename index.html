@@ -731,7 +731,7 @@
           document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
           document.getElementById('sheets-status').classList.add('ok');
         } else {
-          document.getElementById('module-status').textContent = 'A configurer';
+          document.getElementById('module-status').textContent = 'Installer';
           document.getElementById('module-compta').classList.add('inactive');
         }
 
@@ -883,14 +883,14 @@
 
         // Module status
         if (config?.sheet_id) {
-          document.getElementById('module-status').textContent = 'Actif · Derniere entree: -';
+          document.getElementById('module-status').textContent = 'Configurer';
           document.getElementById('conn-sheets').classList.add('connected');
           document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
           document.getElementById('sheets-status').classList.add('ok');
           document.getElementById('conn-sheets').style.cursor = 'pointer';
           document.getElementById('conn-sheets').onclick = () => window.open('https://docs.google.com/spreadsheets/d/' + config.sheet_id + '/edit', '_blank');
         } else {
-          document.getElementById('module-status').textContent = 'A configurer';
+          document.getElementById('module-status').textContent = 'Installer';
           document.getElementById('module-compta').classList.add('inactive');
         }
 
@@ -908,7 +908,7 @@
 
       } catch (err) {
         console.log('No config');
-        document.getElementById('module-status').textContent = 'A configurer';
+        document.getElementById('module-status').textContent = 'Installer';
         document.getElementById('module-compta').classList.add('inactive');
       }
     }
