@@ -126,8 +126,17 @@
     .section { margin-bottom: 24px; }
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
-    .section-count { font-size: 11px; color: rgba(255,255,255,0.3); }
+    .section-count { font-size: 11px; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px; }
     .section-badge { font-size: 10px; padding: 4px 8px; background: rgba(255,255,255,0.05); border-radius: 6px; color: rgba(255,255,255,0.4); margin-left: 6px; }
+
+    /* Section accordéon */
+    .section-accordion { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; margin-bottom: 16px; overflow: hidden; }
+    .section-accordion-header { padding: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; }
+    .section-accordion-header:hover { background: rgba(255,255,255,0.02); }
+    .section-accordion-content { display: none; padding: 0 16px 16px; border-top: 1px solid rgba(255,255,255,0.04); }
+    .section-accordion-content.open { display: block; }
+    .section-arrow { color: rgba(255,255,255,0.3); font-size: 12px; transition: transform 0.3s; }
+    .section-arrow.open { transform: rotate(180deg); }
 
     /* Keywords grid - 2 colonnes */
     .kw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -590,23 +599,45 @@
       <div class="preview-rules" id="preview-rules" style="display: none;"></div>
     </div>
 
-    <!-- Keywords -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Mots-cles</div>
-        <span class="section-count" id="kw-count">0</span>
+    <!-- Keywords (accordéon) -->
+    <div class="section-accordion" id="kw-section">
+      <div class="section-accordion-header" onclick="toggleKwSection()">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 16px;">📝</span>
+          <div>
+            <div style="font-size: 14px; font-weight: 600;">Mots-clés</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.5);" id="kw-summary">Configure tes colonnes</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="section-count" id="kw-count">0</span>
+          <span id="kw-arrow" class="section-arrow">▼</span>
+        </div>
       </div>
-      <div class="kw-grid" id="kw-grid"></div>
+      <div class="section-accordion-content" id="kw-content">
+        <div class="kw-grid" id="kw-grid"></div>
+      </div>
     </div>
 
-    <!-- Rules -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Regles<span class="section-badge">optionnel</span></div>
-        <span class="section-count" id="rules-count">0</span>
+    <!-- Rules (accordéon) -->
+    <div class="section-accordion" id="rules-section">
+      <div class="section-accordion-header" onclick="toggleRulesSection()">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 16px;">⚙️</span>
+          <div>
+            <div style="font-size: 14px; font-weight: 600;">Règles<span class="section-badge" style="margin-left: 8px;">optionnel</span></div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.5);" id="rules-summary">Calculs automatiques</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="section-count" id="rules-count">0</span>
+          <span id="rules-arrow" class="section-arrow">▼</span>
+        </div>
       </div>
-      <div id="rules-list"></div>
-      <button class="btn-add-rule" onclick="addRule()" title="Ajouter une règle">+</button>
+      <div class="section-accordion-content" id="rules-content">
+        <div id="rules-list"></div>
+        <button class="btn-add-rule" onclick="addRule()" title="Ajouter une règle">+</button>
+      </div>
     </div>
 
     <!-- Section Exports -->
@@ -1658,6 +1689,25 @@
       const validRules = rules.filter(r => r.terms.some(t => t.name) && r.target).length;
       document.getElementById('kw-count').textContent = validKw;
       document.getElementById('rules-count').textContent = validRules;
+
+      // Mettre à jour les résumés des accordéons
+      const kwSummary = document.getElementById('kw-summary');
+      const rulesSummary = document.getElementById('rules-summary');
+      if (kwSummary) {
+        if (validKw > 0) {
+          const names = keywords.filter(k => k.nom).map(k => k.nom).slice(0, 3).join(', ');
+          kwSummary.textContent = names + (keywords.length > 3 ? '...' : '');
+        } else {
+          kwSummary.textContent = 'Configure tes colonnes';
+        }
+      }
+      if (rulesSummary) {
+        if (validRules > 0) {
+          rulesSummary.textContent = validRules + ' règle' + (validRules > 1 ? 's' : '') + ' configurée' + (validRules > 1 ? 's' : '');
+        } else {
+          rulesSummary.textContent = 'Calculs automatiques';
+        }
+      }
     }
 
     function renderKw() {
@@ -2099,6 +2149,26 @@
       toast('Sauvegarde');
     }
 
+
+    // Accordéon mots-clés
+    function toggleKwSection() {
+      const content = document.getElementById('kw-content');
+      const arrow = document.getElementById('kw-arrow');
+      const isOpen = content.classList.contains('open');
+
+      content.classList.toggle('open');
+      arrow.classList.toggle('open');
+    }
+
+    // Accordéon règles
+    function toggleRulesSection() {
+      const content = document.getElementById('rules-content');
+      const arrow = document.getElementById('rules-arrow');
+      const isOpen = content.classList.contains('open');
+
+      content.classList.toggle('open');
+      arrow.classList.toggle('open');
+    }
 
     // Accordéon envoi automatique
     function toggleAutoExportAccordion() {
