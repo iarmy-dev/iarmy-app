@@ -88,6 +88,8 @@
     .preview-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 14px; min-height: 80px; }
     .preview-label { font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .preview-label-icon { font-size: 12px; }
+    .preview-open-btn { margin-left: auto; color: rgba(255,255,255,0.3); text-decoration: none; font-size: 14px; transition: all 0.2s; padding: 2px 6px; border-radius: 4px; }
+    .preview-open-btn:hover { color: #FF6B35; background: rgba(255,107,53,0.1); }
     .tg-bubble { background: #2AABEE; padding: 10px 14px; border-radius: 14px 14px 14px 4px; font-size: 13px; display: inline-block; max-width: 100%; word-break: break-word; }
     .empty-state { color: rgba(255,255,255,0.2); font-size: 12px; }
 
@@ -563,11 +565,17 @@
     <div class="preview-card">
       <div class="preview-row">
         <div class="preview-box">
-          <div class="preview-label"><span class="preview-label-icon">💬</span> Telegram</div>
+          <div class="preview-label">
+            <span class="preview-label-icon">💬</span> Telegram
+            <a href="https://t.me/IArmyBOT" target="_blank" class="preview-open-btn" title="Ouvrir le bot">↗</a>
+          </div>
           <div id="preview-tg"><span class="empty-state">Tape un message...</span></div>
         </div>
         <div class="preview-box">
-          <div class="preview-label"><span class="preview-label-icon">📊</span> Google Sheets</div>
+          <div class="preview-label">
+            <span class="preview-label-icon">📊</span> Google Sheets
+            <a href="#" id="open-sheet-btn" onclick="openGoogleSheet()" class="preview-open-btn" title="Ouvrir le fichier">↗</a>
+          </div>
           <div id="preview-sheet"><span class="empty-state">Preview Excel...</span></div>
         </div>
       </div>
@@ -786,6 +794,21 @@
       <div class="delete-modal-btns">
         <button class="delete-modal-btn cancel" onclick="closeDeleteModal()">Annuler</button>
         <button class="delete-modal-btn confirm" onclick="confirmDeleteKw()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal suppression règle -->
+  <div class="delete-modal-overlay" id="delete-rule-modal">
+    <div class="delete-modal">
+      <div class="delete-modal-icon" style="background: rgba(139,92,246,0.15); color: #A78BFA;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+      </div>
+      <div class="delete-modal-title">Supprimer cette règle ?</div>
+      <div class="delete-modal-text">Cette règle de calcul sera supprimée.</div>
+      <div class="delete-modal-btns">
+        <button class="delete-modal-btn cancel" onclick="closeDeleteRuleModal()">Annuler</button>
+        <button class="delete-modal-btn confirm" style="background: linear-gradient(135deg, #8B5CF6, #A78BFA);" onclick="confirmDeleteRule()">Supprimer</button>
       </div>
     </div>
   </div>
@@ -1924,7 +1947,33 @@
 
     // Rules
     function addRule() { rules.push({ terms: [{ name: '', op: '+' }, { name: '', op: '+' }], target: '' }); render(); markAsModified(); }
-    function delRule(i) { rules.splice(i, 1); render(); markAsModified(); }
+
+    let pendingDeleteRuleIndex = null;
+    function delRule(i) {
+      const rule = rules[i];
+      // Si la règle est vide, supprimer directement
+      if (!rule.target && rule.terms.every(t => !t.name)) {
+        rules.splice(i, 1);
+        render();
+        markAsModified();
+        return;
+      }
+      // Sinon confirmation
+      pendingDeleteRuleIndex = i;
+      document.getElementById('delete-rule-modal').classList.add('active');
+    }
+    function closeDeleteRuleModal() {
+      document.getElementById('delete-rule-modal').classList.remove('active');
+      pendingDeleteRuleIndex = null;
+    }
+    function confirmDeleteRule() {
+      if (pendingDeleteRuleIndex !== null) {
+        rules.splice(pendingDeleteRuleIndex, 1);
+        render();
+        markAsModified();
+      }
+      closeDeleteRuleModal();
+    }
     function updRuleTerm(ri, ti, field, value) { rules[ri].terms[ti][field] = value; render(); markAsModified(); }
     function updRuleTarget(ri, value) { rules[ri].target = value; render(); markAsModified(); }
     function addRuleTerm(ri) { rules[ri].terms.push({ name: '', op: '+' }); render(); markAsModified(); }
@@ -1989,7 +2038,13 @@
 
           const result = await response.json();
           if (!response.ok || result.error) {
-            toast('Erreur sauvegarde: ' + (result.error || 'Erreur serveur'), true);
+            const errMsg = result.error || 'Erreur serveur';
+            if (errMsg.includes('Session') || errMsg.includes('token') || errMsg.includes('auth')) {
+              toast('Session expirée. Retourne au menu.', true);
+              setTimeout(() => { window.location.href = '/?tg=1&tguid=' + telegramUserId; }, 2000);
+            } else {
+              toast('Erreur: ' + errMsg, true);
+            }
             return;
           }
 
@@ -2297,6 +2352,13 @@
       }
     }
 
+    function openGoogleSheet() {
+      if (config?.sheet_id) {
+        window.open('https://docs.google.com/spreadsheets/d/' + config.sheet_id, '_blank');
+      } else {
+        toast('Aucun fichier configuré', true);
+      }
+    }
 
     function toast(msg, err = false) {
       const t = document.getElementById('toast');
