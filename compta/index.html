@@ -88,8 +88,8 @@
     .preview-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 14px; min-height: 80px; }
     .preview-label { font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .preview-label-icon { font-size: 12px; }
-    .preview-link-btn { display: block; margin-top: 12px; padding: 10px 14px; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; color: #FF8B5E; font-size: 12px; font-weight: 600; text-decoration: none; text-align: center; transition: all 0.2s; }
-    .preview-link-btn:hover { background: rgba(255,107,53,0.2); color: white; }
+    .preview-link-btn { display: inline-block; margin-top: 10px; padding: 0; background: none; border: none; color: rgba(255,255,255,0.35); font-size: 11px; text-decoration: none; transition: color 0.2s; }
+    .preview-link-btn:hover { color: rgba(255,255,255,0.7); }
     .tg-bubble { background: #2AABEE; padding: 10px 14px; border-radius: 14px 14px 14px 4px; font-size: 13px; display: inline-block; max-width: 100%; word-break: break-word; }
     .empty-state { color: rgba(255,255,255,0.2); font-size: 12px; }
 
@@ -579,12 +579,12 @@
         <div class="preview-box">
           <div class="preview-label"><span class="preview-label-icon">💬</span> Telegram</div>
           <div id="preview-tg"><span class="empty-state">Tape un message...</span></div>
-          <a href="https://t.me/IArmyBOT" target="_blank" class="preview-link-btn">Ouvrir le bot →</a>
+          <a href="https://t.me/IArmyBOT" target="_blank" class="preview-link-btn" id="link-telegram">Ouvrir le bot →</a>
         </div>
         <div class="preview-box">
           <div class="preview-label"><span class="preview-label-icon">📊</span> Google Sheets</div>
           <div id="preview-sheet"><span class="empty-state">Preview Excel...</span></div>
-          <a href="#" onclick="openGoogleSheet(); return false;" class="preview-link-btn">Ouvrir le fichier →</a>
+          <a href="#" onclick="openGoogleSheet(); return false;" class="preview-link-btn" id="link-gsheet">Ouvrir le fichier →</a>
         </div>
       </div>
       <div class="preview-rules" id="preview-rules" style="display: none;"></div>
@@ -896,6 +896,10 @@
       const footer = document.getElementById('main-footer');
       if (nav) nav.style.display = 'none';
       if (footer) footer.style.display = 'none';
+
+      // Cacher le lien "Ouvrir le bot" (on est deja dans le bot)
+      const linkTelegram = document.getElementById('link-telegram');
+      if (linkTelegram) linkTelegram.style.display = 'none';
 
       // Ajuster le padding sans nav
       const pageContainer = document.querySelector('.page-container');
@@ -2368,10 +2372,19 @@
     }
 
     function openGoogleSheet() {
-      if (config?.sheet_id) {
-        window.open('https://docs.google.com/spreadsheets/d/' + config.sheet_id, '_blank');
-      } else {
+      if (!config?.sheet_id) {
         toast('Aucun fichier configuré', true);
+        return;
+      }
+      const sheetId = config.sheet_id;
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Essayer d'ouvrir l'appli native Google Sheets
+        const nativeUrl = 'https://docs.google.com/spreadsheets/d/' + sheetId + '/edit?usp=sharing';
+        window.location.href = nativeUrl;
+      } else {
+        window.open('https://docs.google.com/spreadsheets/d/' + sheetId + '/edit', '_blank');
       }
     }
 
