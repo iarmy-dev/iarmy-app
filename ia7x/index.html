@@ -162,16 +162,38 @@
     async function init() {
       console.log('[ADMIN] 🚀 Init...');
 
-      const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-      console.log('[ADMIN] Session error:', sessionError);
-      console.log('[ADMIN] Session exists:', !!session);
+      // Essayer d'abord un refresh pour avoir une session fraîche
+      let session = null;
+      try {
+        const { data, error } = await supabaseClient.auth.refreshSession();
+        if (data.session) {
+          session = data.session;
+          console.log('[ADMIN] ✅ Session refreshed');
+        } else {
+          console.log('[ADMIN] Refresh failed:', error?.message);
+          // Fallback sur getSession
+          const { data: existing } = await supabaseClient.auth.getSession();
+          if (existing.session) {
+            // Vérifier expiration
+            const expiresAt = existing.session.expires_at;
+            const now = Math.floor(Date.now() / 1000);
+            if (!expiresAt || expiresAt > now) {
+              session = existing.session;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('[ADMIN] Init session error:', e);
+      }
 
       if (!session) {
-        console.log('[ADMIN] ❌ Pas de session, redirection...');
+        console.log('[ADMIN] ❌ Pas de session valide, redirection...');
+        cookieStorage.removeItem('sb-auth-token');
         window.location.href = 'https://iarmy.fr';
         return;
       }
 
+      console.log('[ADMIN] Session user:', session.user?.email);
       currentUser = session.user;
       const userEmail = (currentUser.email || '').toLowerCase().trim();
       const isAdmin = ADMIN_EMAILS.some(e => e.toLowerCase().trim() === userEmail);
@@ -201,32 +223,51 @@
     async function loadDashboard() {
       console.log('[ADMIN] 📊 loadDashboard...');
 
-      // Utiliser l'Edge Function admin-data pour bypass RLS
-      // Forcer un refresh du token pour éviter les JWT expirés
-      const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
-      console.log('[ADMIN] Refresh error:', refreshError);
-      console.log('[ADMIN] Session after refresh:', !!session);
+      // Récupérer et valider la session
+      let activeSession = null;
 
-      if (refreshError || !session) {
-        console.error('[ADMIN] Session refresh error:', refreshError);
-        // Essayer avec getSession comme fallback
-        const { data: { session: fallbackSession } } = await supabaseClient.auth.getSession();
-        console.log('[ADMIN] Fallback session:', !!fallbackSession);
-        if (!fallbackSession) {
-          console.log('[ADMIN] ❌ Pas de session après fallback');
-          showNoAccess();
-          return;
+      // D'abord essayer un refresh pour avoir un token frais
+      try {
+        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
+        console.log('[ADMIN] Refresh result:', { hasSession: !!session, error: refreshError?.message });
+
+        if (session) {
+          activeSession = session;
+        } else if (refreshError) {
+          console.log('[ADMIN] Refresh failed, trying getSession...');
+          const { data: { session: existingSession } } = await supabaseClient.auth.getSession();
+
+          if (existingSession) {
+            // Vérifier si le token est expiré
+            const expiresAt = existingSession.expires_at;
+            const now = Math.floor(Date.now() / 1000);
+            const isExpired = expiresAt && (expiresAt < now + 60); // Expiré ou expire dans 1 minute
+
+            console.log('[ADMIN] Session expires_at:', expiresAt, 'now:', now, 'isExpired:', isExpired);
+
+            if (isExpired) {
+              console.log('[ADMIN] ❌ Session expirée, nettoyage et redirection...');
+              await supabaseClient.auth.signOut();
+              cookieStorage.removeItem('sb-auth-token');
+              window.location.href = 'https://iarmy.fr';
+              return;
+            }
+
+            activeSession = existingSession;
+          }
         }
+      } catch (e) {
+        console.error('[ADMIN] Session error:', e);
       }
 
-      const activeSession = session || (await supabaseClient.auth.getSession()).data.session;
       if (!activeSession) {
-        console.log('[ADMIN] ❌ Pas de activeSession');
-        showNoAccess();
+        console.log('[ADMIN] ❌ Pas de session valide');
+        cookieStorage.removeItem('sb-auth-token');
+        window.location.href = 'https://iarmy.fr';
         return;
       }
 
-      console.log('[ADMIN] ✅ Session active, appel Edge Function...');
+      console.log('[ADMIN] ✅ Session active, token expires_at:', activeSession.expires_at);
 
       try {
         const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-data`, {
@@ -243,6 +284,16 @@
         if (!response.ok) {
           const error = await response.json();
           console.error('[ADMIN] ❌ Admin data error:', error);
+
+          // Si 401 (JWT invalide), nettoyer et rediriger
+          if (response.status === 401) {
+            console.log('[ADMIN] Token invalide, nettoyage session...');
+            await supabaseClient.auth.signOut();
+            cookieStorage.removeItem('sb-auth-token');
+            window.location.href = 'https://iarmy.fr';
+            return;
+          }
+
           showNoAccess();
           return;
         }
