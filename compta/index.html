@@ -137,6 +137,8 @@
     .section-accordion-content.open { display: block; }
     .section-arrow { color: rgba(255,255,255,0.3); font-size: 12px; transition: transform 0.3s; }
     .section-arrow.open { transform: rotate(180deg); }
+    .btn-accordion-close { width: 100%; margin-top: 16px; padding: 12px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; color: #4ade80; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .btn-accordion-close:hover { background: rgba(34,197,94,0.2); }
 
     /* Keywords grid - 2 colonnes */
     .kw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -156,6 +158,7 @@
     .kw-card.incomplete { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.03); }
 
     .kw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .kw-name-wrap { display: flex; align-items: center; gap: 6px; }
     .kw-name-input {
       background: none;
       border: none;
@@ -168,6 +171,8 @@
     }
     .kw-name-input:focus { outline: none; }
     .kw-name-input::placeholder { color: rgba(255,255,255,0.2); }
+    .kw-confirm-btn { width: 28px; height: 28px; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; color: #4ade80; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .kw-confirm-btn:hover, .kw-confirm-btn:active { background: rgba(34,197,94,0.3); transform: scale(1.05); }
     .kw-del {
       background: none;
       border: none;
@@ -616,6 +621,7 @@
       </div>
       <div class="section-accordion-content" id="kw-content">
         <div class="kw-grid" id="kw-grid"></div>
+        <button class="btn-accordion-close" onclick="toggleKwSection()">✓ Fermer</button>
       </div>
     </div>
 
@@ -637,6 +643,7 @@
       <div class="section-accordion-content" id="rules-content">
         <div id="rules-list"></div>
         <button class="btn-add-rule" onclick="addRule()" title="Ajouter une règle">+</button>
+        <button class="btn-accordion-close" onclick="toggleRulesSection()">✓ Fermer</button>
       </div>
     </div>
 
@@ -1764,7 +1771,10 @@
         return `
         <div class="kw-card ${incomplete ? 'incomplete' : ''}">
           <div class="kw-header">
-            <input class="kw-name-input" value="${k.nom}" onchange="updKw(${i},'nom',this.value)" oninput="this.value=this.value.substring(0,20)" maxlength="20" placeholder="NOM">
+            <div class="kw-name-wrap">
+              <input class="kw-name-input" id="kw-input-${i}" value="${k.nom}" onchange="updKw(${i},'nom',this.value)" oninput="this.value=this.value.substring(0,20)" maxlength="20" placeholder="NOM">
+              <button class="kw-confirm-btn" onclick="confirmKwInput(${i})" title="Valider">✓</button>
+            </div>
             <button class="kw-del" onclick="delKw(${i})" title="Supprimer">×</button>
           </div>
           <div class="kw-mapping">
@@ -1916,6 +1926,14 @@
         }
       }
       return null;
+    }
+
+    function confirmKwInput(i) {
+      const input = document.getElementById('kw-input-' + i);
+      if (input) {
+        input.blur(); // Déclenche onchange
+        toast('Mot-clé enregistré');
+      }
     }
 
     function updKw(i, f, v) {
