@@ -36,21 +36,36 @@
 
     .page-container { max-width: 600px; margin: 0 auto; padding: 90px 20px 40px; position: relative; z-index: 10; }
 
-    /* COMPTA LOADING - Mini grid that fills */
+    /* COMPTA LOADING - BADASS VERSION */
     .compta-loading { position: fixed; inset: 0; background: #030303; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
     .compta-loading.hidden { opacity: 0; pointer-events: none; }
-    .compta-grid { display: grid; grid-template-columns: repeat(3, 28px); gap: 4px; margin-bottom: 16px; }
-    .compta-cell { width: 28px; height: 28px; background: rgba(255,255,255,0.03); border-radius: 6px; opacity: 0; animation: cellPop 0.3s ease forwards; }
-    .compta-cell:nth-child(1) { animation-delay: 0.1s; }
-    .compta-cell:nth-child(2) { animation-delay: 0.2s; }
-    .compta-cell:nth-child(3) { animation-delay: 0.3s; }
-    .compta-cell:nth-child(4) { animation-delay: 0.4s; }
-    .compta-cell:nth-child(5) { animation-delay: 0.5s; }
-    .compta-cell:nth-child(6) { animation-delay: 0.6s; }
-    .compta-cell.green { background: rgba(15, 157, 88, 0.4); }
-    .compta-cell.light { background: rgba(15, 157, 88, 0.2); }
-    @keyframes cellPop { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
-    .compta-label { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 500; }
+
+    /* Glow effect behind */
+    .compta-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(15,157,88,0.3) 0%, transparent 70%); border-radius: 50%; filter: blur(40px); animation: glowPulse 2s ease-in-out infinite; }
+    @keyframes glowPulse { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 0.8; } }
+
+    /* Grid container with perspective */
+    .compta-grid-wrap { position: relative; perspective: 500px; }
+    .compta-grid { display: grid; grid-template-columns: repeat(3, 36px); gap: 6px; transform: rotateX(10deg); animation: gridFloat 3s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: rotateX(10deg) translateY(0); } 50% { transform: rotateX(10deg) translateY(-4px); } }
+
+    /* Cells with content */
+    .compta-cell { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; opacity: 0; transform: scale(0) rotateY(90deg); animation: cellFlip 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden; }
+    .compta-cell::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%); animation: shimmer 2s ease-in-out infinite; animation-delay: inherit; }
+    @keyframes shimmer { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+
+    .compta-cell:nth-child(1) { animation-delay: 0.1s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
+    .compta-cell:nth-child(2) { animation-delay: 0.2s; background: rgba(15,157,88,0.15); color: #4ade80; }
+    .compta-cell:nth-child(3) { animation-delay: 0.3s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
+    .compta-cell:nth-child(4) { animation-delay: 0.4s; background: rgba(15,157,88,0.15); color: #4ade80; }
+    .compta-cell:nth-child(5) { animation-delay: 0.5s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
+    .compta-cell:nth-child(6) { animation-delay: 0.6s; background: rgba(255,107,53,0.2); color: #FF8B5E; }
+
+    @keyframes cellFlip { 0% { opacity: 0; transform: scale(0) rotateY(90deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
+
+    /* Label with gradient */
+    .compta-label { margin-top: 20px; font-size: 13px; font-weight: 600; background: linear-gradient(90deg, #0f9d58, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; text-transform: uppercase; animation: labelGlow 2s ease-in-out infinite; }
+    @keyframes labelGlow { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
 
     /* Old loading (keep for compatibility) */
     .loading-overlay { position: fixed; inset: 0; background: rgba(3,3,3,0.95); display: flex; align-items: center; justify-content: center; z-index: 100; display: none; }
@@ -496,15 +511,18 @@
   </style>
 </head>
 <body class="bg-gradient-animate">
-  <!-- COMPTA LOADING -->
+  <!-- COMPTA LOADING - BADASS -->
   <div class="compta-loading" id="compta-loading">
-    <div class="compta-grid">
-      <div class="compta-cell green"></div>
-      <div class="compta-cell light"></div>
-      <div class="compta-cell green"></div>
-      <div class="compta-cell light"></div>
-      <div class="compta-cell green"></div>
-      <div class="compta-cell light"></div>
+    <div class="compta-glow"></div>
+    <div class="compta-grid-wrap">
+      <div class="compta-grid">
+        <div class="compta-cell">€</div>
+        <div class="compta-cell">+</div>
+        <div class="compta-cell">24</div>
+        <div class="compta-cell">%</div>
+        <div class="compta-cell">€</div>
+        <div class="compta-cell">-</div>
+      </div>
     </div>
     <div class="compta-label">Compta</div>
   </div>
@@ -818,7 +836,7 @@
         return;
       }
       var elapsed = Date.now() - comptaLoadingStart;
-      var minTime = 1000; // Minimum 1s
+      var minTime = 1200; // Minimum 1.2s for badass animation
       var remaining = Math.max(0, minTime - elapsed);
       setTimeout(function() {
         loader.classList.add('hidden');
