@@ -36,8 +36,45 @@
 
     .page-container { max-width: 600px; margin: 0 auto; padding: 90px 20px 40px; position: relative; z-index: 10; }
 
-    /* Loading */
-    .loading-overlay { position: fixed; inset: 0; background: rgba(3,3,3,0.95); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    /* ============================================= */
+    /* COMPTA LOADING SCREEN - Excel Animation      */
+    /* ============================================= */
+    .compta-loading { position: fixed; inset: 0; background: #030303; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s; }
+    .compta-loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .compta-loading-glow { position: absolute; width: 350px; height: 350px; background: radial-gradient(circle, rgba(15, 157, 88, 0.12) 0%, transparent 70%); border-radius: 50%; filter: blur(50px); animation: comptaGlowPulse 3s ease-in-out infinite; }
+    @keyframes comptaGlowPulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.1); } }
+
+    .compta-excel { width: 260px; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; margin-bottom: 28px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
+    .compta-excel-header { display: flex; align-items: center; gap: 6px; padding: 10px 12px; background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+    .compta-excel-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .compta-excel-title { margin-left: 8px; font-size: 11px; color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+    .compta-excel-grid { padding: 8px; }
+    .compta-excel-row { display: grid; grid-template-columns: 50px 1fr 60px; gap: 4px; margin-bottom: 4px; }
+    .compta-excel-header-row .compta-excel-cell { background: rgba(15, 157, 88, 0.15) !important; color: #4ade80 !important; font-weight: 600; font-size: 10px; animation: none !important; opacity: 1 !important; }
+    .compta-excel-cell { padding: 8px 10px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.7); }
+    .compta-excel-cell.amount { color: #4ade80; font-weight: 600; }
+    .compta-excel-cell.expense { color: #f87171; font-weight: 600; }
+
+    .compta-excel-row:not(.compta-excel-header-row) .compta-excel-cell {
+      opacity: 0;
+      animation: cellType 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      animation-delay: var(--delay, 0s);
+    }
+    @keyframes cellType {
+      0% { opacity: 0; background: rgba(15, 157, 88, 0.25); transform: scale(0.95); }
+      60% { background: rgba(15, 157, 88, 0.12); }
+      100% { opacity: 1; background: rgba(255, 255, 255, 0.03); transform: scale(1); }
+    }
+
+    .compta-loading-title { font-size: 18px; font-weight: 600; color: white; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+    .compta-loading-title svg { width: 20px; height: 20px; color: #0f9d58; }
+    .compta-loading-subtitle { font-size: 13px; color: rgba(255, 255, 255, 0.4); margin-bottom: 24px; }
+    .compta-loading-bar { width: 160px; height: 3px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; overflow: hidden; }
+    .compta-loading-bar-fill { height: 100%; width: 40%; background: linear-gradient(90deg, #0f9d58, #4ade80); border-radius: 2px; animation: comptaBarSlide 1.2s ease-in-out infinite; }
+    @keyframes comptaBarSlide { 0% { transform: translateX(-150%); } 100% { transform: translateX(400%); } }
+
+    /* Old loading (keep for compatibility) */
+    .loading-overlay { position: fixed; inset: 0; background: rgba(3,3,3,0.95); display: flex; align-items: center; justify-content: center; z-index: 100; display: none; }
     .loading-spinner { width: 28px; height: 28px; border: 2px solid rgba(255,107,53,0.2); border-top-color: #FF6B35; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -480,6 +517,52 @@
   </style>
 </head>
 <body class="bg-gradient-animate">
+  <!-- COMPTA LOADING SCREEN -->
+  <div class="compta-loading" id="compta-loading">
+    <div class="compta-loading-glow"></div>
+
+    <!-- Mini Excel Animation -->
+    <div class="compta-excel">
+      <div class="compta-excel-header">
+        <div class="compta-excel-dot" style="background: #ff5f57;"></div>
+        <div class="compta-excel-dot" style="background: #febc2e;"></div>
+        <div class="compta-excel-dot" style="background: #28c840;"></div>
+        <span class="compta-excel-title">Compta.xlsx</span>
+      </div>
+      <div class="compta-excel-grid">
+        <div class="compta-excel-row compta-excel-header-row">
+          <div class="compta-excel-cell header">Date</div>
+          <div class="compta-excel-cell header">Label</div>
+          <div class="compta-excel-cell header">Montant</div>
+        </div>
+        <div class="compta-excel-row">
+          <div class="compta-excel-cell" style="--delay: 0.2s;">24/01</div>
+          <div class="compta-excel-cell" style="--delay: 0.35s;">Vente</div>
+          <div class="compta-excel-cell amount" style="--delay: 0.5s;">+245€</div>
+        </div>
+        <div class="compta-excel-row">
+          <div class="compta-excel-cell" style="--delay: 0.65s;">24/01</div>
+          <div class="compta-excel-cell" style="--delay: 0.8s;">Achat</div>
+          <div class="compta-excel-cell expense" style="--delay: 0.95s;">-52€</div>
+        </div>
+        <div class="compta-excel-row">
+          <div class="compta-excel-cell" style="--delay: 1.1s;">23/01</div>
+          <div class="compta-excel-cell" style="--delay: 1.25s;">CB</div>
+          <div class="compta-excel-cell amount" style="--delay: 1.4s;">+180€</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compta-loading-title">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>
+      Compta Express
+    </div>
+    <div class="compta-loading-subtitle">Chargement...</div>
+    <div class="compta-loading-bar">
+      <div class="compta-loading-bar-fill"></div>
+    </div>
+  </div>
+
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
 
@@ -779,6 +862,24 @@
     // Nouveau format règles: { terms: [{name, op}], target }
     // op: '+' ou '-' (premier terme toujours '+')
 
+    // Hide compta loading screen (with minimum display time for animation)
+    var comptaLoadingStart = Date.now();
+    function hideComptaLoading() {
+      var loader = document.getElementById('compta-loading');
+      var oldLoader = document.getElementById('loading');
+      if (!loader) {
+        if (oldLoader) oldLoader.style.display = 'none';
+        return;
+      }
+      var elapsed = Date.now() - comptaLoadingStart;
+      var minTime = 1800; // Minimum 1.8s to see the Excel animation
+      var remaining = Math.max(0, minTime - elapsed);
+      setTimeout(function() {
+        loader.classList.add('hidden');
+        if (oldLoader) oldLoader.style.display = 'none';
+      }, remaining);
+    }
+
     // Detecter si on est dans Telegram Mini App
     function detectTelegram() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -935,7 +1036,7 @@
       // Charger la config
       try {
         loadConfigFromAuthData(authData.moduleConfig, authData.user.id);
-        document.getElementById('loading').style.display = 'none';
+        hideComptaLoading();
       } catch (configErr) {
         console.error('[TG] Config error:', configErr);
         showTelegramError('Erreur de configuration: ' + configErr.message);
@@ -1035,7 +1136,7 @@
     }
 
     function showTelegramError(message) {
-      document.getElementById('loading').style.display = 'none';
+      hideComptaLoading();
       document.querySelector('.page-container').innerHTML = `
         <div style="text-align: center; padding: 60px 20px;">
           <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
@@ -1078,7 +1179,7 @@
       }
 
       await loadConfig(session.user.id);
-      document.getElementById('loading').style.display = 'none';
+      hideComptaLoading();
     }
 
     async function checkModuleAccess(userId, moduleName) {
@@ -1118,7 +1219,7 @@
     }
 
     function showNoAccessScreen() {
-      document.getElementById('loading').style.display = 'none';
+      hideComptaLoading();
       document.querySelector('.page-container').innerHTML = `
         <div style="text-align: center; padding: 60px 20px;">
           <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
