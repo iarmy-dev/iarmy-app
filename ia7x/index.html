@@ -173,11 +173,12 @@
       }
 
       currentUser = session.user;
-      console.log('[ADMIN] User email:', currentUser.email);
-      console.log('[ADMIN] ADMIN_EMAILS:', ADMIN_EMAILS);
-      console.log('[ADMIN] Email in list:', ADMIN_EMAILS.includes(currentUser.email));
+      const userEmail = (currentUser.email || '').toLowerCase().trim();
+      const isAdmin = ADMIN_EMAILS.some(e => e.toLowerCase().trim() === userEmail);
+      console.log('[ADMIN] User email:', userEmail);
+      console.log('[ADMIN] Is admin:', isAdmin);
 
-      if (!ADMIN_EMAILS.includes(currentUser.email)) {
+      if (!isAdmin) {
         console.log('[ADMIN] ❌ Email pas dans la liste admin');
         showNoAccess();
         return;
