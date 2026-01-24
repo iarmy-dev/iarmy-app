@@ -359,8 +359,10 @@
     .btn-refresh:hover { background: rgba(255, 255, 255, 0.08); }
     .btn-back { width: 100%; background: transparent; border: 1px solid rgba(255, 255, 255, 0.1); padding: 14px; border-radius: 14px; color: rgba(255, 255, 255, 0.6); cursor: pointer; margin-top: 12px; transition: all 0.3s; }
     .btn-back:hover { background: rgba(255, 255, 255, 0.04); color: white; }
-    .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 16px 32px; border-radius: 16px; font-weight: 600; box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4); z-index: 10002; opacity: 0; transition: all 0.4s; }
-    .toast.active { opacity: 1; transform: translateX(-50%) translateY(0); }
+    /* Toast - Liquid Glass */
+    .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px) scale(0.9); padding: 14px 28px; background: rgba(34, 197, 94, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; color: white; font-size: 14px; font-weight: 500; opacity: 0; z-index: 10002; box-shadow: 0 8px 32px rgba(34, 197, 94, 0.3); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .toast.active { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+    .toast.error { background: rgba(239, 68, 68, 0.85); box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3); }
     .btn-google-sheets { width: 100%; background: white; color: #3c4043; border: none; border-radius: 14px; padding: 16px 24px; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .btn-google-sheets:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2); }
     .btn-google-sheets.connected { background: linear-gradient(135deg, #0f9d58, #0a7e3e); color: white; }
@@ -529,10 +531,9 @@
 
       /* Toast */
       .toast {
-        bottom: 20px;
+        top: 70px;
         padding: 14px 24px;
         font-size: 14px;
-        border-radius: 12px;
         max-width: calc(100vw - 40px);
       }
 
@@ -753,7 +754,7 @@
     /* ============================================= */
     @supports (padding-top: env(safe-area-inset-top)) {
       .glass { padding-top: calc(12px + env(safe-area-inset-top)) !important; }
-      .toast { bottom: calc(20px + env(safe-area-inset-bottom)); }
+      .toast { top: calc(70px + env(safe-area-inset-top)); }
     }
 
     /* ============================================= */
