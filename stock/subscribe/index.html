@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stock - Activer l'abonnement | iArmy</title>
+  <title>Abonnement | iArmy</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0a; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+    .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(24px); border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35 0%, #FF8B5E 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.4s; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25); }
+    .logo-i:hover { transform: scale(1.15) rotate(-8deg); box-shadow: 0 0 40px rgba(255,107,53,0.6); }
 
     .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.25; animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
     .orb-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); top: -200px; right: -100px; }
@@ -60,10 +64,10 @@
   <div class="toast" id="toast"></div>
 
   <!-- Header -->
-  <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(10,10,10,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+  <nav class="glass" style="position: fixed; top: 0; left: 0; right: 0; z-index: 50;">
     <div style="max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
       <a href="https://iarmy.fr" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: white;">
-        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;">i</div>
+        <div class="logo-i">i</div>
         <span style="font-weight: 600;">iArmy</span>
       </a>
       <div id="auth-buttons"></div>
@@ -147,6 +151,7 @@
     const moduleConfig = MODULES[moduleName] || MODULES.stock;
 
     // Afficher les infos du module
+    document.title = moduleConfig.name + ' - Abonnement | iArmy';
     document.getElementById('module-icon').textContent = moduleConfig.icon;
     document.getElementById('module-name').textContent = moduleConfig.name;
     document.getElementById('module-price').textContent = moduleConfig.price;

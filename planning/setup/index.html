@@ -105,11 +105,12 @@
 
   <!-- Header -->
   <nav class="glass fixed top-0 left-0 right-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
       <a href="https://iarmy.fr" class="flex items-center gap-3">
         <div class="logo-i">i</div>
-        <span class="font-semibold text-lg">Planning</span>
+        <span class="font-semibold text-lg">iArmy</span>
       </a>
+      <div id="auth-buttons"></div>
     </div>
   </nav>
 
@@ -418,6 +419,18 @@
         return;
       }
       currentUser = session.user;
+
+      // Update auth buttons
+      const userName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
+      const userAvatar = currentUser.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=FF6B35&color=fff`;
+      document.getElementById('auth-buttons').innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="/compte/" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; text-decoration: none; color: white;">
+            <img src="${userAvatar}" style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,107,53,0.3);">
+            <span style="font-weight: 500; font-size: 14px;">${userName.split(' ')[0]}</span>
+          </a>
+        </div>
+      `;
 
       // Check if already has subscription
       const { data: sub } = await supabase
