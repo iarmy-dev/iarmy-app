@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock - iArmy</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; }
+    .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; }
+    .glass:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); }
+    .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border: none; border-radius: 12px; padding: 14px 24px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,107,53,0.4); }
+    .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 24px; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .stat-card { text-align: center; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+    .product-card { transition: all 0.3s; cursor: pointer; }
+    .product-card:hover { transform: translateX(4px); border-color: rgba(255,107,53,0.3); }
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+    .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .tag-orange { background: rgba(255,107,53,0.15); color: #FF8B5E; }
+    .tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+    .alert-card { border-left: 3px solid; padding-left: 16px; }
+    .alert-warning { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
+    .alert-danger { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+    <div class="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-400 rounded-xl flex items-center justify-center font-bold text-lg">i</div>
+        <span class="font-semibold">Stock</span>
+      </a>
+      <a href="/stock/setup/" class="btn-primary text-sm py-2 px-4">+ Ajouter</a>
+    </div>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-5 pt-24 pb-10">
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-3 mb-6">
+      <div class="glass p-4 stat-card">
+        <div class="stat-value text-orange-400" id="stat-products">-</div>
+        <div class="stat-label">Produits</div>
+      </div>
+      <div class="glass p-4 stat-card">
+        <div class="stat-value text-green-400" id="stat-cocktails">-</div>
+        <div class="stat-label">Cocktails</div>
+      </div>
+      <div class="glass p-4 stat-card">
+        <div class="stat-value text-blue-400" id="stat-margin">-</div>
+        <div class="stat-label">Marge moy.</div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div id="alerts-section" class="mb-6 hidden">
+      <h2 class="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3">Alertes</h2>
+      <div id="alerts-list" class="space-y-3"></div>
+    </div>
+
+    <!-- Products -->
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-semibold text-white/50 uppercase tracking-wide">Mon stock</h2>
+    </div>
+
+    <div id="products-list">
+      <div class="glass p-8 text-center text-white/40" id="loading">
+        Chargement...
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden">
+      <div class="glass p-10 text-center">
+        <div class="w-20 h-20 mx-auto mb-5 bg-white/5 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Aucun produit</h3>
+        <p class="text-white/40 text-sm mb-6">Configure ton stock pour commencer</p>
+        <a href="/stock/setup/" class="btn-primary inline-block">Configurer</a>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 grid grid-cols-2 gap-3">
+      <button onclick="openTelegram()" class="btn-secondary flex items-center justify-center gap-2 text-sm">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.46-1.9-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.015-.15-.056-.212s-.174-.041-.248-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.008-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.324-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.015 3.333-1.386 4.025-1.627 4.477-1.635.099-.002.321.023.465.141.121.1.154.234.17.33.015.096.034.31.019.478z"/>
+        </svg>
+        Telegram
+      </button>
+      <a href="/stock/setup/" class="btn-secondary flex items-center justify-center gap-2 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Parametres
+      </a>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL5CSx3az8';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tguid = urlParams.get('tguid') || tg?.initDataUnsafe?.user?.id;
+
+        if (tguid) {
+          const { data: link } = await supabase
+            .from('telegram_links')
+            .select('user_id')
+            .eq('telegram_user_id', tguid.toString())
+            .single();
+
+          if (link) {
+            currentUser = { id: link.user_id };
+            await checkSubscriptionAndLoad();
+            return;
+          }
+        }
+
+        window.location.href = '/?redirect=/stock/';
+        return;
+      }
+
+      currentUser = session.user;
+      await checkSubscriptionAndLoad();
+    }
+
+    async function checkSubscriptionAndLoad() {
+      // Verifier subscription
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('status, is_tester')
+        .eq('user_id', currentUser.id)
+        .eq('module_name', 'stock')
+        .maybeSingle();
+
+      const hasAccess = sub?.status === 'active' || sub?.is_tester === true;
+
+      // Si pas d'acces mais a des produits = essai termine
+      const { count: productCount } = await supabase
+        .from('stock_products')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id);
+
+      if (!hasAccess && productCount > 0) {
+        // Afficher message essai termine
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('products-list').innerHTML = `
+          <div class="glass p-8 text-center">
+            <div class="text-4xl mb-4">⏰</div>
+            <h3 class="text-lg font-semibold mb-2">Essai termine</h3>
+            <p class="text-white/40 text-sm mb-6">Ton essai gratuit est termine. Passe a l'abonnement pour continuer.</p>
+            <a href="/stock/setup/" class="btn-primary inline-block">S'abonner - 29€/mois</a>
+          </div>
+        `;
+        document.getElementById('stat-products').textContent = productCount;
+        document.getElementById('stat-cocktails').textContent = '-';
+        document.getElementById('stat-margin').textContent = '-';
+        return;
+      }
+
+      // Si pas d'acces et pas de produits = redirect vers setup
+      if (!hasAccess && productCount === 0) {
+        window.location.href = '/stock/setup/';
+        return;
+      }
+
+      loadData();
+    }
+
+    async function loadData() {
+      // Load products
+      const { data: products, error: productsError } = await supabase
+        .from('stock_products')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('name');
+
+      // Load cocktails
+      const { data: cocktails } = await supabase
+        .from('stock_cocktails')
+        .select('*')
+        .eq('user_id', currentUser.id);
+
+      document.getElementById('loading').classList.add('hidden');
+
+      if (productsError || !products || products.length === 0) {
+        document.getElementById('empty-state').classList.remove('hidden');
+        document.getElementById('stat-products').textContent = '0';
+        document.getElementById('stat-cocktails').textContent = '0';
+        document.getElementById('stat-margin').textContent = '-';
+        return;
+      }
+
+      // Update stats
+      document.getElementById('stat-products').textContent = products.length;
+      document.getElementById('stat-cocktails').textContent = cocktails?.length || 0;
+      document.getElementById('stat-margin').textContent = '72%'; // TODO: calculate real average
+
+      // Check for alerts
+      const alerts = [];
+      for (const p of products) {
+        if (p.stock_current !== undefined && p.stock_current < 2) {
+          alerts.push({
+            type: p.stock_current < 1 ? 'danger' : 'warning',
+            message: `${p.name}: ${p.stock_current} bouteille${p.stock_current !== 1 ? 's' : ''} restante${p.stock_current !== 1 ? 's' : ''}`
+          });
+        }
+      }
+
+      if (alerts.length > 0) {
+        document.getElementById('alerts-section').classList.remove('hidden');
+        document.getElementById('alerts-list').innerHTML = alerts.map(a => `
+          <div class="glass alert-card alert-${a.type} p-4">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 ${a.type === 'danger' ? 'text-red-400' : 'text-yellow-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              <span class="text-sm">${a.message}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render products
+      const icons = { spirit: '🥃', liqueur: '🍾', wine: '🍷', beer: '🍺', soft: '🥤', other: '📦' };
+      const container = document.getElementById('products-list');
+      container.innerHTML = products.map(p => {
+        const stockStatus = p.stock_current === undefined ? 'unknown' :
+          p.stock_current < 1 ? 'critical' :
+          p.stock_current < 2 ? 'low' : 'ok';
+        const statusClass = stockStatus === 'critical' ? 'tag-red' :
+          stockStatus === 'low' ? 'tag-orange' : 'tag-green';
+
+        return `
+          <div class="product-card glass p-4 mb-3 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center text-xl">
+              ${icons[p.type] || '📦'}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">${p.name}</div>
+              <div class="text-sm text-white/40">${p.volume_cl}cl • ${p.purchase_price ? p.purchase_price + '€' : 'Prix non defini'}</div>
+            </div>
+            <div class="text-right">
+              ${p.stock_current !== undefined ? `
+                <div class="text-lg font-semibold">${p.stock_current}</div>
+                <div class="text-xs text-white/30">bout.</div>
+              ` : '<span class="tag tag-orange">Non compte</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openTelegram() {
+      window.open('https://t.me/iArmy_bot', '_blank');
+    }
+
+    init();
+  </script>
+</body>
+</html>

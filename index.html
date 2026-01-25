@@ -34,7 +34,8 @@
     .btn-icon.danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
 
     /* Container */
-    .container { max-width: 600px; margin: 0 auto; padding: 90px 20px 40px; position: relative; z-index: 10; }
+    .container { max-width: 600px; margin: 0 auto; padding: 90px 20px 40px; position: relative; z-index: 10; opacity: 0; transition: opacity 0.3s ease; }
+    .container.visible { opacity: 1; }
 
     /* Header Card */
     .header-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
@@ -500,6 +501,23 @@
       </div>
     </div>
 
+    <div class="module-card" id="module-stock" onclick="goToStockModule()">
+      <div class="module-left">
+        <div class="module-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(16,185,129,0.1));">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.5">
+            <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="module-name">Stock</div>
+          <div class="module-status" id="stock-status">Chargement...</div>
+        </div>
+      </div>
+      <div class="module-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
     <!-- Connections -->
     <div class="section-title">Connexions</div>
     <div class="connections-grid">
@@ -728,10 +746,12 @@
     const DEBUG = window.location.hostname === 'localhost';
     const log = (...args) => DEBUG && console.log(...args);
 
-    // Masquer l'écran de chargement
+    // Masquer l'écran de chargement et afficher le contenu
     function hideLoading() {
       const loader = document.getElementById('loading-screen');
+      const container = document.querySelector('.container');
       if (loader) loader.classList.add('hidden');
+      if (container) container.classList.add('visible');
     }
 
     // Cookie storage pour partager la session entre iarmy.fr et app.iarmy.fr
@@ -759,6 +779,7 @@
     let cardElement = null;
     let moduleConfig = null;
     let employeeCount = 0;
+    let stockProductCount = 0;
     let isTelegramMode = false;
     let telegramUserId = null;
     let telegramSubscription = null;
@@ -968,6 +989,20 @@
           document.getElementById('module-planning').classList.add('inactive');
         }
 
+        // Stock module - load products count
+        const { count: prodCount } = await supabaseClient
+          .from('stock_products')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', authData.userId);
+
+        stockProductCount = prodCount || 0;
+        if (stockProductCount > 0) {
+          document.getElementById('stock-status').textContent = stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '');
+        } else {
+          document.getElementById('stock-status').textContent = 'Configurer';
+          document.getElementById('module-stock').classList.add('inactive');
+        }
+
         // Telegram est forcement connecte
         document.getElementById('conn-telegram').classList.add('connected');
         document.getElementById('telegram-status').innerHTML = '<span class="dot"></span> Connecte';
@@ -1173,12 +1208,28 @@
           document.getElementById('module-planning').classList.add('inactive');
         }
 
+        // Stock module - check for products
+        const { count: stockCount } = await supabaseClient
+          .from('stock_products')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', currentUser.id);
+
+        stockProductCount = stockCount || 0;
+        if (stockProductCount > 0) {
+          document.getElementById('stock-status').textContent = stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '');
+        } else {
+          document.getElementById('stock-status').textContent = 'Configurer';
+          document.getElementById('module-stock').classList.add('inactive');
+        }
+
       } catch (err) {
         console.log('No config');
         document.getElementById('module-status').textContent = 'Installer';
         document.getElementById('module-compta').classList.add('inactive');
         document.getElementById('planning-status').textContent = 'Configurer';
         document.getElementById('module-planning').classList.add('inactive');
+        document.getElementById('stock-status').textContent = 'Configurer';
+        document.getElementById('module-stock').classList.add('inactive');
       }
     }
 
@@ -1200,6 +1251,15 @@
         window.location.href = '/planning/' + tgParams;
       } else {
         window.location.href = '/planning/setup/' + tgParams;
+      }
+    }
+
+    function goToStockModule() {
+      const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
+      if (stockProductCount > 0) {
+        window.location.href = '/stock/' + tgParams;
+      } else {
+        window.location.href = '/stock/setup/' + tgParams;
       }
     }
 
