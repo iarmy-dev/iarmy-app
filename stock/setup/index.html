@@ -87,17 +87,6 @@
     .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast.error { background: rgba(239, 68, 68, 0.85); }
 
-    /* Loading screen */
-    .stock-loading { position: fixed; inset: 0; background: #0a0a0a; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s; }
-    .stock-loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .stock-loading-icon { font-size: 64px; margin-bottom: 24px; animation: bounce 2s ease-in-out infinite; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    .stock-loading-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-    .stock-loading-subtitle { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 24px; }
-    .stock-loading-bar { width: 160px; height: 3px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; overflow: hidden; }
-    .stock-loading-bar-fill { height: 100%; width: 40%; background: linear-gradient(90deg, #FF6B35, #FF8B5E); border-radius: 2px; animation: barSlide 1.2s ease-in-out infinite; }
-    @keyframes barSlide { 0% { transform: translateX(-150%); } 100% { transform: translateX(400%); } }
-
     /* Mobile progress */
     .mobile-progress { display: none; position: fixed; top: 60px; left: 0; right: 0; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(20px); padding: 12px 20px; z-index: 45; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
     .mobile-progress-steps { display: flex; align-items: center; justify-content: center; gap: 0; }
@@ -122,16 +111,6 @@
   </style>
 </head>
 <body class="bg-gradient-animate">
-  <!-- Loading Screen -->
-  <div class="stock-loading" id="loading-screen">
-    <div class="stock-loading-icon">🍸</div>
-    <div class="stock-loading-title">Stock</div>
-    <div class="stock-loading-subtitle">Chargement de ton espace...</div>
-    <div class="stock-loading-bar">
-      <div class="stock-loading-bar-fill"></div>
-    </div>
-  </div>
-
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
 
@@ -330,17 +309,11 @@
       setTimeout(() => toast.classList.remove('active'), 4000);
     }
 
-    // Hide loading screen
-    function hideLoading() {
-      document.getElementById('loading-screen').classList.add('hidden');
-    }
-
     // Init
     async function init() {
       // Check si Telegram Mini App
       const tg = window.Telegram?.WebApp;
       if (tg && (tg.initData || tg.platform !== 'unknown')) {
-        hideLoading();
         document.querySelector('main').innerHTML = `
           <div class="glass-card" style="padding: 48px; text-align: center; margin-top: 40px;">
             <div style="font-size: 48px; margin-bottom: 16px;">🌐</div>
@@ -381,21 +354,14 @@
 
       isTester = sub?.is_tester === true;
 
-      // Check si déjà configuré
-      const { count: cocktailCount } = await supabase
-        .from('stock_cocktails')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', currentUser.id);
-
-      // Si déjà configuré et (testeur ou actif) → dashboard
-      if (cocktailCount > 0 && (sub?.status === 'active' || sub?.status === 'trialing' || isTester)) {
+      // Si déjà abonné → dashboard
+      if (sub?.status === 'active' || sub?.status === 'trialing' || isTester) {
         window.location.href = '/stock/';
         return;
       }
 
       // Setup drag & drop
       setupDragDrop();
-      hideLoading();
     }
 
     function setupDragDrop() {
