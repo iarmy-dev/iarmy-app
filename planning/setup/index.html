@@ -152,7 +152,7 @@
       <div class="step-content active" id="step-upload">
         <div class="mb-2"><span class="text-white/30 text-sm">Etape 1/3</span></div>
         <h1 class="text-3xl font-bold mb-3">Ajoute ton equipe</h1>
-        <p class="text-white/40 mb-8">Envoie une photo de contrat ou planning, l'IA extrait les infos</p>
+        <p class="text-white/40 mb-8">Envoie les photos de contrats de tes employes, un par un. L'IA extrait les infos automatiquement.</p>
 
         <!-- Option 1: Upload -->
         <div class="upload-zone mb-6" id="drop-zone" onclick="document.getElementById('file-input').click()">
@@ -181,20 +181,31 @@
           </div>
         </div>
 
-        <!-- Separator -->
-        <div class="flex items-center gap-4 my-8">
-          <div class="flex-1 h-px bg-white/10"></div>
-          <span class="text-white/30 text-sm">ou</span>
-          <div class="flex-1 h-px bg-white/10"></div>
-        </div>
+        <!-- After extraction: add more or continue -->
+        <div id="after-upload" class="hidden">
+          <div class="employee-preview flex items-center gap-4 mb-4">
+            <div class="employee-avatar" id="added-avatar">M</div>
+            <div class="flex-1">
+              <div class="font-semibold" id="added-name">-</div>
+              <div class="text-white/40 text-sm" id="added-info">-</div>
+            </div>
+            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          </div>
 
-        <!-- Option 2: Manual -->
-        <button onclick="startManualEntry()" class="btn-secondary flex items-center justify-center gap-3">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-          </svg>
-          Saisir manuellement
-        </button>
+          <div id="employees-added-list" class="space-y-2 mb-6"></div>
+
+          <p class="text-white/40 text-sm mb-6 text-center" id="employees-count">1 employe ajoute</p>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="addAnotherEmployee()" class="btn-secondary flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Ajouter un autre
+            </button>
+            <button onclick="goToStep(2)" class="btn-glow">
+              Continuer
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- STEP 2: Payment -->
@@ -205,12 +216,23 @@
 
         <div class="glass-card p-8 max-w-lg mx-auto">
           <!-- Employee preview -->
-          <div class="employee-preview flex items-center gap-4 mb-6">
+          <div class="employee-preview flex items-center gap-4 mb-6" id="employee-preview-single">
             <div class="employee-avatar" id="preview-avatar">M</div>
             <div>
               <div class="font-semibold text-lg" id="preview-name">Marie Dupont</div>
               <div class="text-white/40 text-sm" id="preview-info">CDI - 35h/sem</div>
             </div>
+          </div>
+          <!-- Multiple employees preview -->
+          <div class="employee-preview mb-6 hidden" id="employee-preview-multi">
+            <div class="flex items-center gap-4 mb-3">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-content text-2xl font-bold text-orange-400" id="preview-count">5</div>
+              <div>
+                <div class="font-semibold text-lg">Ton equipe</div>
+                <div class="text-white/40 text-sm" id="preview-multi-info">5 employes ajoutes</div>
+              </div>
+            </div>
+            <div id="preview-multi-list" class="space-y-2 text-sm text-white/50"></div>
           </div>
 
           <div class="space-y-3 mb-6">
@@ -298,6 +320,7 @@
     let currentUser = null;
     let currentStep = 1;
     let extractedData = {};
+    let addedEmployees = [];
     let stripe = null;
     let elements = null;
     let paymentElement = null;
@@ -436,24 +459,45 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
 
         if (jsonMatch) {
           extractedData = JSON.parse(jsonMatch[0]);
+
+          if (!extractedData.name) {
+            throw new Error('No name extracted');
+          }
+
           document.getElementById('preview-text').textContent = 'Infos extraites !';
 
           // Save employee data
-          await saveEmployeeData(extractedData);
+          const saved = await saveEmployeeData(extractedData);
+          if (!saved) {
+            throw new Error('Save failed');
+          }
         } else {
           throw new Error('No JSON found');
         }
       } catch (err) {
         console.error('Analyze error:', err);
-        document.getElementById('preview-text').textContent = 'Extraction partielle - continue quand meme';
+        document.getElementById('preview-text').textContent = 'Impossible d\'extraire les infos';
+        document.getElementById('analyzing-state').classList.add('hidden');
+
+        // Reset upload zone to try again
+        setTimeout(() => {
+          alert('L\'IA n\'a pas pu lire ce document. Essaie avec une photo plus nette ou un autre document.');
+          document.getElementById('drop-zone').classList.remove('has-file');
+          document.getElementById('upload-content').classList.remove('hidden');
+          document.getElementById('preview-content').classList.add('hidden');
+          document.getElementById('file-input').value = '';
+        }, 500);
+        return;
       }
 
       document.getElementById('analyzing-state').classList.add('hidden');
-      setTimeout(() => goToStep(2), 800);
+
+      // Show after-upload UI with option to add more
+      showAfterUpload();
     }
 
     async function saveEmployeeData(data) {
-      if (!data.name) return; // Need at least a name
+      if (!data.name) return false; // Need at least a name
 
       const employeeData = {
         user_id: currentUser.id,
@@ -472,18 +516,92 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
       const { error } = await supabase.from('employees').insert(employeeData);
       if (error) {
         console.error('Save employee error:', error);
-      } else {
-        // Update preview
+        return false;
+      }
+
+      // Add to local list
+      addedEmployees.push(employeeData);
+
+      // Update payment preview (shows the first employee)
+      if (addedEmployees.length === 1) {
         document.getElementById('preview-name').textContent = employeeData.name;
         document.getElementById('preview-avatar').textContent = employeeData.name.charAt(0).toUpperCase();
         document.getElementById('preview-info').textContent =
           (employeeData.contract_type || 'Employe') + ' - ' + employeeData.hours_per_week + 'h/sem';
       }
+
+      return true;
     }
 
-    function startManualEntry() {
-      // Go directly to payment, user will add employees later in /planning/
-      goToStep(2);
+    function showAfterUpload() {
+      // Hide upload zone, show after-upload options
+      document.getElementById('drop-zone').classList.add('hidden');
+      document.getElementById('after-upload').classList.remove('hidden');
+
+      // Update the latest added employee display
+      const latest = addedEmployees[addedEmployees.length - 1];
+      if (latest) {
+        document.getElementById('added-name').textContent = latest.name;
+        document.getElementById('added-avatar').textContent = latest.name.charAt(0).toUpperCase();
+        document.getElementById('added-info').textContent =
+          (latest.contract_type || 'Employe') + ' - ' + (latest.hours_per_week || 35) + 'h/sem';
+      }
+
+      // Update count
+      const count = addedEmployees.length;
+      document.getElementById('employees-count').textContent =
+        count + ' employe' + (count > 1 ? 's' : '') + ' ajoute' + (count > 1 ? 's' : '');
+
+      // Show list of all added (except latest which is shown bigger)
+      if (addedEmployees.length > 1) {
+        const listHtml = addedEmployees.slice(0, -1).map(emp => `
+          <div class="flex items-center gap-3 text-sm text-white/50">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center text-xs font-semibold text-orange-400">${emp.name.charAt(0).toUpperCase()}</div>
+            <span>${emp.name}</span>
+            <svg class="w-4 h-4 text-green-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          </div>
+        `).join('');
+        document.getElementById('employees-added-list').innerHTML = listHtml;
+      }
+    }
+
+    function addAnotherEmployee() {
+      // Reset upload zone for another file
+      document.getElementById('drop-zone').classList.remove('hidden', 'has-file');
+      document.getElementById('after-upload').classList.add('hidden');
+      document.getElementById('upload-content').classList.remove('hidden');
+      document.getElementById('preview-content').classList.add('hidden');
+      document.getElementById('file-input').value = '';
+    }
+
+    function updatePaymentPreview() {
+      if (addedEmployees.length === 0) {
+        // No employees added (shouldn't happen, but fallback)
+        document.getElementById('employee-preview-single').classList.add('hidden');
+        document.getElementById('employee-preview-multi').classList.add('hidden');
+      } else if (addedEmployees.length === 1) {
+        // Single employee
+        document.getElementById('employee-preview-single').classList.remove('hidden');
+        document.getElementById('employee-preview-multi').classList.add('hidden');
+      } else {
+        // Multiple employees
+        document.getElementById('employee-preview-single').classList.add('hidden');
+        document.getElementById('employee-preview-multi').classList.remove('hidden');
+
+        const count = addedEmployees.length;
+        document.getElementById('preview-count').textContent = count;
+        document.getElementById('preview-multi-info').textContent = count + ' employes ajoutes';
+
+        // List all employees
+        const listHtml = addedEmployees.map(emp => `
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center text-xs font-semibold text-orange-400">${emp.name.charAt(0).toUpperCase()}</div>
+            <span>${emp.name}</span>
+            <span class="text-white/30">${emp.contract_type || ''}</span>
+          </div>
+        `).join('');
+        document.getElementById('preview-multi-list').innerHTML = listHtml;
+      }
     }
 
     async function initStripePayment() {
@@ -644,6 +762,7 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
         document.getElementById('step-upload').classList.add('active');
       } else if (step === 2) {
         document.getElementById('step-payment').classList.add('active');
+        updatePaymentPreview();
         initStripePayment();
       } else if (step === 3) {
         document.getElementById('step-telegram').classList.add('active');
