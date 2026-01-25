@@ -644,7 +644,7 @@
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const response = await fetch(SUPABASE_URL + '/functions/v1/create-subscription', {
+        const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
