@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajouter un employé - Planning | iArmy</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; }
+    .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; }
+    .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border: none; border-radius: 12px; padding: 16px 24px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,107,53,0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 24px; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .input { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; color: white; font-size: 15px; width: 100%; transition: all 0.2s; }
+    .input:focus { outline: none; border-color: rgba(255,107,53,0.5); background: rgba(255,255,255,0.06); }
+    .input::placeholder { color: rgba(255,255,255,0.3); }
+    .label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+    .upload-zone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: rgba(255,107,53,0.5); background: rgba(255,107,53,0.05); }
+    .upload-zone.has-image { border-style: solid; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
+    .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 40px; }
+    .analyzing { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .tag-select { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag-option { padding: 8px 16px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .tag-option:hover { background: rgba(255,255,255,0.08); }
+    .tag-option.selected { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.4); color: #FF8B5E; }
+    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .day-btn { padding: 10px 4px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 11px; text-align: center; transition: all 0.2s; }
+    .day-btn:hover { background: rgba(255,255,255,0.08); }
+    .day-btn.selected { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.4); color: #FF8B5E; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+    <div class="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/planning/" class="flex items-center gap-3 text-white/60 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span>Retour</span>
+      </a>
+      <span class="font-semibold" id="page-title">Nouvel employé</span>
+      <div class="w-20"></div>
+    </div>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-5 pt-24 pb-10">
+    <!-- Upload Zone -->
+    <div class="mb-6" id="upload-section">
+      <label class="label">Photo du contrat (optionnel)</label>
+      <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+        <div id="upload-content">
+          <svg class="w-12 h-12 mx-auto mb-3 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <p class="text-white/40 text-sm mb-1">Glisse une photo ou clique pour upload</p>
+          <p class="text-white/25 text-xs">L'IA extraira automatiquement les infos</p>
+        </div>
+        <div id="preview-content" class="hidden">
+          <img id="preview-image" class="max-h-40 mx-auto rounded-lg mb-3">
+          <p class="text-green-400 text-sm" id="preview-text">Photo chargée</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analyzing State -->
+    <div id="analyzing-state" class="hidden glass p-6 mb-6 text-center">
+      <div class="analyzing">
+        <svg class="w-10 h-10 mx-auto mb-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+        <p class="font-medium">Analyse du contrat en cours...</p>
+        <p class="text-sm text-white/40 mt-1">Extraction des informations</p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form id="employee-form" class="space-y-5">
+      <div>
+        <label class="label">Nom complet *</label>
+        <input type="text" id="name" class="input" placeholder="Marie Dupont" required>
+      </div>
+
+      <div>
+        <label class="label">Poste</label>
+        <input type="text" id="role" class="input" placeholder="Serveur, Cuisinier, Manager...">
+      </div>
+
+      <div>
+        <label class="label">Type de contrat</label>
+        <div class="tag-select" id="contract-type">
+          <div class="tag-option" data-value="CDI">CDI</div>
+          <div class="tag-option" data-value="CDD">CDD</div>
+          <div class="tag-option" data-value="Stage">Stage</div>
+          <div class="tag-option" data-value="Alternance">Alternance</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="label">Heures / semaine</label>
+          <input type="number" id="hours" class="input" placeholder="35" value="35">
+        </div>
+        <div>
+          <label class="label">Taux horaire (€)</label>
+          <input type="number" id="hourly-rate" class="input" placeholder="11.65" step="0.01">
+        </div>
+      </div>
+
+      <div>
+        <label class="label">Date de début</label>
+        <input type="date" id="start-date" class="input">
+      </div>
+
+      <div>
+        <label class="label">Jours de travail habituels</label>
+        <div class="days-grid" id="work-days">
+          <div class="day-btn selected" data-day="lundi">Lun</div>
+          <div class="day-btn selected" data-day="mardi">Mar</div>
+          <div class="day-btn selected" data-day="mercredi">Mer</div>
+          <div class="day-btn selected" data-day="jeudi">Jeu</div>
+          <div class="day-btn selected" data-day="vendredi">Ven</div>
+          <div class="day-btn" data-day="samedi">Sam</div>
+          <div class="day-btn" data-day="dimanche">Dim</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="label">Téléphone</label>
+          <input type="tel" id="phone" class="input" placeholder="06 12 34 56 78">
+        </div>
+        <div>
+          <label class="label">Email</label>
+          <input type="email" id="email" class="input" placeholder="marie@email.com">
+        </div>
+      </div>
+
+      <div>
+        <label class="label">Notes</label>
+        <textarea id="notes" class="input" rows="2" placeholder="Informations supplémentaires..."></textarea>
+      </div>
+
+      <div class="pt-4 space-y-3">
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <span id="submit-text">Ajouter l'employé</span>
+        </button>
+        <button type="button" id="delete-btn" class="btn-secondary btn-danger w-full hidden" onclick="deleteEmployee()">
+          Supprimer cet employé
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL3CSx3az8';
+    const GEMINI_API_KEY = 'AIzaSyBvpwl8E8pRmcfkP4O8ybnl2xvH9kJ1n-U';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let editingId = null;
+    let selectedContractType = '';
+    let selectedDays = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+
+    // Init Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    // Drag & Drop
+    const dropZone = document.getElementById('drop-zone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+    });
+    dropZone.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (files.length) handleFile(files[0]);
+    });
+
+    // Contract type selection
+    document.querySelectorAll('#contract-type .tag-option').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('#contract-type .tag-option').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedContractType = el.dataset.value;
+      });
+    });
+
+    // Work days selection
+    document.querySelectorAll('#work-days .day-btn').forEach(el => {
+      el.addEventListener('click', () => {
+        el.classList.toggle('selected');
+        updateSelectedDays();
+      });
+    });
+
+    function updateSelectedDays() {
+      selectedDays = Array.from(document.querySelectorAll('#work-days .day-btn.selected')).map(e => e.dataset.day);
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) handleFile(file);
+    }
+
+    async function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner une image');
+        return;
+      }
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        document.getElementById('upload-content').classList.add('hidden');
+        document.getElementById('preview-content').classList.remove('hidden');
+        document.getElementById('preview-image').src = e.target.result;
+        dropZone.classList.add('has-image');
+
+        // Analyze with Gemini
+        await analyzeContract(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function analyzeContract(base64Image) {
+      document.getElementById('analyzing-state').classList.remove('hidden');
+      document.getElementById('preview-text').textContent = 'Analyse en cours...';
+
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: `Analyse ce contrat de travail et extrais les informations au format JSON:
+{
+  "name": "Nom complet de l'employé",
+  "role": "Poste/Fonction",
+  "contract_type": "CDI ou CDD ou Stage ou Alternance",
+  "hours_per_week": nombre d'heures (entier),
+  "start_date": "YYYY-MM-DD",
+  "hourly_rate": taux horaire (nombre)
+}
+Si une info n'est pas visible, mets null. Réponds UNIQUEMENT avec le JSON.` },
+                { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } }
+              ]
+            }]
+          })
+        });
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        // Parse JSON
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const extracted = JSON.parse(jsonMatch[0]);
+          fillForm(extracted);
+          document.getElementById('preview-text').textContent = '✓ Infos extraites avec succès';
+        } else {
+          document.getElementById('preview-text').textContent = 'Extraction partielle - vérifie les infos';
+        }
+      } catch (error) {
+        console.error('Erreur analyse:', error);
+        document.getElementById('preview-text').textContent = 'Erreur d\'analyse - remplis manuellement';
+      }
+
+      document.getElementById('analyzing-state').classList.add('hidden');
+    }
+
+    function fillForm(data) {
+      if (data.name) document.getElementById('name').value = data.name;
+      if (data.role) document.getElementById('role').value = data.role;
+      if (data.hours_per_week) document.getElementById('hours').value = data.hours_per_week;
+      if (data.hourly_rate) document.getElementById('hourly-rate').value = data.hourly_rate;
+      if (data.start_date) document.getElementById('start-date').value = data.start_date;
+
+      if (data.contract_type) {
+        document.querySelectorAll('#contract-type .tag-option').forEach(el => {
+          el.classList.remove('selected');
+          if (el.dataset.value.toLowerCase() === data.contract_type.toLowerCase()) {
+            el.classList.add('selected');
+            selectedContractType = el.dataset.value;
+          }
+        });
+      }
+    }
+
+    async function init() {
+      // Check auth
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tguid = urlParams.get('tguid') || tg?.initDataUnsafe?.user?.id;
+
+        if (tguid) {
+          const { data: link } = await supabase
+            .from('telegram_links')
+            .select('user_id')
+            .eq('telegram_user_id', tguid.toString())
+            .single();
+
+          if (link) {
+            currentUser = { id: link.user_id };
+            checkEditMode();
+            return;
+          }
+        }
+
+        window.location.href = '/?redirect=/planning/setup/';
+        return;
+      }
+
+      currentUser = session.user;
+      checkEditMode();
+    }
+
+    async function checkEditMode() {
+      const urlParams = new URLSearchParams(window.location.search);
+      editingId = urlParams.get('edit');
+
+      if (editingId) {
+        document.getElementById('page-title').textContent = 'Modifier employé';
+        document.getElementById('submit-text').textContent = 'Enregistrer';
+        document.getElementById('delete-btn').classList.remove('hidden');
+        document.getElementById('upload-section').classList.add('hidden');
+
+        // Load employee data
+        const { data: emp } = await supabase
+          .from('employees')
+          .select('*')
+          .eq('id', editingId)
+          .single();
+
+        if (emp) {
+          document.getElementById('name').value = emp.name || '';
+          document.getElementById('role').value = emp.role || '';
+          document.getElementById('hours').value = emp.hours_per_week || 35;
+          document.getElementById('hourly-rate').value = emp.hourly_rate || '';
+          document.getElementById('start-date').value = emp.start_date || '';
+          document.getElementById('phone').value = emp.phone || '';
+          document.getElementById('email').value = emp.email || '';
+          document.getElementById('notes').value = emp.notes || '';
+
+          if (emp.contract_type) {
+            document.querySelectorAll('#contract-type .tag-option').forEach(el => {
+              el.classList.remove('selected');
+              if (el.dataset.value === emp.contract_type) {
+                el.classList.add('selected');
+                selectedContractType = emp.contract_type;
+              }
+            });
+          }
+
+          if (emp.work_days && Array.isArray(emp.work_days)) {
+            document.querySelectorAll('#work-days .day-btn').forEach(el => {
+              el.classList.remove('selected');
+              if (emp.work_days.includes(el.dataset.day)) {
+                el.classList.add('selected');
+              }
+            });
+            selectedDays = emp.work_days;
+          }
+        }
+      }
+    }
+
+    document.getElementById('employee-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      document.getElementById('submit-text').textContent = 'Enregistrement...';
+
+      const data = {
+        user_id: currentUser.id,
+        name: document.getElementById('name').value.trim(),
+        role: document.getElementById('role').value.trim() || null,
+        contract_type: selectedContractType || null,
+        hours_per_week: parseInt(document.getElementById('hours').value) || 35,
+        hourly_rate: parseFloat(document.getElementById('hourly-rate').value) || null,
+        start_date: document.getElementById('start-date').value || null,
+        work_days: selectedDays,
+        phone: document.getElementById('phone').value.trim() || null,
+        email: document.getElementById('email').value.trim() || null,
+        notes: document.getElementById('notes').value.trim() || null
+      };
+
+      let error;
+
+      if (editingId) {
+        const result = await supabase
+          .from('employees')
+          .update(data)
+          .eq('id', editingId);
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from('employees')
+          .insert(data);
+        error = result.error;
+      }
+
+      if (error) {
+        alert('Erreur: ' + error.message);
+        submitBtn.disabled = false;
+        document.getElementById('submit-text').textContent = editingId ? 'Enregistrer' : 'Ajouter l\'employé';
+        return;
+      }
+
+      window.location.href = '/planning/';
+    });
+
+    async function deleteEmployee() {
+      if (!confirm('Supprimer cet employé ? Cette action est irréversible.')) return;
+
+      const { error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', editingId);
+
+      if (error) {
+        alert('Erreur: ' + error.message);
+        return;
+      }
+
+      window.location.href = '/planning/';
+    }
+
+    init();
+  </script>
+</body>
+</html>
