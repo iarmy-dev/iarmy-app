@@ -450,8 +450,8 @@
       </div>
     </div>
 
-    <!-- Module -->
-    <div class="section-title">Mon module</div>
+    <!-- Modules -->
+    <div class="section-title">Mes modules</div>
     <div class="module-card" id="module-compta" onclick="goToModule()">
       <div class="module-left">
         <div class="module-icon">
@@ -473,6 +473,26 @@
         <div>
           <div class="module-name">Compta</div>
           <div class="module-status" id="module-status">Chargement...</div>
+        </div>
+      </div>
+      <div class="module-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <div class="module-card" id="module-planning" onclick="goToPlanningModule()">
+      <div class="module-left">
+        <div class="module-icon" style="background: linear-gradient(135deg, rgba(255,107,53,0.3), rgba(255,107,53,0.1));">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <div class="module-name">Planning</div>
+          <div class="module-status" id="planning-status">Chargement...</div>
         </div>
       </div>
       <div class="module-arrow">
@@ -738,6 +758,7 @@
     let stripe = null;
     let cardElement = null;
     let moduleConfig = null;
+    let employeeCount = 0;
     let isTelegramMode = false;
     let telegramUserId = null;
     let telegramSubscription = null;
@@ -933,6 +954,20 @@
           document.getElementById('module-compta').classList.add('inactive');
         }
 
+        // Planning module - load employees count
+        const { count: empCount } = await supabaseClient
+          .from('employees')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', authData.userId);
+
+        employeeCount = empCount || 0;
+        if (employeeCount > 0) {
+          document.getElementById('planning-status').textContent = employeeCount + ' employe' + (employeeCount > 1 ? 's' : '');
+        } else {
+          document.getElementById('planning-status').textContent = 'Configurer';
+          document.getElementById('module-planning').classList.add('inactive');
+        }
+
         // Telegram est forcement connecte
         document.getElementById('conn-telegram').classList.add('connected');
         document.getElementById('telegram-status').innerHTML = '<span class="dot"></span> Connecte';
@@ -1124,10 +1159,26 @@
         // TODO: Load real stats from edge function quand disponible
         // document.getElementById('stats-section').style.display = 'block';
 
+        // Planning module - check for employees
+        const { data: employees, count } = await supabaseClient
+          .from('employees')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', currentUser.id);
+
+        employeeCount = count || 0;
+        if (employeeCount > 0) {
+          document.getElementById('planning-status').textContent = employeeCount + ' employe' + (employeeCount > 1 ? 's' : '');
+        } else {
+          document.getElementById('planning-status').textContent = 'Configurer';
+          document.getElementById('module-planning').classList.add('inactive');
+        }
+
       } catch (err) {
         console.log('No config');
         document.getElementById('module-status').textContent = 'Installer';
         document.getElementById('module-compta').classList.add('inactive');
+        document.getElementById('planning-status').textContent = 'Configurer';
+        document.getElementById('module-planning').classList.add('inactive');
       }
     }
 
@@ -1140,6 +1191,15 @@
         window.location.href = '/compta/' + tgParams;
       } else {
         window.location.href = '/compta/setup/' + tgParams;
+      }
+    }
+
+    function goToPlanningModule() {
+      const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
+      if (employeeCount > 0) {
+        window.location.href = '/planning/' + tgParams;
+      } else {
+        window.location.href = '/planning/setup/' + tgParams;
       }
     }
 
