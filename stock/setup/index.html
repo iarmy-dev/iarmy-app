@@ -268,16 +268,29 @@
             <a href="#" id="telegram-link" target="_blank" style="color: #FF8B5E; font-size: 14px;">Ouvrir Telegram →</a>
           </div>
 
-          <!-- Telegram Connected -->
-          <div id="telegram-connected" style="display: none; text-align: center;">
+          <!-- Telegram Connected - Tester -->
+          <div id="telegram-connected-tester" style="display: none; text-align: center;">
             <div class="check-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">Telegram connecté !</div>
-            <div style="color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 24px;">Tu recevras tes alertes ici</div>
+            <div style="color: #c084fc; font-size: 14px; margin-bottom: 24px;">🧪 Mode testeur activé</div>
             <button onclick="goToStock()" class="btn-glow">
               Accéder au module Stock →
             </button>
+          </div>
+
+          <!-- Telegram Connected - Payment needed -->
+          <div id="telegram-connected-pay" style="display: none; text-align: center;">
+            <div class="check-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">Telegram connecté !</div>
+            <div style="color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 24px;">Plus qu'une étape pour activer ton module</div>
+            <button onclick="startCheckout()" class="btn-glow" id="btn-checkout">
+              Démarrer l'essai gratuit →
+            </button>
+            <p style="color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 12px;">7 jours gratuits, puis 29€/mois</p>
           </div>
 
           <p style="text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; margin-top: 20px;">
@@ -612,36 +625,46 @@
         if (data?.telegram_user_id) {
           clearInterval(connectionCheckInterval);
           document.getElementById('telegram-waiting').style.display = 'none';
-          document.getElementById('telegram-connected').style.display = 'block';
 
-          // Create subscription trial if not tester
-          if (!isTester) {
-            await createTrialSubscription();
+          if (isTester) {
+            // Testeur → accès direct
+            document.getElementById('telegram-connected-tester').style.display = 'block';
+          } else {
+            // Pas testeur → paiement
+            document.getElementById('telegram-connected-pay').style.display = 'block';
           }
         }
       }, 2000);
     }
 
-    async function createTrialSubscription() {
-      try {
-        const { data: existing } = await supabase
-          .from('subscriptions')
-          .select('id')
-          .eq('user_id', currentUser.id)
-          .eq('module_name', 'stock')
-          .maybeSingle();
+    async function startCheckout() {
+      const btn = document.getElementById('btn-checkout');
+      btn.disabled = true;
+      btn.textContent = 'Redirection...';
 
-        if (!existing) {
-          await supabase.from('subscriptions').insert({
-            user_id: currentUser.id,
-            module_name: 'stock',
-            status: 'trialing',
-            is_tester: false,
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          });
-        }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch(SUPABASE_URL + '/functions/v1/create-subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token
+          },
+          body: JSON.stringify({
+            module: 'stock',
+            successUrl: window.location.origin + '/stock/?success=1',
+            cancelUrl: window.location.origin + '/stock/setup/?canceled=1'
+          })
+        });
+
+        const { url, error } = await response.json();
+
+        if (error) throw new Error(error);
+        if (url) window.location.href = url;
       } catch (err) {
-        console.error('Error creating trial:', err);
+        showToast('Erreur: ' + err.message, true);
+        btn.disabled = false;
+        btn.textContent = 'Démarrer l\'essai gratuit →';
       }
     }
 
