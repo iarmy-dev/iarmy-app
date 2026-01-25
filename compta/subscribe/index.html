@@ -3,190 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Abonnement | iArmy</title>
+  <title>Compta Express - Abonnement | iArmy</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    body { background: #030303; color: white; min-height: 100vh; overflow-x: hidden; }
 
-    .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(24px); border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
-    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35 0%, #FF8B5E 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.4s; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25); }
-    .logo-i:hover { transform: scale(1.15) rotate(-8deg); box-shadow: 0 0 40px rgba(255,107,53,0.6); }
-
-    .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.25; animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
-    .orb-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); top: -200px; right: -100px; }
-    .orb-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #6B35FF, #8B5EFF); bottom: -150px; left: -100px; animation-delay: -7s; }
+    /* Orbs */
+    .orb { position: fixed; border-radius: 50%; filter: blur(100px); animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
+    .orb-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #0f9d58, #4ade80); top: -200px; right: -100px; opacity: 0.15; }
+    .orb-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); bottom: -150px; left: -100px; opacity: 0.1; animation-delay: -7s; }
     @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
 
-    .container { max-width: 420px; width: 100%; position: relative; z-index: 10; }
+    /* Header */
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .header-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: center; }
+    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
 
-    .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; padding: 40px 32px; text-align: center; }
+    /* Container */
+    .container { max-width: 480px; margin: 0 auto; padding: 100px 20px 40px; position: relative; z-index: 10; }
 
-    .icon { font-size: 56px; margin-bottom: 20px; }
-    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-    .subtitle { color: rgba(255,255,255,0.5); font-size: 15px; margin-bottom: 32px; }
+    /* Visual Section */
+    .visual-section { text-align: center; margin-bottom: 32px; }
 
-    .price-box { background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.05)); border: 1px solid rgba(255,107,53,0.25); border-radius: 20px; padding: 24px; margin-bottom: 28px; }
-    .price { font-size: 48px; font-weight: 800; color: #FF8B5E; }
-    .period { color: rgba(255,255,255,0.5); font-size: 16px; }
+    /* Animated Grid */
+    .compta-glow { position: absolute; width: 180px; height: 180px; background: radial-gradient(circle, rgba(15,157,88,0.3) 0%, transparent 70%); border-radius: 50%; filter: blur(40px); animation: glowPulse 2s ease-in-out infinite; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+    @keyframes glowPulse { 0%,100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; } }
 
-    .features { text-align: left; margin-bottom: 32px; }
-    .feature { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .feature:last-child { border-bottom: none; }
-    .feature-check { width: 24px; height: 24px; background: rgba(34,197,94,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #4ade80; font-size: 12px; flex-shrink: 0; }
-    .feature-text { font-size: 15px; color: rgba(255,255,255,0.8); }
+    .compta-grid-wrap { position: relative; perspective: 500px; display: inline-block; margin-bottom: 24px; }
+    .compta-grid { display: grid; grid-template-columns: repeat(3, 44px); gap: 8px; transform: rotateX(10deg); animation: gridFloat 3s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: rotateX(10deg) translateY(0); } 50% { transform: rotateX(10deg) translateY(-6px); } }
 
-    .btn { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border: none; border-radius: 14px; padding: 18px 32px; color: white; font-weight: 600; font-size: 16px; cursor: pointer; width: 100%; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3); }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4); }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .compta-cell { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; opacity: 0; transform: scale(0) rotateY(90deg); animation: cellFlip 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden; }
+    .compta-cell::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%); animation: shimmer 2s ease-in-out infinite; animation-delay: inherit; }
+    @keyframes shimmer { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+    @keyframes cellFlip { 0% { opacity: 0; transform: scale(0) rotateY(90deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
 
-    .payment-methods { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; color: rgba(255,255,255,0.4); font-size: 13px; }
-    .payment-methods span { display: flex; align-items: center; gap: 6px; }
+    .compta-cell:nth-child(1) { animation-delay: 0.1s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
+    .compta-cell:nth-child(2) { animation-delay: 0.2s; background: rgba(15,157,88,0.15); color: #4ade80; }
+    .compta-cell:nth-child(3) { animation-delay: 0.3s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
+    .compta-cell:nth-child(4) { animation-delay: 0.4s; background: rgba(15,157,88,0.15); color: #4ade80; }
+    .compta-cell:nth-child(5) { animation-delay: 0.5s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
+    .compta-cell:nth-child(6) { animation-delay: 0.6s; background: rgba(255,107,53,0.2); color: #FF8B5E; }
 
-    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); padding: 14px 28px; background: rgba(239, 68, 68, 0.9); backdrop-filter: blur(20px); border-radius: 14px; color: white; font-size: 14px; font-weight: 500; opacity: 0; z-index: 1000; transition: all 0.3s ease; }
-    .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: rgba(255,255,255,0.5); font-size: 15px; }
 
-    .back-link { display: block; margin-top: 24px; color: rgba(255,255,255,0.4); font-size: 14px; text-decoration: none; }
-    .back-link:hover { color: rgba(255,255,255,0.6); }
+    /* Price */
+    .price-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 20px 0; }
+    .price { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, #0f9d58, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .period { font-size: 18px; color: rgba(255,255,255,0.5); }
+
+    /* Trial badge */
+    .trial-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: rgba(15,157,88,0.15); border: 1px solid rgba(15,157,88,0.3); border-radius: 20px; font-size: 13px; color: #4ade80; margin-bottom: 24px; }
+
+    /* Stripe Embed */
+    .checkout-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; min-height: 400px; }
+    #checkout { width: 100%; }
+
+    /* Loading */
+    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; }
+    .spinner { width: 32px; height: 32px; border: 2px solid rgba(15,157,88,0.2); border-top-color: #0f9d58; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: rgba(255,255,255,0.5); font-size: 14px; }
+
+    /* Error */
+    .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-top: 16px; }
+
+    /* Features */
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .feature { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.6); }
+    .feature-icon { color: #4ade80; }
+
+    /* Payment icons */
+    .payment-icons { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; color: rgba(255,255,255,0.3); font-size: 12px; }
 
     @media (max-width: 480px) {
-      .card { padding: 32px 24px; border-radius: 24px; }
-      h1 { font-size: 24px; }
-      .price { font-size: 42px; }
+      .container { padding: 90px 16px 32px; }
+      .title { font-size: 22px; }
+      .price { font-size: 40px; }
+      .features { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
-  <div class="toast" id="toast"></div>
 
-  <!-- Header -->
-  <nav class="glass" style="position: fixed; top: 0; left: 0; right: 0; z-index: 50;">
-    <div style="max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
-      <a href="https://iarmy.fr" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: white;">
-        <div class="logo-i">i</div>
-        <span style="font-weight: 600;">iArmy</span>
-      </a>
-      <div id="auth-buttons"></div>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-i">i</div>
     </div>
-  </nav>
+  </header>
 
-  <div class="container" style="padding-top: 80px;">
-    <div class="card">
-      <div class="icon" id="module-icon">📊</div>
-      <h1 id="module-name">Compta Express</h1>
-      <p class="subtitle">Ta config est prête ! Active ton abonnement pour continuer.</p>
-
-      <div class="price-box">
-        <div class="price" id="module-price">29€</div>
-        <div class="period">/mois</div>
+  <div class="container">
+    <div class="visual-section">
+      <div class="compta-grid-wrap">
+        <div class="compta-glow"></div>
+        <div class="compta-grid">
+          <div class="compta-cell">12</div>
+          <div class="compta-cell">34</div>
+          <div class="compta-cell">56</div>
+          <div class="compta-cell">78</div>
+          <div class="compta-cell">90</div>
+          <div class="compta-cell">i</div>
+        </div>
       </div>
 
-      <div class="features" id="module-features"></div>
+      <h1 class="title">Compta Express</h1>
+      <p class="subtitle">Active ton abonnement pour continuer</p>
 
-      <button class="btn" id="btn-subscribe" onclick="startCheckout()">
-        Activer mon abonnement →
-      </button>
-
-      <div class="payment-methods">
-        <span>Apple Pay</span>
-        <span>•</span>
-        <span>Google Pay</span>
-        <span>•</span>
-        <span>CB</span>
+      <div class="price-row">
+        <span class="price">29€</span>
+        <span class="period">/mois</span>
       </div>
 
-      <a href="#" class="back-link" id="back-link">← Retour</a>
+      <div class="trial-badge">
+        <span>🎁</span>
+        <span>7 jours d'essai gratuit</span>
+      </div>
+    </div>
+
+    <div class="checkout-container">
+      <div id="checkout">
+        <div class="loading">
+          <div class="spinner"></div>
+          <div class="loading-text">Chargement du paiement...</div>
+        </div>
+      </div>
+      <div id="error-container"></div>
+    </div>
+
+    <div class="features">
+      <div class="feature"><span class="feature-icon">✓</span> Saisie vocale & photo</div>
+      <div class="feature"><span class="feature-icon">✓</span> Export Google Sheets</div>
+      <div class="feature"><span class="feature-icon">✓</span> Catégorisation IA</div>
+      <div class="feature"><span class="feature-icon">✓</span> Annulation facile</div>
+    </div>
+
+    <div class="payment-icons">
+      <span>Apple Pay</span>
+      <span>•</span>
+      <span>Google Pay</span>
+      <span>•</span>
+      <span>CB</span>
     </div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL5CSx3az8';
+    const STRIPE_PK = 'pk_live_51SngyFQnTQdmBOky5RHXtWREIgfaVu1Pd9NsZH5Euf31wEtGRfPi6URQeQjcMIWUc9NssFv8HM6fJOnPVrwUABxH00YQgcVJFr';
+
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const stripe = Stripe(STRIPE_PK);
+    const moduleName = 'compta';
 
-    // Config par module
-    const MODULES = {
-      stock: {
-        name: 'Stock',
-        icon: '🍸',
-        price: '29€',
-        features: [
-          'Scan tickets Z automatique',
-          'Inventaire photo avec IA',
-          'Alertes stock & marges',
-          'Fiches techniques cocktails'
-        ]
-      },
-      compta: {
-        name: 'Compta Express',
-        icon: '📊',
-        price: '29€',
-        features: [
-          'Saisie vocale & photo',
-          'Export Google Sheets auto',
-          'Catégorisation intelligente',
-          'Récap hebdo & mensuel'
-        ]
-      },
-      planning: {
-        name: 'Planning',
-        icon: '📅',
-        price: '39€',
-        features: [
-          'Planning équipe visuel',
-          'Notifications Telegram',
-          'Gestion des absences',
-          'Export PDF'
-        ]
-      }
-    };
-
-    // Détecter le module depuis l'URL (/stock/subscribe/ → stock)
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    const moduleName = pathParts[0] || 'stock';
-    const moduleConfig = MODULES[moduleName] || MODULES.stock;
-
-    // Afficher les infos du module
-    document.title = moduleConfig.name + ' - Abonnement | iArmy';
-    document.getElementById('module-icon').textContent = moduleConfig.icon;
-    document.getElementById('module-name').textContent = moduleConfig.name;
-    document.getElementById('module-price').textContent = moduleConfig.price;
-    document.getElementById('back-link').href = '/' + moduleName + '/';
-    document.getElementById('module-features').innerHTML = moduleConfig.features.map(f => `
-      <div class="feature">
-        <div class="feature-check">✓</div>
-        <div class="feature-text">${f}</div>
-      </div>
-    `).join('');
-
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('active');
-      setTimeout(() => toast.classList.remove('active'), 4000);
+    function showError(message) {
+      document.getElementById('error-container').innerHTML = `<div class="error-message">${message}</div>`;
     }
 
     async function init() {
+      // Check auth
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        window.location.href = 'https://iarmy.fr?redirect=/' + moduleName + '/subscribe/';
+        window.location.href = 'https://iarmy.fr?redirect=/compta/subscribe/';
         return;
       }
-
-      // Afficher avatar utilisateur
-      const user = session.user;
-      const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
-      const userAvatar = user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=FF6B35&color=fff`;
-      document.getElementById('auth-buttons').innerHTML = `
-        <a href="/compte/" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; text-decoration: none; color: white;">
-          <img src="${userAvatar}" style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,107,53,0.3);">
-          <span style="font-weight: 500; font-size: 14px;">${userName.split(' ')[0]}</span>
-        </a>
-      `;
 
       // Check if already subscribed
       const { data: sub } = await supabase
@@ -197,57 +184,25 @@
         .maybeSingle();
 
       if (sub?.status === 'active' || sub?.is_tester) {
-        // Déjà abonné → dashboard
-        window.location.href = '/' + moduleName + '/';
+        window.location.href = '/compta/';
         return;
       }
 
-      // Check if has existing config (ex-testeur)
-      let hasConfig = false;
+      // Check if has config
+      const { data: config } = await supabase
+        .from('module_configs')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('module_name', 'compta')
+        .maybeSingle();
 
-      if (moduleName === 'stock') {
-        const { count } = await supabase
-          .from('stock_cocktails')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', session.user.id);
-        hasConfig = count > 0;
-      } else if (moduleName === 'compta') {
-        const { data: config } = await supabase
-          .from('module_configs')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .eq('module_name', 'compta')
-          .maybeSingle();
-        hasConfig = !!config;
-      } else if (moduleName === 'planning') {
-        const { data: config } = await supabase
-          .from('module_configs')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .eq('module_name', 'planning')
-          .maybeSingle();
-        hasConfig = !!config;
-      }
-
-      if (!hasConfig) {
-        // Pas de config → doit faire le setup d'abord
-        window.location.href = '/' + moduleName + '/setup/';
+      if (!config) {
+        window.location.href = '/compta/setup/';
         return;
       }
-    }
 
-    async function startCheckout() {
-      const btn = document.getElementById('btn-subscribe');
-      btn.disabled = true;
-      btn.textContent = 'Redirection...';
-
+      // Create checkout session
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          window.location.href = 'https://iarmy.fr?redirect=/' + moduleName + '/subscribe/';
-          return;
-        }
-
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
           headers: {
@@ -256,38 +211,33 @@
           },
           body: JSON.stringify({
             moduleName: moduleName,
-            successUrl: window.location.origin + '/' + moduleName + '/?success=1',
-            cancelUrl: window.location.origin + '/' + moduleName + '/subscribe/?canceled=1'
+            embedded: true,
+            successUrl: window.location.origin + '/compta/?success=1&session_id={CHECKOUT_SESSION_ID}'
           })
         });
 
-        const { url, error } = await response.json();
+        const data = await response.json();
 
-        if (error) throw new Error(error);
-        if (url) window.location.href = url;
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+
+        // Mount embedded checkout
+        const checkout = await stripe.initEmbeddedCheckout({
+          clientSecret: data.clientSecret
+        });
+
+        document.getElementById('checkout').innerHTML = '';
+        checkout.mount('#checkout');
+
       } catch (err) {
-        showToast('Erreur: ' + err.message);
-        btn.disabled = false;
-        btn.textContent = 'Activer mon abonnement →';
+        console.error('Checkout error:', err);
+        showError('Erreur lors du chargement. Réessayez.');
       }
     }
 
-    // Check URL params
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('canceled') === '1') {
-      showToast('Paiement annulé');
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-
-    // Auto-start checkout si param autostart=1
-    const autoStart = params.get('autostart') === '1';
-
-    init().then(() => {
-      if (autoStart) {
-        // Petite pause pour que l'UI se charge
-        setTimeout(() => startCheckout(), 500);
-      }
-    });
+    init();
   </script>
 </body>
 </html>
