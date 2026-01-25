@@ -10,17 +10,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #030303; color: white; min-height: 100vh; overflow-x: hidden; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; overflow-x: hidden; }
 
     /* Orbs */
     .orb { position: fixed; border-radius: 50%; filter: blur(100px); animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
-    .orb-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #0f9d58, #4ade80); top: -200px; right: -100px; opacity: 0.15; }
-    .orb-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); bottom: -150px; left: -100px; opacity: 0.1; animation-delay: -7s; }
+    .orb-1 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(15, 157, 88, 0.15) 0%, transparent 70%); top: -150px; right: -100px; }
+    .orb-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); bottom: -150px; left: -100px; opacity: 0.08; animation-delay: -7s; }
     @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
 
     /* Header */
-    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .header-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: center; }
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(10,10,10,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .header-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; }
     .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
 
@@ -28,45 +28,40 @@
     .container { max-width: 480px; margin: 0 auto; padding: 100px 20px 40px; position: relative; z-index: 10; }
 
     /* Visual Section */
-    .visual-section { text-align: center; margin-bottom: 32px; }
+    .visual-section { text-align: center; margin-bottom: 28px; }
 
-    /* Animated Grid */
-    .compta-glow { position: absolute; width: 180px; height: 180px; background: radial-gradient(circle, rgba(15,157,88,0.3) 0%, transparent 70%); border-radius: 50%; filter: blur(40px); animation: glowPulse 2s ease-in-out infinite; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-    @keyframes glowPulse { 0%,100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; } }
+    /* Mini Excel Animation */
+    .compta-excel { width: 280px; margin: 0 auto 24px; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
+    .compta-excel-header { display: flex; align-items: center; gap: 6px; padding: 10px 12px; background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+    .compta-excel-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .compta-excel-title { margin-left: 8px; font-size: 11px; color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+    .compta-excel-grid { padding: 8px; }
+    .compta-excel-row { display: grid; grid-template-columns: 50px 1fr 60px; gap: 4px; margin-bottom: 4px; }
+    .compta-excel-header-row .compta-excel-cell { background: rgba(15, 157, 88, 0.15) !important; color: #4ade80 !important; font-weight: 600; font-size: 10px; animation: none !important; opacity: 1 !important; }
+    .compta-excel-cell { padding: 8px 10px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.7); opacity: 0; animation: cellType 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: var(--delay, 0s); }
+    .compta-excel-cell.header { opacity: 1; animation: none; }
+    .compta-excel-cell.amount { color: #4ade80; font-weight: 600; }
+    .compta-excel-cell.expense { color: #f87171; font-weight: 600; }
+    @keyframes cellType {
+      0% { opacity: 0; background: rgba(15, 157, 88, 0.25); transform: scale(0.95); }
+      60% { background: rgba(15, 157, 88, 0.12); }
+      100% { opacity: 1; background: rgba(255, 255, 255, 0.03); transform: scale(1); }
+    }
 
-    .compta-grid-wrap { position: relative; perspective: 500px; display: inline-block; margin-bottom: 24px; }
-    .compta-grid { display: grid; grid-template-columns: repeat(3, 44px); gap: 8px; transform: rotateX(10deg); animation: gridFloat 3s ease-in-out infinite; }
-    @keyframes gridFloat { 0%,100% { transform: rotateX(10deg) translateY(0); } 50% { transform: rotateX(10deg) translateY(-6px); } }
-
-    .compta-cell { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; opacity: 0; transform: scale(0) rotateY(90deg); animation: cellFlip 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden; }
-    .compta-cell::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%); animation: shimmer 2s ease-in-out infinite; animation-delay: inherit; }
-    @keyframes shimmer { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
-    @keyframes cellFlip { 0% { opacity: 0; transform: scale(0) rotateY(90deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
-
-    .compta-cell:nth-child(1) { animation-delay: 0.1s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
-    .compta-cell:nth-child(2) { animation-delay: 0.2s; background: rgba(15,157,88,0.15); color: #4ade80; }
-    .compta-cell:nth-child(3) { animation-delay: 0.3s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
-    .compta-cell:nth-child(4) { animation-delay: 0.4s; background: rgba(15,157,88,0.15); color: #4ade80; }
-    .compta-cell:nth-child(5) { animation-delay: 0.5s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
-    .compta-cell:nth-child(6) { animation-delay: 0.6s; background: rgba(255,107,53,0.2); color: #FF8B5E; }
-
-    .title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
-    .subtitle { color: rgba(255,255,255,0.5); font-size: 15px; }
+    .title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { color: rgba(255,255,255,0.5); font-size: 14px; }
 
     /* Price */
-    .price-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 20px 0; }
-    .price { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, #0f9d58, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .period { font-size: 18px; color: rgba(255,255,255,0.5); }
-
-    /* Trial badge */
-    .trial-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: rgba(15,157,88,0.15); border: 1px solid rgba(15,157,88,0.3); border-radius: 20px; font-size: 13px; color: #4ade80; margin-bottom: 24px; }
+    .price-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 16px 0 24px; }
+    .price { font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #0f9d58, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .period { font-size: 16px; color: rgba(255,255,255,0.5); }
 
     /* Stripe Embed */
-    .checkout-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; min-height: 400px; }
-    #checkout { width: 100%; }
+    .checkout-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; min-height: 450px; }
+    #checkout { width: 100%; min-height: 450px; }
 
     /* Loading */
-    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; }
+    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; gap: 16px; }
     .spinner { width: 32px; height: 32px; border: 2px solid rgba(15,157,88,0.2); border-top-color: #0f9d58; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { color: rgba(255,255,255,0.5); font-size: 14px; }
@@ -75,18 +70,15 @@
     .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-top: 16px; }
 
     /* Features */
-    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
-    .feature { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.6); }
+    .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px; }
+    .feature { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
     .feature-icon { color: #4ade80; }
-
-    /* Payment icons */
-    .payment-icons { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; color: rgba(255,255,255,0.3); font-size: 12px; }
 
     @media (max-width: 480px) {
       .container { padding: 90px 16px 32px; }
-      .title { font-size: 22px; }
-      .price { font-size: 40px; }
-      .features { grid-template-columns: 1fr; }
+      .title { font-size: 20px; }
+      .price { font-size: 36px; }
+      .compta-excel { width: 100%; }
     }
   </style>
 </head>
@@ -102,29 +94,44 @@
 
   <div class="container">
     <div class="visual-section">
-      <div class="compta-grid-wrap">
-        <div class="compta-glow"></div>
-        <div class="compta-grid">
-          <div class="compta-cell">12</div>
-          <div class="compta-cell">34</div>
-          <div class="compta-cell">56</div>
-          <div class="compta-cell">78</div>
-          <div class="compta-cell">90</div>
-          <div class="compta-cell">i</div>
+      <!-- Mini Excel Animation -->
+      <div class="compta-excel">
+        <div class="compta-excel-header">
+          <div class="compta-excel-dot" style="background: #ff5f57;"></div>
+          <div class="compta-excel-dot" style="background: #febc2e;"></div>
+          <div class="compta-excel-dot" style="background: #28c840;"></div>
+          <span class="compta-excel-title">Compta.xlsx</span>
+        </div>
+        <div class="compta-excel-grid">
+          <div class="compta-excel-row compta-excel-header-row">
+            <div class="compta-excel-cell header">Date</div>
+            <div class="compta-excel-cell header">Label</div>
+            <div class="compta-excel-cell header">Montant</div>
+          </div>
+          <div class="compta-excel-row">
+            <div class="compta-excel-cell" style="--delay: 0.2s;">25/01</div>
+            <div class="compta-excel-cell" style="--delay: 0.35s;">Vente</div>
+            <div class="compta-excel-cell amount" style="--delay: 0.5s;">+245€</div>
+          </div>
+          <div class="compta-excel-row">
+            <div class="compta-excel-cell" style="--delay: 0.65s;">25/01</div>
+            <div class="compta-excel-cell" style="--delay: 0.8s;">Achat</div>
+            <div class="compta-excel-cell expense" style="--delay: 0.95s;">-52€</div>
+          </div>
+          <div class="compta-excel-row">
+            <div class="compta-excel-cell" style="--delay: 1.1s;">24/01</div>
+            <div class="compta-excel-cell" style="--delay: 1.25s;">CB</div>
+            <div class="compta-excel-cell amount" style="--delay: 1.4s;">+180€</div>
+          </div>
         </div>
       </div>
 
       <h1 class="title">Compta Express</h1>
-      <p class="subtitle">Active ton abonnement pour continuer</p>
+      <p class="subtitle">Continue avec ton abonnement</p>
 
       <div class="price-row">
         <span class="price">29€</span>
         <span class="period">/mois</span>
-      </div>
-
-      <div class="trial-badge">
-        <span>🎁</span>
-        <span>7 jours d'essai gratuit</span>
       </div>
     </div>
 
@@ -135,22 +142,14 @@
           <div class="loading-text">Chargement du paiement...</div>
         </div>
       </div>
-      <div id="error-container"></div>
     </div>
+    <div id="error-container"></div>
 
     <div class="features">
-      <div class="feature"><span class="feature-icon">✓</span> Saisie vocale & photo</div>
-      <div class="feature"><span class="feature-icon">✓</span> Export Google Sheets</div>
-      <div class="feature"><span class="feature-icon">✓</span> Catégorisation IA</div>
+      <div class="feature"><span class="feature-icon">✓</span> Saisie vocale</div>
+      <div class="feature"><span class="feature-icon">✓</span> Export Sheets</div>
+      <div class="feature"><span class="feature-icon">✓</span> IA</div>
       <div class="feature"><span class="feature-icon">✓</span> Annulation facile</div>
-    </div>
-
-    <div class="payment-icons">
-      <span>Apple Pay</span>
-      <span>•</span>
-      <span>Google Pay</span>
-      <span>•</span>
-      <span>CB</span>
     </div>
   </div>
 
@@ -164,6 +163,7 @@
     const moduleName = 'compta';
 
     function showError(message) {
+      document.getElementById('checkout').innerHTML = '';
       document.getElementById('error-container').innerHTML = `<div class="error-message">${message}</div>`;
     }
 
@@ -201,7 +201,7 @@
         return;
       }
 
-      // Create checkout session
+      // Create checkout session (embedded)
       try {
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
@@ -217,9 +217,15 @@
         });
 
         const data = await response.json();
+        console.log('Checkout response:', data);
 
         if (data.error) {
           showError(data.error);
+          return;
+        }
+
+        if (!data.clientSecret) {
+          showError('Erreur: pas de clientSecret recu');
           return;
         }
 
@@ -233,7 +239,7 @@
 
       } catch (err) {
         console.error('Checkout error:', err);
-        showError('Erreur lors du chargement. Réessayez.');
+        showError('Erreur: ' + err.message);
       }
     }
 
