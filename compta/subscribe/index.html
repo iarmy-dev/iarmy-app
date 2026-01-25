@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Compta Express - Abonnement | iArmy</title>
+  <title>Compta - Abonnement | iArmy</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
@@ -31,9 +31,16 @@
     /* Visual Section */
     .visual-section { text-align: center; margin-bottom: 28px; }
 
-    /* Sheet Icon Animation */
-    .sheet-icon { margin: 0 auto 24px; }
-    .sheet-icon svg { width: 80px; height: 80px; animation: pulseSheet 2s ease-in-out infinite; }
+    /* Module Animation (like compte page) */
+    .module-anim { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .module-anim svg { width: 48px; height: 48px; }
+    .logo-tg { animation: pulseTg 2s ease-in-out infinite; }
+    @keyframes pulseTg { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    .pulse-dot { width: 6px; height: 6px; background: #FF6B35; border-radius: 50%; animation: pulseDot 1.5s ease-in-out infinite; }
+    .pulse-dot:nth-child(2) { animation-delay: 0.2s; }
+    .pulse-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulseDot { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    .logo-sheet { animation: pulseSheet 2s ease-in-out infinite; }
     @keyframes pulseSheet { 0%, 40%, 100% { transform: scale(1); } 70% { transform: scale(1.1); } }
 
     .title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
@@ -66,7 +73,6 @@
       .container { padding: 90px 16px 32px; }
       .title { font-size: 20px; }
       .price { font-size: 36px; }
-      .compta-excel { width: 100%; }
     }
   </style>
 </head>
@@ -83,22 +89,31 @@
 
   <div class="container">
     <div class="visual-section">
-      <!-- Sheet Icon -->
-      <div class="sheet-icon">
-        <svg viewBox="0 0 56 56">
-          <defs>
-            <linearGradient id="sh" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#0f9d58"/>
-              <stop offset="100%" stop-color="#0a7e3e"/>
-            </linearGradient>
-          </defs>
-          <rect x="8" y="8" width="40" height="40" rx="6" fill="url(#sh)"/>
-          <line x1="12" y1="20" x2="44" y2="20" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-          <line x1="12" y1="28" x2="44" y2="28" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-          <line x1="12" y1="36" x2="44" y2="36" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-          <line x1="22" y1="12" x2="22" y2="44" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-          <line x1="34" y1="12" x2="34" y2="44" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-        </svg>
+      <!-- Module Animation: Telegram + dots + Sheet -->
+      <div class="module-anim">
+        <div class="logo-tg">
+          <svg viewBox="0 0 240 240">
+            <defs><linearGradient id="tg" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/></linearGradient></defs>
+            <circle cx="120" cy="120" r="120" fill="url(#tg)"/>
+            <path fill="#fff" d="M81.229 128.772l14.237 39.406s1.78 3.687 3.686 3.687 30.255-29.492 30.255-29.492l31.525-60.89L81.737 118.6z"/>
+            <path fill="#d2e4ef" d="M100.106 138.878l-2.733 29.046s-1.144 8.9 7.754 0 17.415-15.763 17.415-15.763"/>
+            <path fill="#b5cfe4" d="M81.486 130.178l-17.8-5.467s-2.006-.808-1.366-2.671c.143-.42.522-.72 1.773-1.5 5.912-3.686 108.297-41.223 108.297-41.223s1.928-.6 3.277-.138c.897.306 1.377 1.152 1.377 1.152.118.58.138 1.368.138 2.14 0 .663-.06 1.41-.06 2.292-.469 8.312-14.237 90.178-14.237 90.178s-.803 3.262-3.686 3.372c-1.99.067-5.104-1.29-6.897-2.352-1.467-.874-27.523-17.598-37.06-25.67-.832-.704-1.68-2.026-.06-3.63 3.673-3.64 8.047-8.047 17.05-16.5 2.006-1.89 4.032-6.297-4.365-1.072l-23.27 15.555s-2.667 1.654-7.617.18z"/>
+          </svg>
+        </div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="logo-sheet">
+          <svg viewBox="0 0 56 56">
+            <defs><linearGradient id="sh" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0f9d58"/><stop offset="100%" stop-color="#0a7e3e"/></linearGradient></defs>
+            <rect x="8" y="8" width="40" height="40" rx="6" fill="url(#sh)"/>
+            <line x1="12" y1="20" x2="44" y2="20" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+            <line x1="12" y1="28" x2="44" y2="28" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+            <line x1="12" y1="36" x2="44" y2="36" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+            <line x1="22" y1="12" x2="22" y2="44" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+            <line x1="34" y1="12" x2="34" y2="44" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+          </svg>
+        </div>
       </div>
 
       <h1 class="title">Compta</h1>
@@ -143,41 +158,43 @@
     }
 
     async function init() {
-      // Check auth
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = 'https://iarmy.fr?redirect=/compta/subscribe/';
-        return;
-      }
-
-      // Check if already subscribed
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('status, is_tester')
-        .eq('user_id', session.user.id)
-        .eq('module_name', moduleName)
-        .maybeSingle();
-
-      if (sub?.status === 'active' || sub?.is_tester) {
-        window.location.href = '/compta/';
-        return;
-      }
-
-      // Check if has config
-      const { data: config } = await supabase
-        .from('module_configs')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('module_name', 'compta')
-        .maybeSingle();
-
-      if (!config) {
-        window.location.href = '/compta/setup/';
-        return;
-      }
-
-      // Create checkout session (embedded)
       try {
+        // Check auth
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          window.location.href = 'https://iarmy.fr?redirect=/compta/subscribe/';
+          return;
+        }
+
+        // Check if already has PAID subscription (not tester - testers can subscribe)
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('status, is_tester')
+          .eq('user_id', session.user.id)
+          .eq('module_name', moduleName)
+          .maybeSingle();
+
+        // Only redirect if already PAID (active), testers can access to subscribe
+        if (sub?.status === 'active' && !sub?.is_tester) {
+          window.location.href = '/compta/';
+          return;
+        }
+
+        // Check if has config
+        const { data: config } = await supabase
+          .from('module_configs')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .eq('module_name', 'compta')
+          .maybeSingle();
+
+        if (!config) {
+          window.location.href = '/compta/setup/';
+          return;
+        }
+
+        // Create checkout session (embedded)
+        console.log('Creating checkout session...');
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
           headers: {
