@@ -279,7 +279,15 @@
       window.history.replaceState({}, '', window.location.pathname);
     }
 
-    init();
+    // Auto-start checkout si param autostart=1
+    const autoStart = params.get('autostart') === '1';
+
+    init().then(() => {
+      if (autoStart) {
+        // Petite pause pour que l'UI se charge
+        setTimeout(() => startCheckout(), 500);
+      }
+    });
   </script>
 </body>
 </html>

@@ -76,8 +76,8 @@
 
   <div class="container" style="padding-top: 80px;">
     <div class="card">
-      <div class="icon" id="module-icon">🍸</div>
-      <h1 id="module-name">Stock</h1>
+      <div class="icon" id="module-icon">📊</div>
+      <h1 id="module-name">Compta Express</h1>
       <p class="subtitle">Ta config est prête ! Active ton abonnement pour continuer.</p>
 
       <div class="price-box">
@@ -279,7 +279,15 @@
       window.history.replaceState({}, '', window.location.pathname);
     }
 
-    init();
+    // Auto-start checkout si param autostart=1
+    const autoStart = params.get('autostart') === '1';
+
+    init().then(() => {
+      if (autoStart) {
+        // Petite pause pour que l'UI se charge
+        setTimeout(() => startCheckout(), 500);
+      }
+    });
   </script>
 </body>
 </html>
