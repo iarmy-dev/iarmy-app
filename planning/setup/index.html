@@ -3,231 +3,387 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ajouter un employé - Planning | iArmy</title>
+  <title>Planning - Configuration | iArmy</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; }
-    body { background: #0a0a0a; color: white; min-height: 100vh; }
-    .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; }
-    .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border: none; border-radius: 12px; padding: 16px 24px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,107,53,0.4); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 24px; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; overflow-x: hidden; }
+    .bg-gradient-animate { background: linear-gradient(135deg, #0a0a0a 0%, #0f0a0d 25%, #0a0f0f 50%, #0d0f0a 75%, #0a0a0a 100%); background-size: 400% 400%; animation: gradientShift 20s ease infinite; }
+    @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.2; animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
+    .orb-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); top: -200px; right: -100px; }
+    .orb-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #6B35FF, #8B5EFF); bottom: -150px; left: -100px; animation-delay: -7s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+
+    .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(24px); border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+    .glass-card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: all 0.4s ease; }
+    .glass-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.15); }
+
+    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35 0%, #FF8B5E 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.4s; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25); }
+    .logo-i:hover { transform: scale(1.15) rotate(-8deg); box-shadow: 0 0 40px rgba(255,107,53,0.6); }
+
+    .sidebar { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(20px); width: 280px; min-height: calc(100vh - 70px); padding: 24px; position: fixed; left: 0; top: 70px; z-index: 40; }
+    .step-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
+    .step-item:hover:not(.upcoming):not(.active) { background: rgba(255, 255, 255, 0.03); }
+    .step-item.active { background: rgba(255, 107, 53, 0.08); cursor: default; }
+    .step-item.completed { opacity: 0.6; cursor: pointer; }
+    .step-item.completed:hover { opacity: 0.8; background: rgba(255, 255, 255, 0.03); }
+    .step-item.upcoming { cursor: not-allowed; opacity: 0.3; pointer-events: none; }
+    .step-number { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; background: rgba(255, 255, 255, 0.03); border: 2px solid rgba(255, 255, 255, 0.08); }
+    .step-item.active .step-number { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-color: transparent; box-shadow: 0 0 20px rgba(255, 107, 53, 0.3); }
+    .step-item.completed .step-number { background: linear-gradient(135deg, #22c55e, #4ade80); border-color: transparent; }
+    .step-label { font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.5); }
+    .step-item.active .step-label { color: white; }
+
+    .main-content { margin-left: 280px; padding: 40px; max-width: 700px; position: relative; z-index: 10; }
+    .step-content { display: none; animation: fadeIn 0.4s ease; }
+    .step-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .upload-zone { border: 2px dashed rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 60px 40px; text-align: center; transition: all 0.4s ease; cursor: pointer; background: rgba(255, 255, 255, 0.01); }
+    .upload-zone:hover, .upload-zone.dragover { border-color: rgba(255, 107, 53, 0.4); background: rgba(255, 107, 53, 0.03); }
+    .upload-zone.has-file { border-style: solid; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
+
+    .btn-glow { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border: none; border-radius: 14px; padding: 16px 32px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25); width: 100%; font-size: 15px; }
+    .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4); }
+    .btn-glow:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px 32px; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
     .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-    .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
-    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-telegram { background: linear-gradient(135deg, #0088cc, #00aaff); border: none; border-radius: 14px; padding: 16px 32px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s ease; width: 100%; font-size: 15px; }
+    .btn-telegram:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 136, 204, 0.5); }
+
+    .close-btn { position: fixed; top: 24px; right: 24px; width: 44px; height: 44px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; z-index: 100; transition: all 0.3s ease; text-decoration: none; }
+    .close-btn:hover { background: rgba(255, 255, 255, 0.08); transform: rotate(90deg); }
+
     .input { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; color: white; font-size: 15px; width: 100%; transition: all 0.2s; }
     .input:focus { outline: none; border-color: rgba(255,107,53,0.5); background: rgba(255,255,255,0.06); }
     .input::placeholder { color: rgba(255,255,255,0.3); }
     .label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
-    .upload-zone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
-    .upload-zone:hover, .upload-zone.dragover { border-color: rgba(255,107,53,0.5); background: rgba(255,107,53,0.05); }
-    .upload-zone.has-image { border-style: solid; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
-    .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 40px; }
-    .analyzing { animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
     .tag-select { display: flex; gap: 8px; flex-wrap: wrap; }
-    .tag-option { padding: 8px 16px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .tag-option { padding: 10px 16px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 14px; transition: all 0.2s; }
     .tag-option:hover { background: rgba(255,255,255,0.08); }
     .tag-option.selected { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.4); color: #FF8B5E; }
-    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-    .day-btn { padding: 10px 4px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 11px; text-align: center; transition: all 0.2s; }
+
+    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+    .day-btn { padding: 12px 8px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 12px; text-align: center; transition: all 0.2s; }
     .day-btn:hover { background: rgba(255,255,255,0.08); }
     .day-btn.selected { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.4); color: #FF8B5E; }
+
+    .analyzing { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .check-icon { width: 60px; height: 60px; background: linear-gradient(135deg, #22c55e, #4ade80); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; animation: popIn 0.5s ease; }
+    @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+    .employee-preview { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .employee-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #FF6B35, #FF8B5E); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; padding: 20px; max-width: 100%; }
+      .upload-zone { padding: 40px 20px; }
+      .days-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+      .day-btn { padding: 10px 4px; font-size: 10px; }
+    }
+
+    /* Mobile steps indicator */
+    .mobile-steps { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(20px); padding: 16px 20px; z-index: 45; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    @media (max-width: 768px) { .mobile-steps { display: block; } .main-content { padding-top: 100px; } }
+    .mobile-steps-track { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .mobile-step { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.3); }
+    .mobile-step.active { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-color: transparent; color: white; }
+    .mobile-step.completed { background: linear-gradient(135deg, #22c55e, #4ade80); border-color: transparent; color: white; }
+    .mobile-step-line { width: 24px; height: 2px; background: rgba(255,255,255,0.1); }
+    .mobile-step-label { text-align: center; margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.5); }
   </style>
 </head>
-<body>
+<body class="bg-gradient-animate">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
   <!-- Header -->
-  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
-    <div class="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
-      <a href="/planning/" class="flex items-center gap-3 text-white/60 hover:text-white transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-        <span>Retour</span>
+  <nav class="glass fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="https://iarmy.fr" class="flex items-center gap-3">
+        <div class="logo-i">i</div>
+        <span class="font-semibold text-lg">Planning</span>
       </a>
-      <span class="font-semibold" id="page-title">Nouvel employé</span>
-      <div class="w-20"></div>
     </div>
   </nav>
 
-  <main class="max-w-lg mx-auto px-5 pt-24 pb-10">
-    <!-- Upload Zone -->
-    <div class="mb-6" id="upload-section">
-      <label class="label">Photo du contrat (optionnel)</label>
-      <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-        <div id="upload-content">
-          <svg class="w-12 h-12 mx-auto mb-3 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+  <!-- Mobile Steps -->
+  <div class="mobile-steps">
+    <div class="mobile-steps-track">
+      <div class="mobile-step active" data-step="1"><span>1</span></div>
+      <div class="mobile-step-line"></div>
+      <div class="mobile-step" data-step="2"><span>2</span></div>
+      <div class="mobile-step-line"></div>
+      <div class="mobile-step" data-step="3"><span>3</span></div>
+    </div>
+    <div class="mobile-step-label" id="mobile-step-label">Ton equipe</div>
+  </div>
+
+  <div class="flex min-h-screen" style="padding-top: 70px;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="mb-6">
+        <div style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Module</div>
+        <div style="font-size: 18px; font-weight: 700; color: white; margin-top: 4px;">Planning</div>
+      </div>
+      <div id="steps-nav">
+        <div class="step-item active" id="step-nav-1"><div class="step-number">1</div><span class="step-label">Ton equipe</span></div>
+        <div class="step-item upcoming" id="step-nav-2"><div class="step-number">2</div><span class="step-label">Paiement</span></div>
+        <div class="step-item upcoming" id="step-nav-3"><div class="step-number">3</div><span class="step-label">Telegram</span></div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <a href="https://iarmy.fr" class="close-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></a>
+
+      <!-- STEP 1: Upload -->
+      <div class="step-content active" id="step-upload">
+        <div class="mb-2"><span class="text-white/30 text-sm">Etape 1/3</span></div>
+        <h1 class="text-3xl font-bold mb-3">Ajoute ton equipe</h1>
+        <p class="text-white/40 mb-8">Envoie une photo de contrat ou planning, l'IA extrait les infos</p>
+
+        <!-- Option 1: Upload -->
+        <div class="upload-zone mb-6" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" accept="image/*,.pdf" class="hidden" onchange="handleFileSelect(event)">
+          <div id="upload-content">
+            <svg class="w-16 h-16 mx-auto mb-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <p class="text-white/50 text-lg mb-2">Glisse une photo ou clique pour upload</p>
+            <p class="text-white/30 text-sm">Contrat de travail, planning Excel, fiche de paie...</p>
+          </div>
+          <div id="preview-content" class="hidden">
+            <img id="preview-image" class="max-h-48 mx-auto rounded-lg mb-4">
+            <p class="text-green-400" id="preview-text">Document charge</p>
+          </div>
+        </div>
+
+        <!-- Analyzing state -->
+        <div id="analyzing-state" class="hidden glass-card p-8 mb-6 text-center">
+          <div class="analyzing">
+            <svg class="w-12 h-12 mx-auto mb-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <p class="text-lg font-medium">Analyse en cours...</p>
+            <p class="text-white/40 text-sm mt-2">L'IA extrait les informations</p>
+          </div>
+        </div>
+
+        <!-- Separator -->
+        <div class="flex items-center gap-4 my-8">
+          <div class="flex-1 h-px bg-white/10"></div>
+          <span class="text-white/30 text-sm">ou</span>
+          <div class="flex-1 h-px bg-white/10"></div>
+        </div>
+
+        <!-- Option 2: Manual -->
+        <button onclick="startManualEntry()" class="btn-secondary flex items-center justify-center gap-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
           </svg>
-          <p class="text-white/40 text-sm mb-1">Glisse une photo ou clique pour upload</p>
-          <p class="text-white/25 text-xs">L'IA extraira automatiquement les infos</p>
-        </div>
-        <div id="preview-content" class="hidden">
-          <img id="preview-image" class="max-h-40 mx-auto rounded-lg mb-3">
-          <p class="text-green-400 text-sm" id="preview-text">Photo chargée</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Analyzing State -->
-    <div id="analyzing-state" class="hidden glass p-6 mb-6 text-center">
-      <div class="analyzing">
-        <svg class="w-10 h-10 mx-auto mb-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-        </svg>
-        <p class="font-medium">Analyse du contrat en cours...</p>
-        <p class="text-sm text-white/40 mt-1">Extraction des informations</p>
-      </div>
-    </div>
-
-    <!-- Form -->
-    <form id="employee-form" class="space-y-5">
-      <div>
-        <label class="label">Nom complet *</label>
-        <input type="text" id="name" class="input" placeholder="Marie Dupont" required>
-      </div>
-
-      <div>
-        <label class="label">Poste</label>
-        <input type="text" id="role" class="input" placeholder="Serveur, Cuisinier, Manager...">
-      </div>
-
-      <div>
-        <label class="label">Type de contrat</label>
-        <div class="tag-select" id="contract-type">
-          <div class="tag-option" data-value="CDI">CDI</div>
-          <div class="tag-option" data-value="CDD">CDD</div>
-          <div class="tag-option" data-value="Stage">Stage</div>
-          <div class="tag-option" data-value="Alternance">Alternance</div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="label">Heures / semaine</label>
-          <input type="number" id="hours" class="input" placeholder="35" value="35">
-        </div>
-        <div>
-          <label class="label">Taux horaire (€)</label>
-          <input type="number" id="hourly-rate" class="input" placeholder="11.65" step="0.01">
-        </div>
-      </div>
-
-      <div>
-        <label class="label">Date de début</label>
-        <input type="date" id="start-date" class="input">
-      </div>
-
-      <div>
-        <label class="label">Jours de travail habituels</label>
-        <div class="days-grid" id="work-days">
-          <div class="day-btn selected" data-day="lundi">Lun</div>
-          <div class="day-btn selected" data-day="mardi">Mar</div>
-          <div class="day-btn selected" data-day="mercredi">Mer</div>
-          <div class="day-btn selected" data-day="jeudi">Jeu</div>
-          <div class="day-btn selected" data-day="vendredi">Ven</div>
-          <div class="day-btn" data-day="samedi">Sam</div>
-          <div class="day-btn" data-day="dimanche">Dim</div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="label">Téléphone</label>
-          <input type="tel" id="phone" class="input" placeholder="06 12 34 56 78">
-        </div>
-        <div>
-          <label class="label">Email</label>
-          <input type="email" id="email" class="input" placeholder="marie@email.com">
-        </div>
-      </div>
-
-      <div>
-        <label class="label">Notes</label>
-        <textarea id="notes" class="input" rows="2" placeholder="Informations supplémentaires..."></textarea>
-      </div>
-
-      <div class="pt-4 space-y-3">
-        <button type="submit" class="btn-primary" id="submit-btn">
-          <span id="submit-text">Ajouter l'employé</span>
-        </button>
-        <button type="button" id="delete-btn" class="btn-secondary btn-danger w-full hidden" onclick="deleteEmployee()">
-          Supprimer cet employé
+          Saisir manuellement
         </button>
       </div>
-    </form>
-  </main>
+
+      <!-- STEP 2: Payment -->
+      <div class="step-content" id="step-payment">
+        <div class="mb-2"><span class="text-white/30 text-sm">Etape 2/3</span></div>
+        <h1 class="text-3xl font-bold mb-3">Active ton essai gratuit</h1>
+        <p class="text-white/40 mb-8">7 jours gratuits, puis 39EUR/mois. Annule quand tu veux.</p>
+
+        <div class="glass-card p-8 max-w-lg mx-auto">
+          <!-- Employee preview -->
+          <div class="employee-preview flex items-center gap-4 mb-6">
+            <div class="employee-avatar" id="preview-avatar">M</div>
+            <div>
+              <div class="font-semibold text-lg" id="preview-name">Marie Dupont</div>
+              <div class="text-white/40 text-sm" id="preview-info">CDI - 35h/sem</div>
+            </div>
+          </div>
+
+          <div class="space-y-3 mb-6">
+            <div class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Gestion illimitee d'employes</span>
+            </div>
+            <div class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Plannings automatiques</span>
+            </div>
+            <div class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Rappels Telegram</span>
+            </div>
+            <div class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Export documents fin de mois</span>
+            </div>
+          </div>
+
+          <div id="payment-loading" class="text-center py-8">
+            <div class="w-8 h-8 border-2 border-white/20 border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-white/40">Chargement...</p>
+          </div>
+
+          <div id="payment-form" style="display: none;">
+            <div id="payment-element" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; margin-bottom: 16px;"></div>
+            <div id="payment-error" style="color: #f87171; font-size: 13px; margin-bottom: 12px; display: none;"></div>
+            <button id="btn-pay" onclick="confirmPayment()" class="btn-glow">
+              Demarrer l'essai gratuit
+            </button>
+            <p class="text-center text-white/30 text-xs mt-4">Tu ne seras debite qu'apres 7 jours</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Telegram -->
+      <div class="step-content" id="step-telegram">
+        <div class="mb-2"><span class="text-white/30 text-sm">Etape 3/3</span></div>
+        <h1 class="text-3xl font-bold mb-3">Connecte Telegram</h1>
+        <p class="text-white/40 mb-8" id="step4-subtitle">Pour recevoir les notifications et gerer ton equipe</p>
+
+        <div id="telegram-initial" class="glass-card p-8 max-w-lg mx-auto text-center">
+          <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/5 flex items-center justify-center mb-6">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="#2AABEE">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.28-.37.78-.57 3.05-1.33 5.08-2.21 6.1-2.63 2.91-1.21 3.52-1.42 3.91-1.43.09 0 .28.02.41.12.1.09.13.21.15.34-.01.05.01.18 0 .28z"/>
+            </svg>
+          </div>
+          <p class="text-white/50 mb-6">Le bot t'enverra des rappels et te permettra de gerer ton equipe directement depuis Telegram</p>
+          <button onclick="connectTelegram()" class="btn-telegram" id="btn-telegram">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.28-.37.78-.57 3.05-1.33 5.08-2.21 6.1-2.63 2.91-1.21 3.52-1.42 3.91-1.43.09 0 .28.02.41.12.1.09.13.21.15.34-.01.05.01.18 0 .28z"/>
+            </svg>
+            Connecter Telegram
+          </button>
+        </div>
+
+        <div id="telegram-connecting" class="glass-card p-8 max-w-lg mx-auto text-center" style="display: none;">
+          <div class="w-8 h-8 border-2 border-white/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p class="text-white/50 mb-4">Clique sur "Demarrer" dans Telegram</p>
+          <a id="telegram-link" href="#" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">Ouvrir manuellement</a>
+        </div>
+
+        <div id="telegram-connected" class="glass-card p-8 max-w-lg mx-auto text-center" style="display: none;">
+          <div class="check-icon">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">C'est pret !</h3>
+          <p class="text-white/50 mb-6">Ton module Planning est configure</p>
+          <button onclick="goToPlanning()" class="btn-glow">Voir mon equipe</button>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <script>
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL3CSx3az8';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL5CSx3az8';
     const GEMINI_API_KEY = 'AIzaSyBvpwl8E8pRmcfkP4O8ybnl2xvH9kJ1n-U';
+    const STRIPE_KEY = 'pk_live_51SnfoGQnTQdmBOkyXQ0lVJWGO24O9zzKNdXKNFQfq8r37uZRmKJgqmwQz66BYYjX96L1lP3XRQPFWwzIU8HxGKG300gNkmRVSd';
+
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUser = null;
-    let editingId = null;
-    let selectedContractType = '';
-    let selectedDays = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+    let currentStep = 1;
+    let extractedData = {};
+    let stripe = null;
+    let elements = null;
+    let paymentElement = null;
+    let connectionCheckInterval = null;
 
-    // Init Telegram WebApp
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
+    // Init
+    async function init() {
+      // Check if from Telegram
+      const tg = window.Telegram?.WebApp;
+      if (tg && (tg.initData || tg.platform !== 'unknown')) {
+        // Setup doesn't work in Telegram mode
+        document.querySelector('.main-content').innerHTML = `
+          <div class="glass-card p-8 text-center max-w-lg mx-auto" style="margin-top: 40px;">
+            <div class="text-4xl mb-4">🌐</div>
+            <h2 class="text-xl font-bold mb-3">Configuration sur le site</h2>
+            <p class="text-white/50 mb-6">La configuration initiale doit etre faite sur le site web.</p>
+            <a href="https://app.iarmy.fr/planning/setup/" class="btn-glow inline-block">Ouvrir le site</a>
+          </div>
+        `;
+        return;
+      }
+
+      // Check auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = 'https://iarmy.fr?redirect=/planning/setup/';
+        return;
+      }
+      currentUser = session.user;
+
+      // Check if already has subscription
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('status, is_tester')
+        .eq('user_id', currentUser.id)
+        .eq('module_name', 'planning')
+        .maybeSingle();
+
+      if (sub?.status === 'active' || sub?.is_tester) {
+        // Already subscribed, check Telegram
+        const { data: tgLink } = await supabase
+          .from('telegram_links')
+          .select('telegram_user_id')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+
+        if (tgLink?.telegram_user_id) {
+          // All set, go to planning
+          window.location.href = '/planning/';
+          return;
+        } else {
+          // Has sub but no Telegram, go to step 3
+          goToStep(3);
+          return;
+        }
+      }
+
+      setupEventListeners();
     }
 
-    // Drag & Drop
-    const dropZone = document.getElementById('drop-zone');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, preventDefaults, false);
-    });
+    function setupEventListeners() {
+      // Drag & drop
+      const dropZone = document.getElementById('drop-zone');
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => {
+        dropZone.addEventListener(e, preventDefaults, false);
+      });
+      ['dragenter', 'dragover'].forEach(e => {
+        dropZone.addEventListener(e, () => dropZone.classList.add('dragover'), false);
+      });
+      ['dragleave', 'drop'].forEach(e => {
+        dropZone.addEventListener(e, () => dropZone.classList.remove('dragover'), false);
+      });
+      dropZone.addEventListener('drop', e => {
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+      });
+    }
+
     function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
-    });
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
-    });
-    dropZone.addEventListener('drop', e => {
-      const files = e.dataTransfer.files;
-      if (files.length) handleFile(files[0]);
-    });
 
-    // Contract type selection
-    document.querySelectorAll('#contract-type .tag-option').forEach(el => {
-      el.addEventListener('click', () => {
-        document.querySelectorAll('#contract-type .tag-option').forEach(e => e.classList.remove('selected'));
-        el.classList.add('selected');
-        selectedContractType = el.dataset.value;
-      });
-    });
-
-    // Work days selection
-    document.querySelectorAll('#work-days .day-btn').forEach(el => {
-      el.addEventListener('click', () => {
-        el.classList.toggle('selected');
-        updateSelectedDays();
-      });
-    });
-
-    function updateSelectedDays() {
-      selectedDays = Array.from(document.querySelectorAll('#work-days .day-btn.selected')).map(e => e.dataset.day);
-    }
-
-    function handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) handleFile(file);
+    function handleFileSelect(e) {
+      if (e.target.files.length) handleFile(e.target.files[0]);
     }
 
     async function handleFile(file) {
-      if (!file.type.startsWith('image/')) {
-        alert('Veuillez sélectionner une image');
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+        alert('Format non supporte. Utilise une image ou PDF.');
         return;
       }
 
@@ -237,15 +393,15 @@
         document.getElementById('upload-content').classList.add('hidden');
         document.getElementById('preview-content').classList.remove('hidden');
         document.getElementById('preview-image').src = e.target.result;
-        dropZone.classList.add('has-image');
+        document.getElementById('drop-zone').classList.add('has-file');
 
-        // Analyze with Gemini
-        await analyzeContract(e.target.result);
+        // Analyze
+        await analyzeDocument(e.target.result);
       };
       reader.readAsDataURL(file);
     }
 
-    async function analyzeContract(base64Image) {
+    async function analyzeDocument(base64) {
       document.getElementById('analyzing-state').classList.remove('hidden');
       document.getElementById('preview-text').textContent = 'Analyse en cours...';
 
@@ -256,17 +412,19 @@
           body: JSON.stringify({
             contents: [{
               parts: [
-                { text: `Analyse ce contrat de travail et extrais les informations au format JSON:
+                { text: `Analyse ce document (contrat de travail, planning, fiche de paie) et extrais les informations au format JSON:
 {
-  "name": "Nom complet de l'employé",
+  "name": "Nom complet de l'employe",
   "role": "Poste/Fonction",
   "contract_type": "CDI ou CDD ou Stage ou Alternance",
   "hours_per_week": nombre d'heures (entier),
   "start_date": "YYYY-MM-DD",
-  "hourly_rate": taux horaire (nombre)
+  "hourly_rate": taux horaire (nombre),
+  "phone": "numero de telephone",
+  "email": "email"
 }
-Si une info n'est pas visible, mets null. Réponds UNIQUEMENT avec le JSON.` },
-                { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } }
+Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
+                { inlineData: { mimeType: 'image/jpeg', data: base64.split(',')[1] } }
               ]
             }]
           })
@@ -274,185 +432,239 @@ Si une info n'est pas visible, mets null. Réponds UNIQUEMENT avec le JSON.` },
 
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-        // Parse JSON
         const jsonMatch = text.match(/\{[\s\S]*\}/);
+
         if (jsonMatch) {
-          const extracted = JSON.parse(jsonMatch[0]);
-          fillForm(extracted);
-          document.getElementById('preview-text').textContent = '✓ Infos extraites avec succès';
+          extractedData = JSON.parse(jsonMatch[0]);
+          document.getElementById('preview-text').textContent = 'Infos extraites !';
+
+          // Save employee data
+          await saveEmployeeData(extractedData);
         } else {
-          document.getElementById('preview-text').textContent = 'Extraction partielle - vérifie les infos';
+          throw new Error('No JSON found');
         }
-      } catch (error) {
-        console.error('Erreur analyse:', error);
-        document.getElementById('preview-text').textContent = 'Erreur d\'analyse - remplis manuellement';
+      } catch (err) {
+        console.error('Analyze error:', err);
+        document.getElementById('preview-text').textContent = 'Extraction partielle - continue quand meme';
       }
 
       document.getElementById('analyzing-state').classList.add('hidden');
+      setTimeout(() => goToStep(2), 800);
     }
 
-    function fillForm(data) {
-      if (data.name) document.getElementById('name').value = data.name;
-      if (data.role) document.getElementById('role').value = data.role;
-      if (data.hours_per_week) document.getElementById('hours').value = data.hours_per_week;
-      if (data.hourly_rate) document.getElementById('hourly-rate').value = data.hourly_rate;
-      if (data.start_date) document.getElementById('start-date').value = data.start_date;
+    async function saveEmployeeData(data) {
+      if (!data.name) return; // Need at least a name
 
-      if (data.contract_type) {
-        document.querySelectorAll('#contract-type .tag-option').forEach(el => {
-          el.classList.remove('selected');
-          if (el.dataset.value.toLowerCase() === data.contract_type.toLowerCase()) {
-            el.classList.add('selected');
-            selectedContractType = el.dataset.value;
-          }
-        });
-      }
-    }
-
-    async function init() {
-      // Check auth
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const tguid = urlParams.get('tguid') || tg?.initDataUnsafe?.user?.id;
-
-        if (tguid) {
-          const { data: link } = await supabase
-            .from('telegram_links')
-            .select('user_id')
-            .eq('telegram_user_id', tguid.toString())
-            .single();
-
-          if (link) {
-            currentUser = { id: link.user_id };
-            checkEditMode();
-            return;
-          }
-        }
-
-        window.location.href = '/?redirect=/planning/setup/';
-        return;
-      }
-
-      currentUser = session.user;
-      checkEditMode();
-    }
-
-    async function checkEditMode() {
-      const urlParams = new URLSearchParams(window.location.search);
-      editingId = urlParams.get('edit');
-
-      if (editingId) {
-        document.getElementById('page-title').textContent = 'Modifier employé';
-        document.getElementById('submit-text').textContent = 'Enregistrer';
-        document.getElementById('delete-btn').classList.remove('hidden');
-        document.getElementById('upload-section').classList.add('hidden');
-
-        // Load employee data
-        const { data: emp } = await supabase
-          .from('employees')
-          .select('*')
-          .eq('id', editingId)
-          .single();
-
-        if (emp) {
-          document.getElementById('name').value = emp.name || '';
-          document.getElementById('role').value = emp.role || '';
-          document.getElementById('hours').value = emp.hours_per_week || 35;
-          document.getElementById('hourly-rate').value = emp.hourly_rate || '';
-          document.getElementById('start-date').value = emp.start_date || '';
-          document.getElementById('phone').value = emp.phone || '';
-          document.getElementById('email').value = emp.email || '';
-          document.getElementById('notes').value = emp.notes || '';
-
-          if (emp.contract_type) {
-            document.querySelectorAll('#contract-type .tag-option').forEach(el => {
-              el.classList.remove('selected');
-              if (el.dataset.value === emp.contract_type) {
-                el.classList.add('selected');
-                selectedContractType = emp.contract_type;
-              }
-            });
-          }
-
-          if (emp.work_days && Array.isArray(emp.work_days)) {
-            document.querySelectorAll('#work-days .day-btn').forEach(el => {
-              el.classList.remove('selected');
-              if (emp.work_days.includes(el.dataset.day)) {
-                el.classList.add('selected');
-              }
-            });
-            selectedDays = emp.work_days;
-          }
-        }
-      }
-    }
-
-    document.getElementById('employee-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const submitBtn = document.getElementById('submit-btn');
-      submitBtn.disabled = true;
-      document.getElementById('submit-text').textContent = 'Enregistrement...';
-
-      const data = {
+      const employeeData = {
         user_id: currentUser.id,
-        name: document.getElementById('name').value.trim(),
-        role: document.getElementById('role').value.trim() || null,
-        contract_type: selectedContractType || null,
-        hours_per_week: parseInt(document.getElementById('hours').value) || 35,
-        hourly_rate: parseFloat(document.getElementById('hourly-rate').value) || null,
-        start_date: document.getElementById('start-date').value || null,
-        work_days: selectedDays,
-        phone: document.getElementById('phone').value.trim() || null,
-        email: document.getElementById('email').value.trim() || null,
-        notes: document.getElementById('notes').value.trim() || null
+        name: data.name,
+        role: data.role || null,
+        contract_type: data.contract_type || null,
+        hours_per_week: data.hours_per_week || 35,
+        hourly_rate: data.hourly_rate || null,
+        start_date: data.start_date || null,
+        work_days: ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'],
+        phone: data.phone || null,
+        email: data.email || null
       };
 
-      let error;
-
-      if (editingId) {
-        const result = await supabase
-          .from('employees')
-          .update(data)
-          .eq('id', editingId);
-        error = result.error;
+      // Save to Supabase
+      const { error } = await supabase.from('employees').insert(employeeData);
+      if (error) {
+        console.error('Save employee error:', error);
       } else {
-        const result = await supabase
-          .from('employees')
-          .insert(data);
-        error = result.error;
+        // Update preview
+        document.getElementById('preview-name').textContent = employeeData.name;
+        document.getElementById('preview-avatar').textContent = employeeData.name.charAt(0).toUpperCase();
+        document.getElementById('preview-info').textContent =
+          (employeeData.contract_type || 'Employe') + ' - ' + employeeData.hours_per_week + 'h/sem';
       }
+    }
 
-      if (error) {
-        alert('Erreur: ' + error.message);
-        submitBtn.disabled = false;
-        document.getElementById('submit-text').textContent = editingId ? 'Enregistrer' : 'Ajouter l\'employé';
-        return;
+    function startManualEntry() {
+      // Go directly to payment, user will add employees later in /planning/
+      goToStep(2);
+    }
+
+    async function initStripePayment() {
+      try {
+        // Create setup intent via edge function
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(SUPABASE_URL + '/functions/v1/create-setup-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token
+          },
+          body: JSON.stringify({ module_name: 'planning' })
+        });
+
+        const { clientSecret, hasAccess } = await res.json();
+
+        if (hasAccess) {
+          // Already has access
+          goToStep(3);
+          return;
+        }
+
+        stripe = Stripe(STRIPE_KEY);
+        elements = stripe.elements({
+          clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: '#FF6B35',
+              colorBackground: '#141414',
+              colorText: '#ffffff',
+              colorDanger: '#f87171',
+              borderRadius: '12px'
+            }
+          }
+        });
+
+        paymentElement = elements.create('payment', { layout: 'tabs' });
+        paymentElement.mount('#payment-element');
+
+        document.getElementById('payment-loading').style.display = 'none';
+        document.getElementById('payment-form').style.display = 'block';
+
+      } catch (err) {
+        console.error('Stripe init error:', err);
+        document.getElementById('payment-loading').innerHTML = '<p class="text-red-400">Erreur de chargement</p><button onclick="initStripePayment()" class="btn-secondary mt-4">Reessayer</button>';
       }
+    }
 
-      window.location.href = '/planning/';
-    });
+    async function confirmPayment() {
+      const btn = document.getElementById('btn-pay');
+      const errorEl = document.getElementById('payment-error');
+      btn.disabled = true;
+      btn.textContent = 'Traitement...';
+      errorEl.style.display = 'none';
 
-    async function deleteEmployee() {
-      if (!confirm('Supprimer cet employé ? Cette action est irréversible.')) return;
+      try {
+        const { error } = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            return_url: window.location.origin + '/planning/setup/?payment=success'
+          }
+        });
 
-      const { error } = await supabase
-        .from('employees')
-        .delete()
-        .eq('id', editingId);
-
-      if (error) {
-        alert('Erreur: ' + error.message);
-        return;
+        if (error) {
+          errorEl.textContent = error.message;
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Demarrer l\'essai gratuit';
+        }
+      } catch (err) {
+        errorEl.textContent = 'Une erreur est survenue';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Demarrer l\'essai gratuit';
       }
+    }
 
+    async function connectTelegram() {
+      const btn = document.getElementById('btn-telegram');
+      btn.disabled = true;
+      btn.textContent = 'Connexion...';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(SUPABASE_URL + '/functions/v1/generate-telegram-link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token
+          }
+        });
+
+        const { token } = await res.json();
+        const telegramLink = 'https://t.me/IArmyBOT?start=' + token;
+
+        document.getElementById('telegram-initial').style.display = 'none';
+        document.getElementById('telegram-connecting').style.display = 'block';
+        document.getElementById('telegram-link').href = telegramLink;
+
+        window.open(telegramLink, '_blank');
+        startConnectionCheck();
+      } catch (err) {
+        alert('Erreur: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Connecter Telegram';
+      }
+    }
+
+    function startConnectionCheck() {
+      connectionCheckInterval = setInterval(async () => {
+        const { data } = await supabase
+          .from('telegram_links')
+          .select('telegram_user_id')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+
+        if (data?.telegram_user_id) {
+          clearInterval(connectionCheckInterval);
+          document.getElementById('telegram-connecting').style.display = 'none';
+          document.getElementById('telegram-connected').style.display = 'block';
+        }
+      }, 3000);
+    }
+
+    function goToPlanning() {
       window.location.href = '/planning/';
     }
 
-    init();
+    function goToStep(step) {
+      currentStep = step;
+
+      // Update sidebar
+      const stepLabels = ['Ton equipe', 'Paiement', 'Telegram'];
+      for (let i = 1; i <= 3; i++) {
+        const nav = document.getElementById('step-nav-' + i);
+        const mobileStep = document.querySelector('.mobile-step[data-step="' + i + '"]');
+        nav.classList.remove('active', 'completed', 'upcoming');
+        mobileStep.classList.remove('active', 'completed');
+
+        if (i < step) {
+          nav.classList.add('completed');
+          mobileStep.classList.add('completed');
+        } else if (i === step) {
+          nav.classList.add('active');
+          mobileStep.classList.add('active');
+        } else {
+          nav.classList.add('upcoming');
+        }
+      }
+      document.getElementById('mobile-step-label').textContent = stepLabels[step - 1];
+
+      // Show step content
+      document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+
+      if (step === 1) {
+        document.getElementById('step-upload').classList.add('active');
+      } else if (step === 2) {
+        document.getElementById('step-payment').classList.add('active');
+        initStripePayment();
+      } else if (step === 3) {
+        document.getElementById('step-telegram').classList.add('active');
+      }
+    }
+
+    // Check payment return
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success') {
+      window.history.replaceState({}, '', '/planning/setup/');
+      // Wait for subscription webhook
+      setTimeout(async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          currentUser = session.user;
+          goToStep(3);
+        }
+      }, 1000);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
