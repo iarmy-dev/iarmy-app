@@ -59,7 +59,18 @@
   <div class="orb orb-2"></div>
   <div class="toast" id="toast"></div>
 
-  <div class="container">
+  <!-- Header -->
+  <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(10,10,10,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+    <div style="max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+      <a href="https://iarmy.fr" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: white;">
+        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;">i</div>
+        <span style="font-weight: 600;">iArmy</span>
+      </a>
+      <div id="auth-buttons"></div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top: 80px;">
     <div class="card">
       <div class="icon" id="module-icon">🍸</div>
       <h1 id="module-name">Stock</h1>
@@ -160,6 +171,17 @@
         window.location.href = 'https://iarmy.fr?redirect=/' + moduleName + '/subscribe/';
         return;
       }
+
+      // Afficher avatar utilisateur
+      const user = session.user;
+      const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+      const userAvatar = user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=FF6B35&color=fff`;
+      document.getElementById('auth-buttons').innerHTML = `
+        <a href="/compte/" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; text-decoration: none; color: white;">
+          <img src="${userAvatar}" style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,107,53,0.3);">
+          <span style="font-weight: 500; font-size: 14px;">${userName.split(' ')[0]}</span>
+        </a>
+      `;
 
       // Check if already subscribed
       const { data: sub } = await supabase
