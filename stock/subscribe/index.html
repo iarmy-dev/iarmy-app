@@ -179,12 +179,13 @@
         // Fallback sur session Supabase
         const { data: { session } } = await supabase.auth.getSession();
 
-        // Debug info
+        // Debug info visible
         console.log('[SUBSCRIBE] tg:', !!tg, 'initData:', !!initData, 'initData length:', initData?.length, 'session:', !!session);
+        console.log('[SUBSCRIBE] tg.initData raw:', tg?.initData?.substring(0, 100));
 
         // On a besoin soit d'initData soit d'une session
         if (!initData && !session) {
-          showError('Pas de session. Retourne sur Telegram.');
+          showError('Pas de session. tg=' + !!tg + ', initData=' + !!initData + ', session=' + !!session);
           return;
         }
 
@@ -222,6 +223,8 @@
           headers['Authorization'] = 'Bearer ' + session.access_token;
         }
 
+        console.log('[SUBSCRIBE] Calling stripe-checkout with initData length:', initData?.length);
+
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
           headers,
@@ -233,8 +236,9 @@
           })
         });
 
+        console.log('[SUBSCRIBE] Response status:', response.status);
         const data = await response.json();
-        console.log('Checkout response:', data);
+        console.log('[SUBSCRIBE] Checkout response:', data);
 
         if (data.error) {
           showError(data.error);
