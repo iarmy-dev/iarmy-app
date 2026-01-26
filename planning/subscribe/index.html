@@ -201,7 +201,8 @@
         .eq('module_name', moduleName)
         .maybeSingle();
 
-      if (sub?.status === 'active' || sub?.is_tester) {
+      // Only redirect if already PAID (active), testers can access to subscribe
+      if (sub?.status === 'active' && !sub?.is_tester) {
         window.location.href = '/planning/';
         return;
       }
