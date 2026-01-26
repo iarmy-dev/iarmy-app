@@ -152,17 +152,7 @@
         }
 
         const checkout = await stripe.initEmbeddedCheckout({
-          clientSecret: data.clientSecret,
-          appearance: {
-            theme: 'night',
-            variables: {
-              colorPrimary: '#a855f7',
-              colorBackground: '#0a0a0a',
-              colorText: '#ffffff',
-              colorDanger: '#f87171',
-              borderRadius: '12px'
-            }
-          }
+          clientSecret: data.clientSecret
         });
 
         document.getElementById('checkout').innerHTML = '';
