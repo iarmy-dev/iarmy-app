@@ -130,11 +130,12 @@
       <div id="checkout">
         <div class="loading">
           <div class="spinner"></div>
-          <div class="loading-text">Chargement du paiement...</div>
+          <div class="loading-text" id="status">Chargement...</div>
         </div>
       </div>
     </div>
     <div id="error-container"></div>
+    <script>document.getElementById('status').textContent='Page OK, scripts...';</script>
 
     <div class="features">
       <div class="feature"><span class="feature-icon">✓</span> Saisie vocale</div>
@@ -148,9 +149,6 @@
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
     const STRIPE_PK = 'pk_live_51SngyFQnTQdmBOky5RHXtWREIgfaVu1Pd9NsZH5Euf31wEtGRfPi6URQeQjcMIWUc9NssFv8HM6fJOnPVrwUABxH00YQgcVJFr';
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const stripe = Stripe(STRIPE_PK);
     const moduleName = 'compta';
 
     function showError(message) {
@@ -158,23 +156,49 @@
       document.getElementById('error-container').innerHTML = `<div class="error-message">${message}</div>`;
     }
 
+    function showDebug(text) {
+      const el = document.getElementById('status');
+      if (el) el.textContent = text;
+      console.log('[DEBUG]', text);
+    }
+
+    // Check dependencies
+    showDebug('Checking deps...');
+    if (!window.supabase) {
+      showError('Supabase non chargé. Recharge la page.');
+      throw new Error('Supabase not loaded');
+    }
+    if (typeof Stripe === 'undefined') {
+      showError('Stripe non chargé. Recharge la page.');
+      throw new Error('Stripe not loaded');
+    }
+
+    showDebug('Creating clients...');
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const stripe = Stripe(STRIPE_PK);
+    showDebug('Clients OK');
+
     async function init() {
       try {
+        showDebug('Init...');
+
         // Essayer d'abord via Telegram WebApp initData
         const tg = window.Telegram?.WebApp;
+        showDebug('tg=' + !!tg);
+
         const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
+        showDebug('initData len=' + (initData?.length || 0));
 
         // Fallback sur session Supabase
+        showDebug('Getting session...');
         const { data: { session } } = await supabase.auth.getSession();
+        showDebug('session=' + !!session);
 
         // On a besoin soit d'initData soit d'une session
         if (!initData && !session) {
-          window.location.href = 'https://iarmy.fr?redirect=/compta/subscribe/';
+          showError('Pas de session. tg=' + !!tg + ', initData=' + !!initData);
           return;
         }
-
-        const authMode = initData ? 'Telegram' : 'Supabase';
-        console.log('[SUBSCRIBE] Auth mode:', authMode);
 
         // Vérifications locales seulement si on a une session Supabase
         if (session?.user?.id) {
@@ -202,9 +226,8 @@
             return;
           }
         }
-        // Pour Telegram, on skip les checks locaux - le backend vérifiera
 
-        console.log('Creating checkout session...');
+        showDebug('Calling checkout...');
 
         const headers = { 'Content-Type': 'application/json' };
         if (session?.access_token) {
@@ -222,8 +245,9 @@
           })
         });
 
+        showDebug('Response: ' + response.status);
         const data = await response.json();
-        console.log('Checkout response:', data);
+        showDebug('Got data: ' + (data.error || 'OK'));
 
         if (data.error) {
           showError(data.error);
@@ -235,7 +259,6 @@
           return;
         }
 
-        // Mount embedded checkout
         const checkout = await stripe.initEmbeddedCheckout({
           clientSecret: data.clientSecret
         });
@@ -249,7 +272,7 @@
       }
     }
 
-    init();
+    init().catch(e => showError('Erreur: ' + e.message));
   </script>
 </body>
 </html>
