@@ -653,17 +653,14 @@
         html += renderEmployeeCard(emp, i, index);
       });
 
-      // Carte "Ajouter"
+      // Carte "Ajouter" - Upload en avant
       html += `
-        <div class="team-add-card">
+        <div class="team-add-card" onclick="document.getElementById('team-file-input-${index}').click()">
           <input type="file" id="team-file-input-${index}" accept="image/*,.pdf" multiple style="display: none;" onchange="handleTeamUpload(event, ${index})">
-          <div style="font-size: 40px; margin-bottom: 16px;">👤</div>
-          <button onclick="document.getElementById('team-file-input-${index}').click()" class="btn-secondary" style="margin-bottom: 10px; padding: 12px 20px;">
-            📄 Upload contrat
-          </button>
-          <button onclick="addEmptyEmployee(${index})" class="btn-secondary" style="padding: 12px 20px; background: transparent; border: 1px dashed rgba(255,255,255,0.2);">
-            ✏️ Saisie manuelle
-          </button>
+          <div style="font-size: 48px; margin-bottom: 12px;">📄</div>
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 6px;">Ajouter un contrat</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 16px;">Photo ou PDF</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.3);" onclick="event.stopPropagation(); addEmptyEmployee(${index})">ou <span style="text-decoration: underline; cursor: pointer;">saisie manuelle</span></div>
         </div>
       `;
 
@@ -757,22 +754,34 @@
       grid.style.display = 'none';
       analyzing.style.display = 'block';
 
-      let processed = 0;
-      for (const file of files) {
-        document.getElementById(`team-analyzing-text-${index}`).textContent = `Contrat ${processed + 1}/${files.length}...`;
+      let added = 0;
+      let failed = 0;
+
+      for (let i = 0; i < files.length; i++) {
+        document.getElementById(`team-analyzing-text-${index}`).textContent = `Analyse ${i + 1}/${files.length}...`;
 
         try {
-          const base64 = await fileToBase64(file);
+          const base64 = await fileToBase64(files[i]);
           const extracted = await analyzeContractWithGemini(base64);
 
           if (extracted && extracted.name) {
             stepData.employees.push(extracted);
+            added++;
+          } else {
+            // Si l'IA n'a rien trouve, ajouter une carte vide
+            stepData.employees.push({
+              name: files[i].name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '),
+              role: '',
+              contract_type: '',
+              hours_per_week: 35
+            });
+            added++;
+            failed++;
           }
         } catch (err) {
           console.error('Erreur analyse contrat:', err);
+          failed++;
         }
-
-        processed++;
       }
 
       analyzing.style.display = 'none';
@@ -782,8 +791,14 @@
       document.getElementById(`team-file-input-${index}`).value = '';
       renderTeamGrid(index);
 
-      if (processed > 0 && stepData.employees.length > 0) {
-        showToast(`${stepData.employees.length} employe(s) ajoute(s)`);
+      if (added > 0) {
+        if (failed > 0) {
+          showToast(`${added} employe(s) ajoute(s) - ${failed} a completer manuellement`);
+        } else {
+          showToast(`${added} employe(s) ajoute(s) !`);
+        }
+      } else {
+        showToast('Erreur d\'analyse, essaie avec une meilleure photo', true);
       }
     }
 
@@ -818,13 +833,14 @@
     }
 
     async function analyzeContractWithGemini(base64) {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: `Analyse ce contrat de travail et extrais les informations au format JSON:
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: `Analyse ce contrat de travail et extrais les informations au format JSON:
 {
   "name": "Nom complet",
   "birth_date": "YYYY-MM-DD",
@@ -842,16 +858,27 @@
   "email": "email si visible"
 }
 Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON, sans texte.` },
-              { inlineData: { mimeType: 'image/jpeg', data: base64.split(',')[1] } }
-            ]
-          }]
-        })
-      });
+                { inlineData: { mimeType: 'image/jpeg', data: base64.split(',')[1] } }
+              ]
+            }]
+          })
+        });
 
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+        const data = await response.json();
+        console.log('Gemini response:', data);
+
+        if (data.error) {
+          console.error('Gemini error:', data.error);
+          return null;
+        }
+
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+      } catch (err) {
+        console.error('analyzeContractWithGemini error:', err);
+        return null;
+      }
     }
 
     function renderStripeCheckout(step, index) {
