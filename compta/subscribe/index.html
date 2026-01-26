@@ -31,16 +31,21 @@
     .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     /* Loading */
-    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; gap: 16px; }
-    .spinner { width: 32px; height: 32px; border: 2px solid rgba(15,157,88,0.2); border-top-color: #0f9d58; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { color: rgba(255,255,255,0.5); font-size: 14px; }
+    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; gap: 20px; }
+    .loading-logo { width: 60px; height: 60px; background: linear-gradient(135deg, #0f9d58, #4ade80); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 28px; animation: logoPulse 2s ease-in-out infinite; }
+    @keyframes logoPulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(15,157,88,0.4); } 50% { transform: scale(1.05); box-shadow: 0 0 20px 10px rgba(15,157,88,0.2); } }
+    .loading-steps { display: flex; flex-direction: column; gap: 8px; }
+    .loading-step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.4); transition: all 0.3s; }
+    .loading-step.active { color: #4ade80; }
+    .loading-step.done { color: rgba(255,255,255,0.6); }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s; }
+    .loading-step.active .step-dot { background: #4ade80; box-shadow: 0 0 10px rgba(74,222,128,0.5); animation: dotPulse 1s ease-in-out infinite; }
+    .loading-step.done .step-dot { background: #0f9d58; }
+    @keyframes dotPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
 
     /* Error */
     .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-bottom: 16px; }
 
-    /* Debug */
-    .debug { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 10px; word-break: break-all; }
   </style>
 </head>
 <body>
@@ -56,13 +61,16 @@
     <div class="payment-container">
       <div id="payment-error" class="error-message" style="display: none;"></div>
       <div id="payment-loading" class="loading">
-        <div class="spinner"></div>
-        <div class="loading-text">Chargement...</div>
+        <div class="loading-logo">i</div>
+        <div class="loading-steps">
+          <div class="loading-step active" id="step-1"><span class="step-dot"></span>Connexion au serveur...</div>
+          <div class="loading-step" id="step-2"><span class="step-dot"></span>Préparation du paiement...</div>
+          <div class="loading-step" id="step-3"><span class="step-dot"></span>Chargement du formulaire...</div>
+        </div>
       </div>
       <div id="payment-element"></div>
       <button id="btn-pay" class="btn-pay" style="display: none;">Démarrer l'essai gratuit</button>
     </div>
-    <div id="debug" class="debug"></div>
   </div>
 
   <script>
@@ -75,11 +83,6 @@
     let elements = null;
     let hasTrial = true;
 
-    function debug(msg) {
-      console.log(msg);
-      document.getElementById('debug').textContent += msg + ' | ';
-    }
-
     function showError(message) {
       document.getElementById('payment-error').textContent = message;
       document.getElementById('payment-error').style.display = 'block';
@@ -91,19 +94,25 @@
       document.getElementById('btn-pay').style.display = 'block';
     }
 
+    function updateStep(stepNum) {
+      for (let i = 1; i <= 3; i++) {
+        const step = document.getElementById('step-' + i);
+        step.classList.remove('active', 'done');
+        if (i < stepNum) step.classList.add('done');
+        else if (i === stepNum) step.classList.add('active');
+      }
+    }
+
     async function init() {
-      debug('start');
       try {
         if (!window.supabase) { showError('Supabase non chargé'); return; }
         if (typeof Stripe === 'undefined') { showError('Stripe non chargé'); return; }
-        debug('libs ok');
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const tg = window.Telegram?.WebApp;
         const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
         const { data: { session } } = await supabase.auth.getSession();
-        debug('initData=' + (initData ? 'yes' : 'no') + ' session=' + (session ? 'yes' : 'no'));
 
         if (!initData && !session) {
           showError('Session expirée. Retourne sur Telegram.');
@@ -115,7 +124,8 @@
           headers['Authorization'] = 'Bearer ' + session.access_token;
         }
 
-        debug('calling create-subscription...');
+        updateStep(2);
+
         const response = await fetch(SUPABASE_URL + '/functions/v1/create-subscription', {
           method: 'POST',
           headers,
@@ -126,7 +136,6 @@
         });
 
         const data = await response.json();
-        debug('response: ' + JSON.stringify(data).substring(0, 100));
 
         if (data.error) {
           showError(data.error);
@@ -139,13 +148,13 @@
         }
 
         hasTrial = data.hasTrial !== false;
-        debug('hasTrial=' + hasTrial + ' secret=' + data.clientSecret.substring(0, 20) + '...');
 
         const btn = document.getElementById('btn-pay');
         btn.textContent = hasTrial ? 'Démarrer l\'essai gratuit' : 'S\'abonner - 39€/mois';
 
+        updateStep(3);
+
         stripe = Stripe(STRIPE_PK);
-        debug('stripe init');
 
         elements = stripe.elements({
           clientSecret: data.clientSecret,
@@ -166,28 +175,22 @@
             }
           }
         });
-        debug('elements created');
 
         const paymentElement = elements.create('payment');
-        debug('payment element created');
 
         paymentElement.on('ready', () => {
-          debug('ready event');
           showForm();
         });
 
         paymentElement.on('loaderror', (event) => {
-          debug('loaderror: ' + JSON.stringify(event.error));
           showError('Erreur chargement: ' + event.error.message);
         });
 
         paymentElement.mount('#payment-element');
-        debug('mounted');
 
         // Fallback timeout
         setTimeout(() => {
           if (document.getElementById('payment-loading').style.display !== 'none') {
-            debug('timeout fallback');
             showForm();
           }
         }, 5000);
@@ -195,7 +198,6 @@
         btn.onclick = confirmPayment;
 
       } catch (err) {
-        debug('error: ' + err.message);
         showError('Erreur: ' + err.message);
       }
     }
