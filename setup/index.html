@@ -1484,15 +1484,35 @@ IMPORTANT:
       document.getElementById(`menu-analyzing-${index}`).style.display = 'block';
 
       const allItems = [];
+      let hasError = false;
 
       for (let i = 0; i < menuPhotos.length; i++) {
         document.getElementById(`menu-analyzing-text-${index}`).textContent = `Photo ${i + 1}/${menuPhotos.length}...`;
 
-        try {
-          const items = await analyzeWithGemini(menuPhotos[i].base64, 'menu_complet');
-          allItems.push(...items);
-        } catch (err) {
-          console.error('Error analyzing photo:', err);
+        // Retry logic for rate limiting
+        let retries = 3;
+        let success = false;
+
+        while (retries > 0 && !success) {
+          try {
+            const items = await analyzeWithGemini(menuPhotos[i].base64, 'menu_complet');
+            allItems.push(...items);
+            success = true;
+          } catch (err) {
+            console.error('Error analyzing photo:', err);
+            retries--;
+            if (retries > 0) {
+              document.getElementById(`menu-analyzing-text-${index}`).textContent = `Photo ${i + 1}/${menuPhotos.length}... (retry)`;
+              await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
+            } else {
+              hasError = true;
+            }
+          }
+        }
+
+        // Small delay between photos to avoid rate limiting
+        if (i < menuPhotos.length - 1) {
+          await new Promise(r => setTimeout(r, 500));
         }
       }
 
@@ -1504,6 +1524,12 @@ IMPORTANT:
         }
         return acc;
       }, []);
+
+      if (uniqueItems.length === 0 && hasError) {
+        showToast('Erreur d\'analyse. Attends quelques secondes et reessaie.', true);
+        resetMenuUpload(index);
+        return;
+      }
 
       stepData.extractedItems = uniqueItems;
       showMenuResults(index, uniqueItems);
@@ -2021,6 +2047,10 @@ Reponds UNIQUEMENT avec le JSON.`
           }]
         })
       });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
 
       const data = await response.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
