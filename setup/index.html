@@ -258,7 +258,7 @@
       }
     };
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
     });
 
@@ -318,11 +318,11 @@
       }
 
       // Check auth
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
         // Pas de session - stocker la destination et lancer OAuth
         sessionStorage.setItem('auth_redirect', window.location.href);
-        await supabase.auth.signInWithOAuth({
+        await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: { redirectTo: window.location.origin + '/auth/callback' }
         });
@@ -341,7 +341,7 @@
       `;
 
       // Check subscription
-      const { data: sub } = await supabase
+      const { data: sub } = await supabaseClient
         .from('subscriptions')
         .select('status, is_tester')
         .eq('user_id', currentUser.id)
@@ -979,7 +979,7 @@
       btn.textContent = 'Redirection...';
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
           headers: {
@@ -1009,7 +1009,7 @@
       btn.textContent = 'Connexion...';
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         const res = await fetch(SUPABASE_URL + '/functions/v1/generate-telegram-link', {
           method: 'POST',
           headers: {
@@ -1036,7 +1036,7 @@
 
     function startConnectionCheck(index) {
       connectionCheckInterval = setInterval(async () => {
-        const { data } = await supabase
+        const { data } = await supabaseClient
           .from('telegram_links')
           .select('telegram_user_id')
           .eq('user_id', currentUser.id)
@@ -1127,7 +1127,7 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
         category: 'cocktail'
       }));
 
-      await supabase.from('stock_cocktails').insert(cocktailsToInsert);
+      await supabaseClient.from('stock_cocktails').insert(cocktailsToInsert);
     }
 
     async function saveEmployee(data) {
@@ -1144,7 +1144,7 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
         email: data.email || null
       };
 
-      const { data: inserted, error } = await supabase.from('employees').insert(employeeData).select().single();
+      const { data: inserted, error } = await supabaseClient.from('employees').insert(employeeData).select().single();
       if (error) {
         console.error('Save employee error:', error);
         return null;
