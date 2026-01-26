@@ -320,10 +320,11 @@
       // Check auth
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // Pas de session - lancer OAuth directement
+        // Pas de session - stocker la destination et lancer OAuth
+        sessionStorage.setItem('auth_redirect', window.location.href);
         await supabase.auth.signInWithOAuth({
           provider: 'google',
-          options: { redirectTo: window.location.href }
+          options: { redirectTo: window.location.origin + '/auth/callback' }
         });
         return;
       }

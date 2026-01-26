@@ -115,8 +115,10 @@
             // Créer profil si nécessaire
             await createProfileIfNeeded(session.user);
 
-            // Redirection directe vers dashboard (pas de délai)
-            window.location.href = '/';
+            // Redirection vers la page d'origine ou dashboard
+            const redirectUrl = sessionStorage.getItem('auth_redirect');
+            sessionStorage.removeItem('auth_redirect');
+            window.location.href = redirectUrl || '/';
             return;
           }
 
@@ -159,8 +161,10 @@
         // Créer profil si nécessaire
         await createProfileIfNeeded(user);
 
-        // Redirection directe vers dashboard (pas de délai)
-        window.location.href = '/';
+        // Redirection vers la page d'origine ou dashboard
+        const redirectUrl = sessionStorage.getItem('auth_redirect');
+        sessionStorage.removeItem('auth_redirect');
+        window.location.href = redirectUrl || '/';
 
       } catch (err) {
         console.error('[CALLBACK] ❌ Erreur inattendue:', err);
