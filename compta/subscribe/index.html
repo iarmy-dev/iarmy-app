@@ -8,73 +8,61 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #030303; color: white; min-height: 100vh; padding: 16px; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; }
 
-    .container { max-width: 500px; margin: 0 auto; }
+    .container { max-width: 500px; margin: 0 auto; padding: 20px; }
 
-    #payment-element { margin-bottom: 20px; }
+    /* Header */
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
+    .header-text h1 { font-size: 18px; font-weight: 600; }
+    .header-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+    /* Payment */
+    .payment-container { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; }
+    #payment-element { min-height: 200px; margin-bottom: 20px; }
 
     .btn-pay { width: 100%; padding: 16px; background: linear-gradient(135deg, #0f9d58, #4ade80); border: none; border-radius: 12px; color: white; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; }
     .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(15,157,88,0.4); }
     .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    /* COMPTA LOADING - BADASS VERSION */
-    .compta-loading { position: fixed; inset: 0; background: #030303; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
-    .compta-loading.hidden { opacity: 0; pointer-events: none; }
+    /* Loading */
+    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; gap: 16px; }
+    .spinner { width: 32px; height: 32px; border: 2px solid rgba(15,157,88,0.2); border-top-color: #0f9d58; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: rgba(255,255,255,0.5); font-size: 14px; }
 
-    .compta-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(15,157,88,0.3) 0%, transparent 70%); border-radius: 50%; filter: blur(40px); animation: glowPulse 2s ease-in-out infinite; }
-    @keyframes glowPulse { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 0.8; } }
-
-    .compta-grid-wrap { position: relative; perspective: 500px; }
-    .compta-grid { display: grid; grid-template-columns: repeat(3, 36px); gap: 6px; transform: rotateX(10deg); animation: gridFloat 3s ease-in-out infinite; }
-    @keyframes gridFloat { 0%,100% { transform: rotateX(10deg) translateY(0); } 50% { transform: rotateX(10deg) translateY(-4px); } }
-
-    .compta-cell { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; opacity: 0; transform: scale(0) rotateY(90deg); animation: cellFlip 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden; }
-    .compta-cell::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%); animation: shimmer 2s ease-in-out infinite; animation-delay: inherit; }
-    @keyframes shimmer { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
-
-    .compta-cell:nth-child(1) { animation-delay: 0.1s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
-    .compta-cell:nth-child(2) { animation-delay: 0.2s; background: rgba(15,157,88,0.15); color: #4ade80; }
-    .compta-cell:nth-child(3) { animation-delay: 0.3s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
-    .compta-cell:nth-child(4) { animation-delay: 0.4s; background: rgba(15,157,88,0.15); color: #4ade80; }
-    .compta-cell:nth-child(5) { animation-delay: 0.5s; background: linear-gradient(135deg, #0f9d58, #0d8a4d); color: white; }
-    .compta-cell:nth-child(6) { animation-delay: 0.6s; background: rgba(255,107,53,0.2); color: #FF8B5E; }
-
-    @keyframes cellFlip { 0% { opacity: 0; transform: scale(0) rotateY(90deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
-
-    .compta-label { margin-top: 20px; font-size: 13px; font-weight: 600; background: linear-gradient(90deg, #0f9d58, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; text-transform: uppercase; animation: labelGlow 2s ease-in-out infinite; }
-    @keyframes labelGlow { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
-
+    /* Error */
     .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-bottom: 16px; }
 
-    #payment-form { display: none; }
+    /* Debug */
+    .debug { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 10px; word-break: break-all; }
   </style>
 </head>
 <body>
-  <div id="payment-loading" class="compta-loading">
-    <div class="compta-glow"></div>
-    <div class="compta-grid-wrap">
-      <div class="compta-grid">
-        <div class="compta-cell">€</div>
-        <div class="compta-cell">42</div>
-        <div class="compta-cell">+</div>
-        <div class="compta-cell">%</div>
-        <div class="compta-cell">∑</div>
-        <div class="compta-cell">i</div>
+  <div class="container">
+    <div class="header">
+      <div class="logo-i">i</div>
+      <div class="header-text">
+        <h1>Compta</h1>
+        <p>Finalise ton abonnement</p>
       </div>
     </div>
-    <div class="compta-label">Chargement</div>
-  </div>
 
-  <div class="container">
-    <div id="payment-form">
+    <div class="payment-container">
       <div id="payment-error" class="error-message" style="display: none;"></div>
+      <div id="payment-loading" class="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Chargement...</div>
+      </div>
       <div id="payment-element"></div>
-      <button id="btn-pay" class="btn-pay">Démarrer l'essai gratuit</button>
+      <button id="btn-pay" class="btn-pay" style="display: none;">Démarrer l'essai gratuit</button>
     </div>
+    <div id="debug" class="debug"></div>
   </div>
 
   <script>
@@ -87,30 +75,35 @@
     let elements = null;
     let hasTrial = true;
 
-    function hideLoading() {
-      document.getElementById('payment-loading').classList.add('hidden');
-      document.getElementById('payment-form').style.display = 'block';
+    function debug(msg) {
+      console.log(msg);
+      document.getElementById('debug').textContent += msg + ' | ';
     }
 
     function showError(message) {
-      const errorEl = document.getElementById('payment-error');
-      errorEl.textContent = message;
-      errorEl.style.display = 'block';
-      hideLoading();
+      document.getElementById('payment-error').textContent = message;
+      document.getElementById('payment-error').style.display = 'block';
+      document.getElementById('payment-loading').style.display = 'none';
+    }
+
+    function showForm() {
+      document.getElementById('payment-loading').style.display = 'none';
+      document.getElementById('btn-pay').style.display = 'block';
     }
 
     async function init() {
+      debug('start');
       try {
-        if (!window.supabase || typeof Stripe === 'undefined') {
-          showError('Erreur de chargement. Recharge la page.');
-          return;
-        }
+        if (!window.supabase) { showError('Supabase non chargé'); return; }
+        if (typeof Stripe === 'undefined') { showError('Stripe non chargé'); return; }
+        debug('libs ok');
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const tg = window.Telegram?.WebApp;
         const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
         const { data: { session } } = await supabase.auth.getSession();
+        debug('initData=' + (initData ? 'yes' : 'no') + ' session=' + (session ? 'yes' : 'no'));
 
         if (!initData && !session) {
           showError('Session expirée. Retourne sur Telegram.');
@@ -122,6 +115,7 @@
           headers['Authorization'] = 'Bearer ' + session.access_token;
         }
 
+        debug('calling create-subscription...');
         const response = await fetch(SUPABASE_URL + '/functions/v1/create-subscription', {
           method: 'POST',
           headers,
@@ -132,6 +126,7 @@
         });
 
         const data = await response.json();
+        debug('response: ' + JSON.stringify(data).substring(0, 100));
 
         if (data.error) {
           showError(data.error);
@@ -139,15 +134,19 @@
         }
 
         if (!data.clientSecret) {
-          showError('Erreur: pas de réponse du serveur');
+          showError('Pas de clientSecret');
           return;
         }
 
         hasTrial = data.hasTrial !== false;
+        debug('hasTrial=' + hasTrial + ' secret=' + data.clientSecret.substring(0, 20) + '...');
+
         const btn = document.getElementById('btn-pay');
         btn.textContent = hasTrial ? 'Démarrer l\'essai gratuit' : 'S\'abonner - 39€/mois';
 
         stripe = Stripe(STRIPE_PK);
+        debug('stripe init');
+
         elements = stripe.elements({
           clientSecret: data.clientSecret,
           appearance: {
@@ -161,48 +160,51 @@
               borderRadius: '12px'
             },
             rules: {
-              '.Input': {
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.15)'
-              },
-              '.Input:focus': {
-                border: '1px solid #0f9d58',
-                boxShadow: '0 0 0 1px #0f9d58'
-              },
-              '.Label': {
-                color: 'rgba(255, 255, 255, 0.7)'
-              }
+              '.Input': { backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)' },
+              '.Input:focus': { border: '1px solid #0f9d58', boxShadow: '0 0 0 1px #0f9d58' },
+              '.Label': { color: 'rgba(255,255,255,0.7)' }
             }
           }
         });
+        debug('elements created');
 
         const paymentElement = elements.create('payment');
-        paymentElement.mount('#payment-element');
+        debug('payment element created');
 
-        // Attendre ready OU timeout de 3s
-        let shown = false;
         paymentElement.on('ready', () => {
-          if (!shown) { shown = true; hideLoading(); }
+          debug('ready event');
+          showForm();
         });
+
+        paymentElement.on('loaderror', (event) => {
+          debug('loaderror: ' + JSON.stringify(event.error));
+          showError('Erreur chargement: ' + event.error.message);
+        });
+
+        paymentElement.mount('#payment-element');
+        debug('mounted');
+
+        // Fallback timeout
         setTimeout(() => {
-          if (!shown) { shown = true; hideLoading(); }
-        }, 3000);
+          if (document.getElementById('payment-loading').style.display !== 'none') {
+            debug('timeout fallback');
+            showForm();
+          }
+        }, 5000);
 
         btn.onclick = confirmPayment;
 
       } catch (err) {
-        console.error('Init error:', err);
+        debug('error: ' + err.message);
         showError('Erreur: ' + err.message);
       }
     }
 
     async function confirmPayment() {
       const btn = document.getElementById('btn-pay');
-      const errorEl = document.getElementById('payment-error');
-
       btn.disabled = true;
       btn.textContent = 'Traitement...';
-      errorEl.style.display = 'none';
+      document.getElementById('payment-error').style.display = 'none';
 
       try {
         const result = hasTrial
