@@ -45,43 +45,32 @@
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODY1MTIsImV4cCI6MjA4MzQ2MjUxMn0.1W2OaRb0sApMvrG_28AoV2zUFAzrptzpwbR1c65tOPo';
 
-    // Debug mode - désactivé en production
-    const DEBUG = window.location.hostname === 'localhost';
-    const log = (...args) => DEBUG && console.log(...args);
-
-    // Cookie storage pour partager la session entre iarmy.fr et app.iarmy.fr
-    const cookieStorage = {
-      getItem: (key) => {
-        const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
-        return match ? decodeURIComponent(match[2]) : null;
-      },
-      setItem: (key, value) => {
-        document.cookie = `${key}=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Strict; Secure`;
-      },
-      removeItem: (key) => {
-        document.cookie = `${key}=; domain=.iarmy.fr; path=/; max-age=0`;
-      }
-    };
-
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    // Etape 1: Client avec localStorage pour parser le hash automatiquement
+    const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        storage: cookieStorage,
-        storageKey: 'sb-auth-token',
+        storage: localStorage,
+        storageKey: 'sb-temp-auth',
         detectSessionInUrl: true,
         flowType: 'implicit'
       }
     });
+
+    // Fonction pour sauvegarder en cookie (partage cross-domain)
+    function saveSessionToCookie(session) {
+      const value = JSON.stringify(session);
+      document.cookie = `sb-auth-token=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Lax; Secure`;
+      console.log('[CALLBACK] 🍪 Session sauvegardee en cookie');
+    }
 
     function showError(message) {
       document.getElementById('title').textContent = 'Erreur de connexion';
       document.getElementById('subtitle').textContent = message;
       document.getElementById('dots').style.display = 'none';
       const errorDiv = document.getElementById('error');
-      // Sécurité: éviter XSS en utilisant textContent + createElement
       errorDiv.textContent = message;
       const br = document.createElement('br');
       const link = document.createElement('a');
-      link.href = 'https://iarmy.fr';
+      link.href = '/';
       link.className = 'btn';
       link.textContent = 'Retour';
       errorDiv.appendChild(br);
@@ -97,51 +86,58 @@
     async function handleCallback() {
       try {
         console.log('[CALLBACK] 🔐 Traitement du callback OAuth...');
+        console.log('[CALLBACK] Hash present:', !!window.location.hash);
 
-        // Écouter les changements d'auth (le SDK va traiter le hash automatiquement)
-        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
-          console.log('[CALLBACK] Auth event:', event);
+        // Attendre que le SDK traite le hash
+        await new Promise(r => setTimeout(r, 500));
 
-          if (event === 'SIGNED_IN' && session) {
-            subscription.unsubscribe();
-            await finishCallback(session);
-          } else if (event === 'TOKEN_REFRESHED' && session) {
-            subscription.unsubscribe();
-            await finishCallback(session);
-          }
-        });
+        // Recuperer la session
+        const { data: { session }, error } = await tempClient.auth.getSession();
 
-        // Vérifier si on a déjà une session (peut arriver si le hash a déjà été traité)
-        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        console.log('[CALLBACK] Session result:', { hasSession: !!session, error });
 
         if (error) {
-          console.error('[CALLBACK] ❌ Erreur getSession:', error);
-          // Ne pas afficher l'erreur tout de suite, laisser le listener une chance
-        }
-
-        if (session) {
-          subscription.unsubscribe();
-          await finishCallback(session);
+          console.error('[CALLBACK] ❌ Erreur:', error);
+          showError('Erreur: ' + error.message);
           return;
         }
 
-        // Si pas de session après 5 secondes, afficher erreur
-        setTimeout(() => {
-          subscription.unsubscribe();
-          showError('Connexion expirée. Veuillez réessayer.');
-        }, 5000);
+        if (!session) {
+          // Reessayer apres un delai
+          console.log('[CALLBACK] ⏳ Pas de session, retry...');
+          await new Promise(r => setTimeout(r, 1000));
+
+          const { data: { session: retrySession }, error: retryError } = await tempClient.auth.getSession();
+
+          if (retryError || !retrySession) {
+            console.error('[CALLBACK] ❌ Toujours pas de session');
+            showError('Connexion echouee. Reessayez.');
+            return;
+          }
+
+          await finishCallback(retrySession);
+          return;
+        }
+
+        await finishCallback(session);
 
       } catch (err) {
-        console.error('[CALLBACK] ❌ Erreur inattendue:', err);
-        showError('Une erreur inattendue est survenue: ' + err.message);
+        console.error('[CALLBACK] ❌ Erreur:', err);
+        showError('Erreur: ' + err.message);
       }
     }
 
     async function finishCallback(session) {
       const user = session.user;
-      console.log('[CALLBACK] ✅ Session trouvée:', user.email);
+      console.log('[CALLBACK] ✅ Session OK:', user.email);
 
-      // Nettoyer l'URL (supprimer le hash)
+      // Sauvegarder en cookie pour partage cross-domain
+      saveSessionToCookie(session);
+
+      // Nettoyer localStorage temporaire
+      localStorage.removeItem('sb-temp-auth');
+
+      // Nettoyer l'URL
       window.history.replaceState({}, document.title, window.location.pathname);
 
       const firstName = user.user_metadata?.full_name?.split(' ')[0] ||
@@ -150,39 +146,41 @@
 
       showSuccess(firstName);
 
-      // Créer profil si nécessaire
+      // Creer profil si necessaire
       await createProfileIfNeeded(user);
 
-      // Redirection vers la page d'origine ou dashboard
+      // Redirection
       const redirectUrl = sessionStorage.getItem('auth_redirect');
       sessionStorage.removeItem('auth_redirect');
-      window.location.href = redirectUrl || '/';
+
+      setTimeout(() => {
+        window.location.href = redirectUrl || '/';
+      }, 500);
     }
 
     async function createProfileIfNeeded(user) {
       try {
-        const { error } = await supabaseClient
+        const { error } = await tempClient
           .from('profiles')
           .select('id')
           .eq('id', user.id)
           .single();
 
         if (error && error.code === 'PGRST116') {
-          console.log('[CALLBACK] 📝 Création du profil...');
-          await supabaseClient.from('profiles').insert({
+          console.log('[CALLBACK] 📝 Creation du profil...');
+          await tempClient.from('profiles').insert({
             id: user.id,
             email: user.email,
             name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
             plan: 'free'
           });
-          console.log('[CALLBACK] ✅ Profil créé');
         }
       } catch (e) {
-        console.log('[CALLBACK] Profil déjà existant ou erreur ignorée');
+        console.log('[CALLBACK] Profil existant ou erreur ignoree');
       }
     }
 
-    // Lancer le traitement au chargement
+    // Lancer au chargement
     document.addEventListener('DOMContentLoaded', handleCallback);
   </script>
 </body>
