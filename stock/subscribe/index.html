@@ -170,18 +170,27 @@
       document.getElementById('error-container').innerHTML = `<div class="error-message">${message}</div>`;
     }
 
+    function showDebug(text) {
+      const loadingText = document.querySelector('.loading-text');
+      if (loadingText) loadingText.textContent = text;
+      console.log('[DEBUG]', text);
+    }
+
     async function init() {
       try {
+        showDebug('Init...');
+
         // Essayer d'abord via Telegram WebApp initData
         const tg = window.Telegram?.WebApp;
+        showDebug('tg=' + !!tg);
+
         const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
+        showDebug('initData len=' + (initData?.length || 0));
 
         // Fallback sur session Supabase
+        showDebug('Getting session...');
         const { data: { session } } = await supabase.auth.getSession();
-
-        // Debug info visible
-        console.log('[SUBSCRIBE] tg:', !!tg, 'initData:', !!initData, 'initData length:', initData?.length, 'session:', !!session);
-        console.log('[SUBSCRIBE] tg.initData raw:', tg?.initData?.substring(0, 100));
+        showDebug('session=' + !!session);
 
         // On a besoin soit d'initData soit d'une session
         if (!initData && !session) {
@@ -223,7 +232,7 @@
           headers['Authorization'] = 'Bearer ' + session.access_token;
         }
 
-        console.log('[SUBSCRIBE] Calling stripe-checkout with initData length:', initData?.length);
+        showDebug('Calling checkout...');
 
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
@@ -236,9 +245,9 @@
           })
         });
 
-        console.log('[SUBSCRIBE] Response status:', response.status);
+        showDebug('Response: ' + response.status);
         const data = await response.json();
-        console.log('[SUBSCRIBE] Checkout response:', data);
+        showDebug('Got data: ' + (data.error || 'OK'));
 
         if (data.error) {
           showError(data.error);
