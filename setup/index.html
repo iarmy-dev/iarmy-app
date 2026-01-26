@@ -196,6 +196,10 @@
     .pos-check { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; background: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; opacity: 0; transition: all 0.2s; }
     .pos-btn-other { border-style: dashed; }
     .pos-btn-other:hover { border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.05); }
+
+    /* Multi photo upload styles */
+    .upload-zone-multi { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .upload-zone-multi.dragover { border-color: #10B981; background: rgba(16,185,129,0.1); transform: scale(1.02); }
   </style>
 </head>
 <body class="bg-gradient-animate">
@@ -288,10 +292,10 @@
         ],
         setup: {
           steps: [
-            { id: "upload_menu", type: "photo_upload", title: "Photo de ta carte", description: "On extrait tes produits automatiquement", ai_type: "menu_complet" },
+            { id: "upload_menu", type: "multi_photo_menu", title: "Photos de ta carte", description: "Glisse ou ajoute plusieurs photos", ai_type: "menu_complet" },
             { id: "confirm_products", type: "list_validation", title: "Valide tes produits", description: "Verifie la liste extraite" },
             { id: "pos_connection", type: "pos_connection", title: "Ta caisse", description: "Connecte ta caisse ou envoie ton ticket Z" },
-            { id: "payment", type: "stripe_checkout", title: "Essai gratuit 7 jours" },
+            { id: "payment", type: "stripe_checkout", title: "Paiement", hidden: true },
             { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
           ],
           onboarding_message: "Stock active ! 🍾\n\nOn commence par ton stock actuel.\n\n🎤 Envoie un vocal : \"4 Sobieski, 2 Jack, 3 Havana...\"\n📸 Ou une photo de ta reserve\n\n💡 Tout est modifiable dans Reglages"
@@ -464,16 +468,24 @@
       const nav = document.getElementById('steps-nav');
       const mobileTrack = document.getElementById('mobile-steps-track');
 
-      nav.innerHTML = steps.map((step, i) => `
-        <div class="step-item upcoming" id="step-nav-${i}" onclick="goToStep(${i})">
-          <div class="step-number">${i + 1}</div>
-          <span class="step-label">${step.title}</span>
-        </div>
-      `).join('');
+      // Filter visible steps for nav (hide steps with hidden: true)
+      let visibleIndex = 0;
+      nav.innerHTML = steps.map((step, i) => {
+        if (step.hidden) return '';
+        visibleIndex++;
+        return `
+          <div class="step-item upcoming" id="step-nav-${i}" onclick="goToStep(${i})">
+            <div class="step-number">${visibleIndex}</div>
+            <span class="step-label">${step.title}</span>
+          </div>
+        `;
+      }).join('');
 
-      mobileTrack.innerHTML = steps.map((step, i) => `
-        <div class="mobile-step" data-step="${i}">${i + 1}</div>
-        ${i < steps.length - 1 ? '<div class="mobile-step-line"></div>' : ''}
+      // Same for mobile
+      const visibleSteps = steps.filter(s => !s.hidden);
+      mobileTrack.innerHTML = visibleSteps.map((step, i) => `
+        <div class="mobile-step" data-step="${steps.indexOf(step)}">${i + 1}</div>
+        ${i < visibleSteps.length - 1 ? '<div class="mobile-step-line"></div>' : ''}
       `).join('');
     }
 
@@ -501,6 +513,8 @@
           return renderFileUpload(step, index);
         case 'photo_upload':
           return renderPhotoUpload(step, index);
+        case 'multi_photo_menu':
+          return renderMultiPhotoMenu(step, index);
         case 'multi_photo_upload':
           return renderMultiPhotoUpload(step, index);
         case 'ai_analysis':
@@ -655,6 +669,40 @@
         <div style="margin-top: 24px;">
           <button onclick="nextStep()" class="btn-glow">Valider et continuer</button>
           <button onclick="goToStep(${index - 1})" class="btn-secondary" style="margin-top: 12px;">Modifier</button>
+        </div>
+      `;
+    }
+
+    function renderMultiPhotoMenu(step, index) {
+      return `
+        <div id="menu-upload-zone-${index}" class="upload-zone upload-zone-multi"
+             ondrop="handleMenuDrop(event, ${index})"
+             ondragover="handleMenuDragOver(event, ${index})"
+             ondragleave="handleMenuDragLeave(event, ${index})"
+             onclick="document.getElementById('menu-file-${index}').click()">
+          <input type="file" id="menu-file-${index}" accept="image/*" multiple style="display: none;" onchange="handleMenuFiles(event, ${index})">
+          <div style="font-size: 48px; margin-bottom: 16px;">📸</div>
+          <div style="font-weight: 600; margin-bottom: 8px;">Glisse tes photos ici</div>
+          <div style="color: rgba(255,255,255,0.4); font-size: 14px;">ou clique pour choisir (plusieurs photos OK)</div>
+        </div>
+        <div id="menu-photos-preview-${index}" style="display: none; margin-top: 16px;">
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;" id="menu-photos-grid-${index}"></div>
+          <button onclick="document.getElementById('menu-file-${index}').click()" class="btn-secondary" style="margin-bottom: 12px;">+ Ajouter d'autres photos</button>
+          <button onclick="analyzeMenuPhotos(${index})" class="btn-glow" id="btn-analyze-menu-${index}">Analyser les photos</button>
+        </div>
+        <div id="menu-analyzing-${index}" style="display: none; text-align: center; padding: 40px 0;">
+          <div class="loading-spinner"></div>
+          <div style="font-weight: 600; margin-bottom: 8px;">Analyse en cours...</div>
+          <div style="color: rgba(255,255,255,0.4); font-size: 14px;" id="menu-analyzing-text-${index}">Extraction des produits</div>
+        </div>
+        <div id="menu-results-${index}" style="display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <div style="font-weight: 600;">Produits trouves</div>
+            <div style="color: #4ade80; font-size: 14px;" id="menu-items-count-${index}"></div>
+          </div>
+          <div id="menu-items-list-${index}" style="max-height: 300px; overflow-y: auto;"></div>
+          <button onclick="validateMenuResults(${index})" class="btn-glow" style="margin-top: 24px;">C'est bon, continuer</button>
+          <button onclick="resetMenuUpload(${index})" class="btn-secondary" style="margin-top: 12px;">Recommencer</button>
         </div>
       `;
     }
@@ -1342,6 +1390,160 @@ IMPORTANT:
         if (currentModule === 'stock') {
           await saveStockCocktails(stepData.extractedItems);
         }
+      }
+      nextStep();
+    }
+
+    // ============================================
+    // MULTI PHOTO MENU HANDLERS
+    // ============================================
+    let menuPhotos = [];
+
+    function handleMenuDragOver(event, index) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById(`menu-upload-zone-${index}`).classList.add('dragover');
+    }
+
+    function handleMenuDragLeave(event, index) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById(`menu-upload-zone-${index}`).classList.remove('dragover');
+    }
+
+    function handleMenuDrop(event, index) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById(`menu-upload-zone-${index}`).classList.remove('dragover');
+
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        addMenuPhotos(files, index);
+      }
+    }
+
+    function handleMenuFiles(event, index) {
+      const files = event.target.files;
+      if (files.length > 0) {
+        addMenuPhotos(files, index);
+      }
+    }
+
+    async function addMenuPhotos(files, index) {
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          const base64 = await fileToBase64(file);
+          menuPhotos.push({ file, base64, name: file.name });
+        }
+      }
+
+      if (menuPhotos.length > 0) {
+        document.getElementById(`menu-upload-zone-${index}`).style.display = 'none';
+        document.getElementById(`menu-photos-preview-${index}`).style.display = 'block';
+        renderMenuPhotosGrid(index);
+      }
+    }
+
+    function renderMenuPhotosGrid(index) {
+      const grid = document.getElementById(`menu-photos-grid-${index}`);
+      grid.innerHTML = menuPhotos.map((photo, i) => `
+        <div style="position: relative; width: 100px; height: 100px;">
+          <img src="${photo.base64}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);">
+          <button onclick="removeMenuPhoto(${i}, ${index})" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: #ef4444; border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 14px;">×</button>
+        </div>
+      `).join('');
+    }
+
+    function removeMenuPhoto(photoIndex, stepIndex) {
+      menuPhotos.splice(photoIndex, 1);
+      if (menuPhotos.length === 0) {
+        document.getElementById(`menu-upload-zone-${stepIndex}`).style.display = 'block';
+        document.getElementById(`menu-photos-preview-${stepIndex}`).style.display = 'none';
+      } else {
+        renderMenuPhotosGrid(stepIndex);
+      }
+    }
+
+    async function analyzeMenuPhotos(index) {
+      if (menuPhotos.length === 0) return;
+
+      document.getElementById(`menu-photos-preview-${index}`).style.display = 'none';
+      document.getElementById(`menu-analyzing-${index}`).style.display = 'block';
+
+      const allItems = [];
+
+      for (let i = 0; i < menuPhotos.length; i++) {
+        document.getElementById(`menu-analyzing-text-${index}`).textContent = `Photo ${i + 1}/${menuPhotos.length}...`;
+
+        try {
+          const items = await analyzeWithGemini(menuPhotos[i].base64, 'menu_complet');
+          allItems.push(...items);
+        } catch (err) {
+          console.error('Error analyzing photo:', err);
+        }
+      }
+
+      // Deduplicate by name
+      const uniqueItems = allItems.reduce((acc, item) => {
+        const existing = acc.find(i => i.name.toLowerCase() === item.name.toLowerCase());
+        if (!existing) {
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+
+      stepData.extractedItems = uniqueItems;
+      showMenuResults(index, uniqueItems);
+    }
+
+    function showMenuResults(index, items) {
+      document.getElementById(`menu-analyzing-${index}`).style.display = 'none';
+      document.getElementById(`menu-results-${index}`).style.display = 'block';
+      document.getElementById(`menu-items-count-${index}`).textContent = items.length + ' produit' + (items.length > 1 ? 's' : '');
+
+      const categoryEmojis = {
+        cocktail: '🍹', biere: '🍺', shot: '🥃', spiritueux: '🥃',
+        vin: '🍷', soft: '🥤', autre: '📦'
+      };
+      const categoryNames = {
+        cocktail: 'Cocktails', biere: 'Bieres', shot: 'Shots',
+        spiritueux: 'Spiritueux', vin: 'Vins', soft: 'Softs', autre: 'Autres'
+      };
+
+      const grouped = items.reduce((acc, item) => {
+        const cat = item.category || 'autre';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(item);
+        return acc;
+      }, {});
+
+      document.getElementById(`menu-items-list-${index}`).innerHTML = Object.entries(grouped).map(([cat, catItems]) => `
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 8px;">${categoryEmojis[cat] || '📦'} ${categoryNames[cat] || cat} (${catItems.length})</div>
+          ${catItems.map(item => `
+            <div class="item-card">
+              <div class="icon">${categoryEmojis[item.category] || '📦'}</div>
+              <div class="name">${item.name}</div>
+              <div class="meta">${item.price ? item.price + '€' : ''}</div>
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function resetMenuUpload(index) {
+      menuPhotos = [];
+      stepData.extractedItems = [];
+      document.getElementById(`menu-upload-zone-${index}`).style.display = 'block';
+      document.getElementById(`menu-photos-preview-${index}`).style.display = 'none';
+      document.getElementById(`menu-analyzing-${index}`).style.display = 'none';
+      document.getElementById(`menu-results-${index}`).style.display = 'none';
+      document.getElementById(`menu-file-${index}`).value = '';
+    }
+
+    async function validateMenuResults(index) {
+      if (stepData.extractedItems && stepData.extractedItems.length > 0) {
+        await saveStockCocktails(stepData.extractedItems);
       }
       nextStep();
     }
