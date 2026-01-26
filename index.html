@@ -84,18 +84,17 @@
     .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
     @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.1); } 50%, 90% { background: #4ade80; } 100% { background: rgba(255,255,255,0.1); } }
 
-    /* Mini paie animation - team with checkmark */
-    .mini-paie { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; }
-    .mini-paie-avatars { display: flex; gap: -4px; }
-    .mini-paie-avatar { width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); margin-left: -4px; border: 1.5px solid rgba(0,0,0,0.3); animation: avatarBounce 2.5s ease-in-out infinite; }
-    .mini-paie-avatar:first-child { margin-left: 0; }
-    .mini-paie-avatar:nth-child(1) { animation-delay: 0s; }
-    .mini-paie-avatar:nth-child(2) { animation-delay: 0.15s; }
-    .mini-paie-avatar:nth-child(3) { animation-delay: 0.3s; }
-    @keyframes avatarBounce { 0%, 100% { transform: translateY(0); } 20% { transform: translateY(-3px); } 40% { transform: translateY(0); } }
-    .mini-paie-check { position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: #4ade80; border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: checkPop 2.5s ease-in-out infinite; }
-    .mini-paie-check svg { width: 8px; height: 8px; }
-    @keyframes checkPop { 0%, 50% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 70%, 100% { transform: scale(1); opacity: 1; } }
+    /* Mini paie animation - team silhouettes + euro */
+    .mini-paie { width: 36px; height: 28px; display: flex; align-items: flex-end; justify-content: center; position: relative; gap: 1px; }
+    .mini-paie-person { display: flex; flex-direction: column; align-items: center; opacity: 0.3; animation: paiePersonAppear 3s ease-in-out infinite; }
+    .mini-paie-person-1 { animation-delay: 0s; }
+    .mini-paie-person-2 { animation-delay: 0.25s; }
+    .mini-paie-person-3 { animation-delay: 0.5s; }
+    .mini-paie-head { width: 6px; height: 6px; border-radius: 50%; background: white; margin-bottom: 1px; }
+    .mini-paie-body { width: 8px; height: 8px; background: white; border-radius: 3px 3px 1px 1px; }
+    @keyframes paiePersonAppear { 0%, 15% { opacity: 0.25; transform: scale(0.9); } 25%, 75% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0.25; transform: scale(0.9); } }
+    .mini-paie-euro { position: absolute; bottom: -2px; right: -6px; font-size: 12px; font-weight: 800; color: #4ade80; opacity: 0; animation: paieEuroPop 3s ease-out infinite; animation-delay: 0.9s; }
+    @keyframes paieEuroPop { 0%, 20% { opacity: 0; transform: scale(0); } 35% { opacity: 1; transform: scale(1.2); } 50%, 70% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
 
     /* Connections Grid */
     .connections-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 32px; }
@@ -515,14 +514,19 @@
       <div class="module-left">
         <div class="module-icon" style="background: linear-gradient(135deg, rgba(251,191,36,0.3), rgba(245,158,11,0.1));">
           <div class="mini-paie">
-            <div class="mini-paie-avatars">
-              <div class="mini-paie-avatar"></div>
-              <div class="mini-paie-avatar"></div>
-              <div class="mini-paie-avatar"></div>
+            <div class="mini-paie-person mini-paie-person-1">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
             </div>
-            <div class="mini-paie-check">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="mini-paie-person mini-paie-person-2">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
             </div>
+            <div class="mini-paie-person mini-paie-person-3">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
+            </div>
+            <div class="mini-paie-euro">€</div>
           </div>
         </div>
         <div>
