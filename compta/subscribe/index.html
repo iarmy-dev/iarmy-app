@@ -173,39 +173,39 @@
           return;
         }
 
-        console.log('[SUBSCRIBE] Auth mode:', initData ? 'Telegram' : 'Supabase');
+        const authMode = initData ? 'Telegram' : 'Supabase';
+        console.log('[SUBSCRIBE] Auth mode:', authMode);
 
-        // Check if already has PAID subscription (not tester - testers can subscribe)
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('status, is_tester')
-          .eq('user_id', session.user.id)
-          .eq('module_name', moduleName)
-          .maybeSingle();
+        // Vérifications locales seulement si on a une session Supabase
+        if (session?.user?.id) {
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('status, is_tester')
+            .eq('user_id', session.user.id)
+            .eq('module_name', moduleName)
+            .maybeSingle();
 
-        // Only redirect if already PAID (active), testers can access to subscribe
-        if (sub?.status === 'active' && !sub?.is_tester) {
-          window.location.href = '/compta/';
-          return;
+          if (sub?.status === 'active' && !sub?.is_tester) {
+            window.location.href = '/compta/';
+            return;
+          }
+
+          const { data: config } = await supabase
+            .from('module_configs')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('module_name', 'compta')
+            .maybeSingle();
+
+          if (!config) {
+            window.location.href = '/compta/setup/';
+            return;
+          }
         }
+        // Pour Telegram, on skip les checks locaux - le backend vérifiera
 
-        // Check if has config
-        const { data: config } = await supabase
-          .from('module_configs')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .eq('module_name', 'compta')
-          .maybeSingle();
-
-        if (!config) {
-          window.location.href = '/compta/setup/';
-          return;
-        }
-
-        // Create checkout session (embedded)
         console.log('Creating checkout session...');
 
-        // Préparer les headers - avec ou sans session
         const headers = { 'Content-Type': 'application/json' };
         if (session?.access_token) {
           headers['Authorization'] = 'Bearer ' + session.access_token;

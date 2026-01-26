@@ -202,36 +202,38 @@
         return;
       }
 
-      console.log('[SUBSCRIBE] Auth mode:', initData ? 'Telegram' : 'Supabase');
+      const authMode = initData ? 'Telegram' : 'Supabase';
+      console.log('[SUBSCRIBE] Auth mode:', authMode);
 
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('status, is_tester')
-        .eq('user_id', session.user.id)
-        .eq('module_name', moduleName)
-        .maybeSingle();
+      // Vérifications locales seulement si on a une session Supabase
+      if (session?.user?.id) {
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('status, is_tester')
+          .eq('user_id', session.user.id)
+          .eq('module_name', moduleName)
+          .maybeSingle();
 
-      // Only redirect if already PAID (active), testers can access to subscribe
-      if (sub?.status === 'active' && !sub?.is_tester) {
-        window.location.href = '/planning/';
-        return;
+        if (sub?.status === 'active' && !sub?.is_tester) {
+          window.location.href = '/planning/';
+          return;
+        }
+
+        const { data: config } = await supabase
+          .from('module_configs')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .eq('module_name', 'planning')
+          .maybeSingle();
+
+        if (!config) {
+          window.location.href = '/planning/setup/';
+          return;
+        }
       }
-
-      // Check if has config
-      const { data: config } = await supabase
-        .from('module_configs')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('module_name', 'planning')
-        .maybeSingle();
-
-      if (!config) {
-        window.location.href = '/planning/setup/';
-        return;
-      }
+      // Pour Telegram, on skip les checks locaux - le backend vérifiera
 
       try {
-        // Préparer les headers - avec ou sans session
         const headers = { 'Content-Type': 'application/json' };
         if (session?.access_token) {
           headers['Authorization'] = 'Bearer ' + session.access_token;
