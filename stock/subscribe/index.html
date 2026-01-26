@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; color: white; min-height: 100vh; padding: 16px; }
+    body { background: #030303; color: white; min-height: 100vh; padding: 16px; }
 
     .container { max-width: 500px; margin: 0 auto; }
 
@@ -21,21 +21,56 @@
     .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(168,85,247,0.4); }
     .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; gap: 16px; }
-    .spinner { width: 32px; height: 32px; border: 2px solid rgba(168,85,247,0.2); border-top-color: #a855f7; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { color: rgba(255,255,255,0.5); font-size: 14px; }
+    /* STOCK LOADING */
+    .stock-loading { position: fixed; inset: 0; background: #030303; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
+    .stock-loading.hidden { opacity: 0; pointer-events: none; }
+
+    .stock-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%); border-radius: 50%; filter: blur(40px); animation: glowPulse 2s ease-in-out infinite; }
+    @keyframes glowPulse { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 0.8; } }
+
+    .stock-grid-wrap { position: relative; perspective: 500px; }
+    .stock-grid { display: grid; grid-template-columns: repeat(3, 36px); gap: 6px; transform: rotateX(10deg); animation: gridFloat 3s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: rotateX(10deg) translateY(0); } 50% { transform: rotateX(10deg) translateY(-4px); } }
+
+    .stock-cell { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; opacity: 0; transform: scale(0) rotateY(90deg); animation: cellFlip 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden; }
+    .stock-cell::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%); animation: shimmer 2s ease-in-out infinite; }
+    @keyframes shimmer { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+
+    .stock-cell:nth-child(1) { animation-delay: 0.1s; background: linear-gradient(135deg, #a855f7, #9333ea); color: white; }
+    .stock-cell:nth-child(2) { animation-delay: 0.2s; background: rgba(168,85,247,0.15); color: #c084fc; }
+    .stock-cell:nth-child(3) { animation-delay: 0.3s; background: linear-gradient(135deg, #a855f7, #9333ea); color: white; }
+    .stock-cell:nth-child(4) { animation-delay: 0.4s; background: rgba(168,85,247,0.15); color: #c084fc; }
+    .stock-cell:nth-child(5) { animation-delay: 0.5s; background: linear-gradient(135deg, #a855f7, #9333ea); color: white; }
+    .stock-cell:nth-child(6) { animation-delay: 0.6s; background: rgba(255,107,53,0.2); color: #FF8B5E; }
+
+    @keyframes cellFlip { 0% { opacity: 0; transform: scale(0) rotateY(90deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
+
+    .stock-label { margin-top: 20px; font-size: 13px; font-weight: 600; background: linear-gradient(90deg, #a855f7, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; text-transform: uppercase; animation: labelGlow 2s ease-in-out infinite; }
+    @keyframes labelGlow { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
 
     .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-bottom: 16px; }
+
+    #payment-form { display: none; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="payment-loading" class="loading">
-      <div class="spinner"></div>
-      <div class="loading-text">Chargement...</div>
+  <div id="payment-loading" class="stock-loading">
+    <div class="stock-glow"></div>
+    <div class="stock-grid-wrap">
+      <div class="stock-grid">
+        <div class="stock-cell">📦</div>
+        <div class="stock-cell">42</div>
+        <div class="stock-cell">🍸</div>
+        <div class="stock-cell">%</div>
+        <div class="stock-cell">📊</div>
+        <div class="stock-cell">i</div>
+      </div>
     </div>
-    <div id="payment-form" style="display: none;">
+    <div class="stock-label">Chargement</div>
+  </div>
+
+  <div class="container">
+    <div id="payment-form">
       <div id="payment-error" class="error-message" style="display: none;"></div>
       <div id="payment-element"></div>
       <button id="btn-pay" class="btn-pay">Démarrer l'essai gratuit</button>
@@ -52,18 +87,22 @@
     let elements = null;
     let hasTrial = true;
 
+    function hideLoading() {
+      document.getElementById('payment-loading').classList.add('hidden');
+      document.getElementById('payment-form').style.display = 'block';
+    }
+
     function showError(message) {
       const errorEl = document.getElementById('payment-error');
       errorEl.textContent = message;
       errorEl.style.display = 'block';
+      hideLoading();
     }
 
     async function init() {
       try {
         if (!window.supabase || typeof Stripe === 'undefined') {
           showError('Erreur de chargement. Recharge la page.');
-          document.getElementById('payment-loading').style.display = 'none';
-          document.getElementById('payment-form').style.display = 'block';
           return;
         }
 
@@ -75,8 +114,6 @@
 
         if (!initData && !session) {
           showError('Session expirée. Retourne sur Telegram.');
-          document.getElementById('payment-loading').style.display = 'none';
-          document.getElementById('payment-form').style.display = 'block';
           return;
         }
 
@@ -98,15 +135,11 @@
 
         if (data.error) {
           showError(data.error);
-          document.getElementById('payment-loading').style.display = 'none';
-          document.getElementById('payment-form').style.display = 'block';
           return;
         }
 
         if (!data.clientSecret) {
           showError('Erreur: pas de réponse du serveur');
-          document.getElementById('payment-loading').style.display = 'none';
-          document.getElementById('payment-form').style.display = 'block';
           return;
         }
 
@@ -146,18 +179,19 @@
         const paymentElement = elements.create('payment');
         paymentElement.mount('#payment-element');
 
+        let shown = false;
         paymentElement.on('ready', () => {
-          document.getElementById('payment-loading').style.display = 'none';
-          document.getElementById('payment-form').style.display = 'block';
+          if (!shown) { shown = true; hideLoading(); }
         });
+        setTimeout(() => {
+          if (!shown) { shown = true; hideLoading(); }
+        }, 3000);
 
         btn.onclick = confirmPayment;
 
       } catch (err) {
         console.error('Init error:', err);
         showError('Erreur: ' + err.message);
-        document.getElementById('payment-loading').style.display = 'none';
-        document.getElementById('payment-form').style.display = 'block';
       }
     }
 
