@@ -146,6 +146,10 @@
   </div>
 
   <script>
+    // Debug immédiat
+    document.getElementById('status').textContent = 'Script start...';
+
+    try {
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
     const STRIPE_PK = 'pk_live_51SngyFQnTQdmBOky5RHXtWREIgfaVu1Pd9NsZH5Euf31wEtGRfPi6URQeQjcMIWUc9NssFv8HM6fJOnPVrwUABxH00YQgcVJFr';
@@ -159,17 +163,16 @@
     function showDebug(text) {
       const el = document.getElementById('status');
       if (el) el.textContent = text;
-      console.log('[DEBUG]', text);
     }
 
     // Check dependencies
-    showDebug('Checking deps...');
+    showDebug('Deps: sb=' + !!window.supabase + ' st=' + (typeof Stripe !== 'undefined'));
     if (!window.supabase) {
-      showError('Supabase non chargé. Recharge la page.');
+      showError('Supabase non chargé');
       throw new Error('Supabase not loaded');
     }
     if (typeof Stripe === 'undefined') {
-      showError('Stripe non chargé. Recharge la page.');
+      showError('Stripe non chargé');
       throw new Error('Stripe not loaded');
     }
 
@@ -272,7 +275,12 @@
       }
     }
 
-    init().catch(e => showError('Erreur: ' + e.message));
+    init().catch(e => showError('Erreur init: ' + e.message));
+
+    } catch (globalErr) {
+      document.getElementById('status').textContent = 'Erreur: ' + globalErr.message;
+      document.getElementById('error-container').innerHTML = '<div class="error-message">Erreur globale: ' + globalErr.message + '</div>';
+    }
   </script>
 </body>
 </html>
