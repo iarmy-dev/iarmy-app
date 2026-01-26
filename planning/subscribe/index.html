@@ -17,7 +17,8 @@
 
     /* Header */
     .header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; }
+    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
     .header-text h1 { font-size: 18px; font-weight: 600; }
     .header-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
 
@@ -153,7 +154,17 @@
         }
 
         const checkout = await stripe.initEmbeddedCheckout({
-          clientSecret: data.clientSecret
+          clientSecret: data.clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: '#3b82f6',
+              colorBackground: '#0a0a0a',
+              colorText: '#ffffff',
+              colorDanger: '#f87171',
+              borderRadius: '12px'
+            }
+          }
         });
 
         document.getElementById('checkout').innerHTML = '';
