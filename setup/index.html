@@ -211,27 +211,27 @@
           onboarding_message: "Envoie ton inventaire :\n_Exemple : Vodka 5 Rhum 3 Biere 24_"
         }
       },
-      planning: {
-        name: "Planning",
-        icon: "📅",
+      paie: {
+        name: "Paie",
+        icon: "💰",
         color: { primary: "#f59e0b", secondary: "#fbbf24" },
         price: 39,
         trial_days: 7,
-        description: "Gere ton equipe et les plannings",
+        description: "Prepare la paie de ton equipe",
         features: [
-          "Gestion illimitee d'employes",
-          "Plannings automatiques",
-          "Rappels Telegram",
-          "Export documents"
+          "Extraction auto des contrats",
+          "Suivi absences & retards",
+          "Calcul automatique fin de mois",
+          "Export pour comptable"
         ],
         setup: {
           steps: [
-            { id: "upload_contracts", type: "multi_photo_upload", title: "Upload les contrats", description: "Photo des contrats ou fiches de paie", ai_type: "employee" },
-            { id: "review_team", type: "team_validation", title: "Recap de ton equipe", description: "Verifie les infos extraites" },
+            { id: "upload_contracts", type: "multi_photo_upload", title: "Upload les contrats", description: "Photo des contrats de travail", ai_type: "employee_full" },
+            { id: "review_team", type: "team_validation", title: "Recap de ton equipe", description: "Verifie et ajoute le salaire net convenu", editable_fields: ["net_salary_reference"] },
             { id: "payment", type: "stripe_checkout", title: "Essai gratuit 7 jours" },
             { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
           ],
-          onboarding_message: "Tape /equipe pour gerer ton equipe"
+          onboarding_message: "Module Paie active !\n\n/equipe - Voir ton equipe\n/paie - Recap du mois\n\nOu envoie : _Ayham absent 2h_"
         }
       }
     };

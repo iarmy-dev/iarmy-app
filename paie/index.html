@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paie - iArmy</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; }
+    .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; }
+    .glass:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); }
+    .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border: none; border-radius: 12px; padding: 14px 24px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,107,53,0.4); }
+    .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 24px; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .employee-card { transition: all 0.3s; cursor: pointer; }
+    .employee-card:hover { transform: translateX(4px); border-color: rgba(255,107,53,0.3); }
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+    .tag-cdi { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .tag-cdd { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .tag-stage { background: rgba(168,85,247,0.15); color: #c084fc; }
+    .tag-absence { background: rgba(239,68,68,0.15); color: #f87171; }
+    .tag-late { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .tag-extra { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .tab { padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .tab.active { background: rgba(255,107,53,0.15); color: #FF8B5E; }
+    .tab:not(.active) { color: rgba(255,255,255,0.4); }
+    .tab:not(.active):hover { color: rgba(255,255,255,0.7); }
+    .event-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .event-row:last-child { border-bottom: none; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .modal.show { display: flex; }
+    .modal-content { background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    input, select { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; color: white; width: 100%; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: rgba(255,107,53,0.5); }
+    input::placeholder { color: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+    <div class="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-400 rounded-xl flex items-center justify-center font-bold text-lg">i</div>
+        <span class="font-semibold">Paie</span>
+      </a>
+      <button onclick="showAddEventModal()" class="btn-primary text-sm py-2 px-4">+ Event</button>
+    </div>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-5 pt-24 pb-10">
+    <!-- Month Selector -->
+    <div class="flex items-center justify-between mb-6">
+      <button onclick="changeMonth(-1)" class="p-2 rounded-lg hover:bg-white/5">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="text-center">
+        <div class="text-lg font-semibold" id="current-month">Janvier 2026</div>
+        <div class="text-xs text-white/40" id="month-range">1 - 31 janvier</div>
+      </div>
+      <button onclick="changeMonth(1)" class="p-2 rounded-lg hover:bg-white/5">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-3 mb-6">
+      <div class="glass p-4 text-center">
+        <div class="text-2xl font-bold text-orange-400" id="stat-employees">-</div>
+        <div class="text-xs text-white/40 mt-1">Employes</div>
+      </div>
+      <div class="glass p-4 text-center">
+        <div class="text-2xl font-bold text-red-400" id="stat-absences">-</div>
+        <div class="text-xs text-white/40 mt-1">Absences</div>
+      </div>
+      <div class="glass p-4 text-center">
+        <div class="text-2xl font-bold text-yellow-400" id="stat-events">-</div>
+        <div class="text-xs text-white/40 mt-1">Events</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 bg-white/5 p-1 rounded-xl">
+      <div class="tab active flex-1 text-center" data-tab="equipe" onclick="switchTab('equipe')">Equipe</div>
+      <div class="tab flex-1 text-center" data-tab="events" onclick="switchTab('events')">Events</div>
+      <div class="tab flex-1 text-center" data-tab="recap" onclick="switchTab('recap')">Recap</div>
+    </div>
+
+    <!-- Tab: Equipe -->
+    <div id="tab-equipe">
+      <div id="employees-list">
+        <div class="glass p-8 text-center text-white/40" id="loading">Chargement...</div>
+      </div>
+      <div id="empty-state" class="hidden">
+        <div class="empty-state glass">
+          <div class="w-20 h-20 mx-auto mb-5 bg-white/5 rounded-full flex items-center justify-center">
+            <svg class="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Aucun employe</h3>
+          <p class="text-white/40 text-sm mb-6">Ajoute ton equipe via le setup</p>
+          <a href="/paie/setup/" class="btn-primary inline-block">Configurer</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Events -->
+    <div id="tab-events" class="hidden">
+      <div id="events-list" class="glass">
+        <div class="p-8 text-center text-white/40">Aucun evenement ce mois</div>
+      </div>
+    </div>
+
+    <!-- Tab: Recap -->
+    <div id="tab-recap" class="hidden">
+      <div id="recap-content" class="space-y-4">
+        <div class="glass p-8 text-center text-white/40">
+          Calcul du recap en cours...
+        </div>
+      </div>
+      <button onclick="exportForAccountant()" class="btn-primary w-full mt-6 flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Export pour comptable
+      </button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 grid grid-cols-2 gap-3">
+      <a href="/paie/setup/" class="btn-secondary flex items-center justify-center gap-2 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Ajouter
+      </a>
+      <button onclick="openTelegram()" class="btn-secondary flex items-center justify-center gap-2 text-sm">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.46-1.9-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.015-.15-.056-.212s-.174-.041-.248-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.008-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.324-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.015 3.333-1.386 4.025-1.627 4.477-1.635.099-.002.321.023.465.141.121.1.154.234.17.33.015.096.034.31.019.478z"/>
+        </svg>
+        Telegram
+      </button>
+    </div>
+  </main>
+
+  <!-- Modal: Add Event -->
+  <div class="modal" id="event-modal">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4">Ajouter un evenement</h3>
+      <form id="event-form" onsubmit="saveEvent(event)">
+        <div class="mb-4">
+          <label class="block text-sm text-white/50 mb-2">Employe</label>
+          <select id="event-employee" required>
+            <option value="">Selectionner...</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm text-white/50 mb-2">Date</label>
+          <input type="date" id="event-date" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm text-white/50 mb-2">Type</label>
+          <select id="event-type" required onchange="toggleDuration()">
+            <option value="absence">Absence</option>
+            <option value="late">Retard</option>
+            <option value="early_leave">Depart anticipe</option>
+            <option value="extra_hours">Heures sup</option>
+            <option value="reduced_hours">Heures en moins</option>
+            <option value="other">Autre</option>
+          </select>
+        </div>
+        <div class="mb-4" id="duration-field">
+          <label class="block text-sm text-white/50 mb-2">Duree (minutes)</label>
+          <input type="number" id="event-duration" placeholder="Ex: 120 pour 2h">
+          <div class="text-xs text-white/30 mt-1">Laisser vide = journee complete</div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm text-white/50 mb-2">Notes</label>
+          <input type="text" id="event-notes" placeholder="Optionnel...">
+        </div>
+        <div class="flex gap-3">
+          <button type="button" onclick="closeModal()" class="btn-secondary flex-1">Annuler</button>
+          <button type="submit" class="btn-primary flex-1">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+
+    const cookieStorage = {
+      getItem: (key) => {
+        const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : null;
+      },
+      setItem: (key, value) => {
+        document.cookie = `${key}=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Strict; Secure`;
+      },
+      removeItem: (key) => {
+        document.cookie = `${key}=; domain=.iarmy.fr; path=/; max-age=0`;
+      }
+    };
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
+    });
+
+    let currentUser = null;
+    let employees = [];
+    let events = [];
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.ready(); tg.expand(); }
+
+    const MONTHS = ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'];
+    const EVENT_TYPES = {
+      absence: { label: 'Absence', icon: '🚫', class: 'tag-absence' },
+      late: { label: 'Retard', icon: '⏰', class: 'tag-late' },
+      early_leave: { label: 'Depart', icon: '🚪', class: 'tag-late' },
+      extra_hours: { label: 'Heures +', icon: '➕', class: 'tag-extra' },
+      reduced_hours: { label: 'Heures -', icon: '➖', class: 'tag-absence' },
+      other: { label: 'Autre', icon: '📝', class: 'tag' }
+    };
+
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tguid = urlParams.get('tguid') || tg?.initDataUnsafe?.user?.id;
+
+        if (tguid) {
+          const { data: link } = await supabase
+            .from('telegram_links')
+            .select('user_id')
+            .eq('telegram_user_id', tguid.toString())
+            .single();
+
+          if (link) {
+            currentUser = { id: link.user_id };
+            await loadData();
+            return;
+          }
+        }
+
+        sessionStorage.setItem('auth_redirect', window.location.href);
+        await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin + '/auth/callback' }
+        });
+        return;
+      }
+
+      currentUser = session.user;
+      await loadData();
+    }
+
+    async function loadData() {
+      updateMonthDisplay();
+      await Promise.all([loadEmployees(), loadEvents()]);
+      updateStats();
+    }
+
+    async function loadEmployees() {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('name');
+
+      document.getElementById('loading').classList.add('hidden');
+
+      if (error || !data || data.length === 0) {
+        document.getElementById('empty-state').classList.remove('hidden');
+        employees = [];
+        return;
+      }
+
+      employees = data;
+      renderEmployees();
+      populateEmployeeSelect();
+    }
+
+    async function loadEvents() {
+      const startDate = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+      const endDate = new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from('employee_events')
+        .select('*, employees(name)')
+        .eq('user_id', currentUser.id)
+        .gte('event_date', startDate)
+        .lte('event_date', endDate)
+        .order('event_date', { ascending: false });
+
+      events = data || [];
+      renderEvents();
+      renderRecap();
+    }
+
+    function renderEmployees() {
+      const container = document.getElementById('employees-list');
+      container.innerHTML = employees.map(emp => {
+        const empEvents = events.filter(e => e.employee_id === emp.id);
+        const absences = empEvents.filter(e => e.event_type === 'absence').length;
+        const lates = empEvents.filter(e => e.event_type === 'late').length;
+
+        return `
+        <div class="employee-card glass p-4 mb-3 flex items-center gap-4" onclick="showEmployeeDetail('${emp.id}')">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center text-lg font-semibold text-orange-400">
+            ${emp.name.charAt(0).toUpperCase()}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">${emp.name}</div>
+            <div class="text-sm text-white/40 flex items-center gap-2">
+              ${emp.role || 'Employe'}
+              ${emp.contract_type ? `<span class="tag tag-${emp.contract_type.toLowerCase()}">${emp.contract_type}</span>` : ''}
+            </div>
+          </div>
+          <div class="text-right text-xs">
+            ${absences > 0 ? `<div class="text-red-400">${absences} abs</div>` : ''}
+            ${lates > 0 ? `<div class="text-yellow-400">${lates} ret</div>` : ''}
+            ${absences === 0 && lates === 0 ? `<div class="text-green-400">OK</div>` : ''}
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-medium">${emp.net_salary_reference ? emp.net_salary_reference + '€' : (emp.gross_salary ? emp.gross_salary + '€' : '-')}</div>
+            <div class="text-xs text-white/30">${emp.net_salary_reference ? 'net' : 'brut'}</div>
+          </div>
+        </div>
+      `}).join('');
+    }
+
+    function renderEvents() {
+      const container = document.getElementById('events-list');
+
+      if (events.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-white/40">Aucun evenement ce mois</div>';
+        return;
+      }
+
+      container.innerHTML = events.map(evt => {
+        const type = EVENT_TYPES[evt.event_type] || EVENT_TYPES.other;
+        const date = new Date(evt.event_date);
+        const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' });
+        const duration = evt.duration_minutes ? `${Math.floor(evt.duration_minutes / 60)}h${evt.duration_minutes % 60 || ''}` : 'Journee';
+
+        return `
+        <div class="event-row p-4 flex items-center gap-3">
+          <div class="text-2xl">${type.icon}</div>
+          <div class="flex-1">
+            <div class="font-medium">${evt.employees?.name || 'Employe'}</div>
+            <div class="text-sm text-white/40">${dateStr} - ${duration}</div>
+            ${evt.notes ? `<div class="text-xs text-white/30 mt-1">${evt.notes}</div>` : ''}
+          </div>
+          <span class="tag ${type.class}">${type.label}</span>
+        </div>
+      `}).join('');
+    }
+
+    function renderRecap() {
+      const container = document.getElementById('recap-content');
+
+      if (employees.length === 0) {
+        container.innerHTML = '<div class="glass p-8 text-center text-white/40">Aucun employe</div>';
+        return;
+      }
+
+      container.innerHTML = employees.map(emp => {
+        const empEvents = events.filter(e => e.employee_id === emp.id);
+        const absenceHours = empEvents
+          .filter(e => e.event_type === 'absence')
+          .reduce((sum, e) => sum + (e.duration_minutes ? e.duration_minutes / 60 : (emp.hours_per_week || 35) / 5), 0);
+        const lateMinutes = empEvents
+          .filter(e => e.event_type === 'late')
+          .reduce((sum, e) => sum + (e.duration_minutes || 0), 0);
+        const extraHours = empEvents
+          .filter(e => e.event_type === 'extra_hours')
+          .reduce((sum, e) => sum + (e.duration_minutes ? e.duration_minutes / 60 : 0), 0);
+
+        const monthlyHours = emp.monthly_hours || (emp.hours_per_week || 35) * 4.33;
+        const actualHours = monthlyHours - absenceHours + extraHours;
+        const baseNet = emp.net_salary_reference || emp.gross_salary || 0;
+        const hourlyRate = baseNet / monthlyHours;
+        const deduction = absenceHours * hourlyRate;
+        const addition = extraHours * hourlyRate;
+        const finalNet = baseNet - deduction + addition;
+
+        return `
+        <div class="glass p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-semibold">${emp.name}</div>
+            <div class="text-lg font-bold text-orange-400">${finalNet.toFixed(0)}€</div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-white/40">Heures prevues</span>
+              <span>${monthlyHours.toFixed(0)}h</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-white/40">Heures reelles</span>
+              <span>${actualHours.toFixed(0)}h</span>
+            </div>
+            ${absenceHours > 0 ? `
+            <div class="flex justify-between">
+              <span class="text-red-400">Absences</span>
+              <span class="text-red-400">-${absenceHours.toFixed(1)}h</span>
+            </div>` : ''}
+            ${lateMinutes > 0 ? `
+            <div class="flex justify-between">
+              <span class="text-yellow-400">Retards</span>
+              <span class="text-yellow-400">${lateMinutes}min</span>
+            </div>` : ''}
+            ${extraHours > 0 ? `
+            <div class="flex justify-between">
+              <span class="text-green-400">Heures sup</span>
+              <span class="text-green-400">+${extraHours.toFixed(1)}h</span>
+            </div>` : ''}
+            ${deduction > 0 ? `
+            <div class="flex justify-between">
+              <span class="text-white/40">Retenue</span>
+              <span class="text-red-400">-${deduction.toFixed(0)}€</span>
+            </div>` : ''}
+            ${addition > 0 ? `
+            <div class="flex justify-between">
+              <span class="text-white/40">Supplement</span>
+              <span class="text-green-400">+${addition.toFixed(0)}€</span>
+            </div>` : ''}
+          </div>
+          ${empEvents.length > 0 ? `
+          <div class="mt-3 pt-3 border-t border-white/5 text-xs text-white/30">
+            ${empEvents.length} evenement(s) ce mois
+          </div>` : ''}
+        </div>
+      `}).join('');
+    }
+
+    function updateStats() {
+      document.getElementById('stat-employees').textContent = employees.length;
+      document.getElementById('stat-absences').textContent = events.filter(e => e.event_type === 'absence').length;
+      document.getElementById('stat-events').textContent = events.length;
+    }
+
+    function updateMonthDisplay() {
+      document.getElementById('current-month').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+      const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+      document.getElementById('month-range').textContent = `1 - ${lastDay} ${MONTHS[currentMonth].toLowerCase()}`;
+    }
+
+    function changeMonth(delta) {
+      currentMonth += delta;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      loadData();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+      document.getElementById('tab-equipe').classList.add('hidden');
+      document.getElementById('tab-events').classList.add('hidden');
+      document.getElementById('tab-recap').classList.add('hidden');
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+    }
+
+    function showAddEventModal() {
+      document.getElementById('event-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('event-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('event-modal').classList.remove('show');
+      document.getElementById('event-form').reset();
+    }
+
+    function toggleDuration() {
+      // Duration field always visible for flexibility
+    }
+
+    function populateEmployeeSelect() {
+      const select = document.getElementById('event-employee');
+      select.innerHTML = '<option value="">Selectionner...</option>' +
+        employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+    }
+
+    async function saveEvent(e) {
+      e.preventDefault();
+
+      const eventData = {
+        user_id: currentUser.id,
+        employee_id: document.getElementById('event-employee').value,
+        event_date: document.getElementById('event-date').value,
+        event_type: document.getElementById('event-type').value,
+        duration_minutes: document.getElementById('event-duration').value ? parseInt(document.getElementById('event-duration').value) : null,
+        notes: document.getElementById('event-notes').value || null
+      };
+
+      const { error } = await supabase.from('employee_events').insert(eventData);
+
+      if (error) {
+        alert('Erreur: ' + error.message);
+        return;
+      }
+
+      closeModal();
+      await loadEvents();
+      updateStats();
+      renderEmployees();
+    }
+
+    function showEmployeeDetail(id) {
+      // TODO: Show employee detail modal
+      console.log('Show employee:', id);
+    }
+
+    function exportForAccountant() {
+      let csv = 'Nom;Heures Prevues;Heures Reelles;Absences (h);Retards (min);Heures Sup;Base Net;Retenue;Supplement;Net Final\n';
+
+      employees.forEach(emp => {
+        const empEvents = events.filter(e => e.employee_id === emp.id);
+        const absenceHours = empEvents.filter(e => e.event_type === 'absence').reduce((sum, e) => sum + (e.duration_minutes ? e.duration_minutes / 60 : 7), 0);
+        const lateMinutes = empEvents.filter(e => e.event_type === 'late').reduce((sum, e) => sum + (e.duration_minutes || 0), 0);
+        const extraHours = empEvents.filter(e => e.event_type === 'extra_hours').reduce((sum, e) => sum + (e.duration_minutes ? e.duration_minutes / 60 : 0), 0);
+
+        const monthlyHours = emp.monthly_hours || (emp.hours_per_week || 35) * 4.33;
+        const actualHours = monthlyHours - absenceHours + extraHours;
+        const baseNet = emp.net_salary_reference || emp.gross_salary || 0;
+        const hourlyRate = baseNet / monthlyHours;
+        const deduction = absenceHours * hourlyRate;
+        const addition = extraHours * hourlyRate;
+        const finalNet = baseNet - deduction + addition;
+
+        csv += `${emp.name};${monthlyHours.toFixed(1)};${actualHours.toFixed(1)};${absenceHours.toFixed(1)};${lateMinutes};${extraHours.toFixed(1)};${baseNet.toFixed(2)};${deduction.toFixed(2)};${addition.toFixed(2)};${finalNet.toFixed(2)}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `paie_${MONTHS[currentMonth].toLowerCase()}_${currentYear}.csv`;
+      link.click();
+    }
+
+    function openTelegram() {
+      window.open('https://t.me/iArmy_bot', '_blank');
+    }
+
+    init();
+  </script>
+</body>
+</html>
