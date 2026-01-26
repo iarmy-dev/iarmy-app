@@ -84,17 +84,21 @@
     .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
     @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.1); } 50%, 90% { background: #4ade80; } 100% { background: rgba(255,255,255,0.1); } }
 
-    /* Mini paie animation - team silhouettes + euro */
-    .mini-paie { width: 36px; height: 28px; display: flex; align-items: flex-end; justify-content: center; position: relative; gap: 1px; }
-    .mini-paie-person { display: flex; flex-direction: column; align-items: center; opacity: 0.3; animation: paiePersonAppear 3s ease-in-out infinite; }
-    .mini-paie-person-1 { animation-delay: 0s; }
-    .mini-paie-person-2 { animation-delay: 0.25s; }
-    .mini-paie-person-3 { animation-delay: 0.5s; }
-    .mini-paie-head { width: 6px; height: 6px; border-radius: 50%; background: white; margin-bottom: 1px; }
-    .mini-paie-body { width: 8px; height: 8px; background: white; border-radius: 3px 3px 1px 1px; }
-    @keyframes paiePersonAppear { 0%, 15% { opacity: 0.25; transform: scale(0.9); } 25%, 75% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0.25; transform: scale(0.9); } }
-    .mini-paie-euro { position: absolute; bottom: -2px; right: -6px; font-size: 12px; font-weight: 800; color: #4ade80; opacity: 0; animation: paieEuroPop 3s ease-out infinite; animation-delay: 0.9s; }
-    @keyframes paieEuroPop { 0%, 20% { opacity: 0; transform: scale(0); } 35% { opacity: 1; transform: scale(1.2); } 50%, 70% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
+    /* Mini paie animation - team transforms to euro */
+    .mini-paie { width: 32px; height: 28px; display: flex; align-items: center; justify-content: center; position: relative; }
+    .mini-paie-people { display: flex; align-items: flex-end; gap: 1px; position: absolute; animation: paiePeopleToEuro 3.5s ease-in-out infinite; }
+    .mini-paie-person { display: flex; flex-direction: column; align-items: center; }
+    .mini-paie-head { width: 5px; height: 5px; border-radius: 50%; background: white; margin-bottom: 1px; }
+    .mini-paie-body { width: 7px; height: 7px; background: white; border-radius: 2px 2px 1px 1px; }
+    .mini-paie-person-1 { animation: paiePerson1 3.5s ease-in-out infinite; }
+    .mini-paie-person-2 { animation: paiePerson2 3.5s ease-in-out infinite; }
+    .mini-paie-person-3 { animation: paiePerson3 3.5s ease-in-out infinite; }
+    @keyframes paiePeopleToEuro { 0%, 50% { opacity: 1; } 60%, 90% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes paiePerson1 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(10px); } 100% { transform: translateX(0); } }
+    @keyframes paiePerson2 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(0); } 100% { transform: translateX(0); } }
+    @keyframes paiePerson3 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(-10px); } 100% { transform: translateX(0); } }
+    .mini-paie-euro { position: absolute; font-size: 18px; font-weight: 800; color: white; opacity: 0; animation: paieEuroAppear 3.5s ease-in-out infinite; }
+    @keyframes paieEuroAppear { 0%, 50% { opacity: 0; transform: scale(0.5); } 65% { opacity: 1; transform: scale(1.1); } 75%, 85% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(0.8); } }
 
     /* Connections Grid */
     .connections-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 32px; }
@@ -514,17 +518,19 @@
       <div class="module-left">
         <div class="module-icon" style="background: linear-gradient(135deg, rgba(251,191,36,0.3), rgba(245,158,11,0.1));">
           <div class="mini-paie">
-            <div class="mini-paie-person mini-paie-person-1">
-              <div class="mini-paie-head"></div>
-              <div class="mini-paie-body"></div>
-            </div>
-            <div class="mini-paie-person mini-paie-person-2">
-              <div class="mini-paie-head"></div>
-              <div class="mini-paie-body"></div>
-            </div>
-            <div class="mini-paie-person mini-paie-person-3">
-              <div class="mini-paie-head"></div>
-              <div class="mini-paie-body"></div>
+            <div class="mini-paie-people">
+              <div class="mini-paie-person mini-paie-person-1">
+                <div class="mini-paie-head"></div>
+                <div class="mini-paie-body"></div>
+              </div>
+              <div class="mini-paie-person mini-paie-person-2">
+                <div class="mini-paie-head"></div>
+                <div class="mini-paie-body"></div>
+              </div>
+              <div class="mini-paie-person mini-paie-person-3">
+                <div class="mini-paie-head"></div>
+                <div class="mini-paie-body"></div>
+              </div>
             </div>
             <div class="mini-paie-euro">€</div>
           </div>
