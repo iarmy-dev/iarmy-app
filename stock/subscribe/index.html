@@ -142,11 +142,12 @@
       <div id="checkout">
         <div class="loading">
           <div class="spinner"></div>
-          <div class="loading-text">Chargement du paiement...</div>
+          <div class="loading-text" id="status">Chargement...</div>
         </div>
       </div>
     </div>
     <div id="error-container"></div>
+    <script>document.getElementById('status').textContent='Page OK, scripts...';</script>
 
     <div class="features">
       <div class="feature"><span class="feature-icon">✓</span> Scan tickets Z</div>
@@ -168,8 +169,8 @@
     }
 
     function showDebug(text) {
-      const loadingText = document.querySelector('.loading-text');
-      if (loadingText) loadingText.textContent = text;
+      const el = document.getElementById('status');
+      if (el) el.textContent = text;
       console.log('[DEBUG]', text);
     }
 
