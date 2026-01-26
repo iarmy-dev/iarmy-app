@@ -200,6 +200,7 @@
     /* Multi photo upload styles */
     .upload-zone-multi { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .upload-zone-multi.dragover { border-color: #10B981; background: rgba(16,185,129,0.1); transform: scale(1.02); }
+    #menu-drop-area-0.dragover .upload-zone, [id^="menu-drop-area-"].dragover .upload-zone { border-color: #10B981; background: rgba(16,185,129,0.1); }
   </style>
 </head>
 <body class="bg-gradient-animate">
@@ -675,20 +676,29 @@
 
     function renderMultiPhotoMenu(step, index) {
       return `
-        <div id="menu-upload-zone-${index}" class="upload-zone upload-zone-multi"
+        <div id="menu-drop-area-${index}"
              ondrop="handleMenuDrop(event, ${index})"
              ondragover="handleMenuDragOver(event, ${index})"
-             ondragleave="handleMenuDragLeave(event, ${index})"
-             onclick="document.getElementById('menu-file-${index}').click()">
+             ondragleave="handleMenuDragLeave(event, ${index})">
           <input type="file" id="menu-file-${index}" accept="image/*" multiple style="display: none;" onchange="handleMenuFiles(event, ${index})">
-          <div style="font-size: 48px; margin-bottom: 16px;">📸</div>
-          <div style="font-weight: 600; margin-bottom: 8px;">Glisse tes photos ici</div>
-          <div style="color: rgba(255,255,255,0.4); font-size: 14px;">ou clique pour choisir (plusieurs photos OK)</div>
-        </div>
-        <div id="menu-photos-preview-${index}" style="display: none; margin-top: 16px;">
-          <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;" id="menu-photos-grid-${index}"></div>
-          <button onclick="document.getElementById('menu-file-${index}').click()" class="btn-secondary" style="margin-bottom: 12px;">+ Ajouter d'autres photos</button>
-          <button onclick="analyzeMenuPhotos(${index})" class="btn-glow" id="btn-analyze-menu-${index}">Analyser les photos</button>
+
+          <div id="menu-upload-zone-${index}" class="upload-zone upload-zone-multi"
+               onclick="document.getElementById('menu-file-${index}').click()">
+            <div style="font-size: 48px; margin-bottom: 16px;">📸</div>
+            <div style="font-weight: 600; margin-bottom: 8px;">Glisse tes photos ici</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 14px;">ou clique pour choisir (plusieurs photos OK)</div>
+          </div>
+
+          <div id="menu-photos-preview-${index}" style="display: none;">
+            <div id="menu-photos-grid-${index}" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;"></div>
+            <div class="upload-zone" style="padding: 20px; min-height: auto; margin-bottom: 16px;" onclick="document.getElementById('menu-file-${index}').click()">
+              <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.5);">
+                <span style="font-size: 20px;">+</span>
+                <span>Glisse ou clique pour ajouter</span>
+              </div>
+            </div>
+            <button onclick="analyzeMenuPhotos(${index})" class="btn-glow" id="btn-analyze-menu-${index}">Analyser les photos</button>
+          </div>
         </div>
         <div id="menu-analyzing-${index}" style="display: none; text-align: center; padding: 40px 0;">
           <div class="loading-spinner"></div>
@@ -1402,19 +1412,22 @@ IMPORTANT:
     function handleMenuDragOver(event, index) {
       event.preventDefault();
       event.stopPropagation();
-      document.getElementById(`menu-upload-zone-${index}`).classList.add('dragover');
+      document.getElementById(`menu-drop-area-${index}`).classList.add('dragover');
     }
 
     function handleMenuDragLeave(event, index) {
       event.preventDefault();
       event.stopPropagation();
-      document.getElementById(`menu-upload-zone-${index}`).classList.remove('dragover');
+      // Only remove dragover if leaving the drop area entirely
+      if (!event.relatedTarget || !document.getElementById(`menu-drop-area-${index}`).contains(event.relatedTarget)) {
+        document.getElementById(`menu-drop-area-${index}`).classList.remove('dragover');
+      }
     }
 
     function handleMenuDrop(event, index) {
       event.preventDefault();
       event.stopPropagation();
-      document.getElementById(`menu-upload-zone-${index}`).classList.remove('dragover');
+      document.getElementById(`menu-drop-area-${index}`).classList.remove('dragover');
 
       const files = event.dataTransfer.files;
       if (files.length > 0) {
