@@ -64,7 +64,12 @@
     };
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
+      auth: {
+        storage: cookieStorage,
+        storageKey: 'sb-auth-token',
+        detectSessionInUrl: true,
+        flowType: 'implicit'
+      }
     });
 
     function showError(message) {
@@ -91,85 +96,67 @@
 
     async function handleCallback() {
       try {
-        // Récupérer le hash de l'URL (contient access_token, refresh_token, etc.)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
+        console.log('[CALLBACK] 🔐 Traitement du callback OAuth...');
 
-        console.log('[CALLBACK] Hash params:', {
-          hasAccessToken: !!accessToken,
-          hasRefreshToken: !!refreshToken
-        });
+        // Écouter les changements d'auth (le SDK va traiter le hash automatiquement)
+        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          console.log('[CALLBACK] Auth event:', event);
 
-        // Si pas de tokens dans le hash, vérifier si on a déjà une session
-        if (!accessToken || !refreshToken) {
-          console.log('[CALLBACK] Pas de tokens dans URL, vérification session existante...');
-
-          const { data: { session }, error } = await supabaseClient.auth.getSession();
-
-          if (session) {
-            console.log('[CALLBACK] ✅ Session existante trouvée:', session.user.email);
-            const firstName = session.user.user_metadata?.full_name?.split(' ')[0] ||
-                            session.user.user_metadata?.name?.split(' ')[0] ||
-                            session.user.email?.split('@')[0] || 'toi';
-            // Créer profil si nécessaire
-            await createProfileIfNeeded(session.user);
-
-            // Redirection vers la page d'origine ou dashboard
-            const redirectUrl = sessionStorage.getItem('auth_redirect');
-            sessionStorage.removeItem('auth_redirect');
-            window.location.href = redirectUrl || '/';
-            return;
+          if (event === 'SIGNED_IN' && session) {
+            subscription.unsubscribe();
+            await finishCallback(session);
+          } else if (event === 'TOKEN_REFRESHED' && session) {
+            subscription.unsubscribe();
+            await finishCallback(session);
           }
-
-          // Pas de session, pas de tokens → erreur
-          console.log('[CALLBACK] ❌ Aucun token et aucune session');
-          showError('Aucun token de connexion trouvé. Veuillez réessayer.');
-          return;
-        }
-
-        // On a des tokens, on configure la session
-        console.log('[CALLBACK] 🔐 Configuration de la session avec les tokens...');
-
-        const { data, error } = await supabaseClient.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
         });
+
+        // Vérifier si on a déjà une session (peut arriver si le hash a déjà été traité)
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
 
         if (error) {
-          console.error('[CALLBACK] ❌ Erreur setSession:', error);
-          showError('Erreur lors de la configuration de la session: ' + error.message);
+          console.error('[CALLBACK] ❌ Erreur getSession:', error);
+          // Ne pas afficher l'erreur tout de suite, laisser le listener une chance
+        }
+
+        if (session) {
+          subscription.unsubscribe();
+          await finishCallback(session);
           return;
         }
 
-        if (!data.session) {
-          console.error('[CALLBACK] ❌ Pas de session après setSession');
-          showError('Session non créée. Veuillez réessayer.');
-          return;
-        }
-
-        const user = data.session.user;
-        console.log('[CALLBACK] ✅ Session créée:', user.email);
-
-        // Nettoyer l'URL (supprimer le hash)
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        const firstName = user.user_metadata?.full_name?.split(' ')[0] ||
-                         user.user_metadata?.name?.split(' ')[0] ||
-                         user.email?.split('@')[0] || 'toi';
-
-        // Créer profil si nécessaire
-        await createProfileIfNeeded(user);
-
-        // Redirection vers la page d'origine ou dashboard
-        const redirectUrl = sessionStorage.getItem('auth_redirect');
-        sessionStorage.removeItem('auth_redirect');
-        window.location.href = redirectUrl || '/';
+        // Si pas de session après 5 secondes, afficher erreur
+        setTimeout(() => {
+          subscription.unsubscribe();
+          showError('Connexion expirée. Veuillez réessayer.');
+        }, 5000);
 
       } catch (err) {
         console.error('[CALLBACK] ❌ Erreur inattendue:', err);
         showError('Une erreur inattendue est survenue: ' + err.message);
       }
+    }
+
+    async function finishCallback(session) {
+      const user = session.user;
+      console.log('[CALLBACK] ✅ Session trouvée:', user.email);
+
+      // Nettoyer l'URL (supprimer le hash)
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      const firstName = user.user_metadata?.full_name?.split(' ')[0] ||
+                       user.user_metadata?.name?.split(' ')[0] ||
+                       user.email?.split('@')[0] || 'toi';
+
+      showSuccess(firstName);
+
+      // Créer profil si nécessaire
+      await createProfileIfNeeded(user);
+
+      // Redirection vers la page d'origine ou dashboard
+      const redirectUrl = sessionStorage.getItem('auth_redirect');
+      sessionStorage.removeItem('auth_redirect');
+      window.location.href = redirectUrl || '/';
     }
 
     async function createProfileIfNeeded(user) {
