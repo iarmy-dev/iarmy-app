@@ -84,6 +84,19 @@
     .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
     @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.1); } 50%, 90% { background: #4ade80; } 100% { background: rgba(255,255,255,0.1); } }
 
+    /* Mini paie animation - team with checkmark */
+    .mini-paie { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .mini-paie-avatars { display: flex; gap: -4px; }
+    .mini-paie-avatar { width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); margin-left: -4px; border: 1.5px solid rgba(0,0,0,0.3); animation: avatarBounce 2.5s ease-in-out infinite; }
+    .mini-paie-avatar:first-child { margin-left: 0; }
+    .mini-paie-avatar:nth-child(1) { animation-delay: 0s; }
+    .mini-paie-avatar:nth-child(2) { animation-delay: 0.15s; }
+    .mini-paie-avatar:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes avatarBounce { 0%, 100% { transform: translateY(0); } 20% { transform: translateY(-3px); } 40% { transform: translateY(0); } }
+    .mini-paie-check { position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: #4ade80; border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: checkPop 2.5s ease-in-out infinite; }
+    .mini-paie-check svg { width: 8px; height: 8px; }
+    @keyframes checkPop { 0%, 50% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 70%, 100% { transform: scale(1); opacity: 1; } }
+
     /* Connections Grid */
     .connections-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 32px; }
     .connection-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; transition: all 0.2s; }
@@ -518,6 +531,30 @@
       </div>
     </div>
 
+    <div class="module-card" id="module-paie" onclick="goToPaieModule()">
+      <div class="module-left">
+        <div class="module-icon" style="background: linear-gradient(135deg, rgba(251,191,36,0.3), rgba(245,158,11,0.1));">
+          <div class="mini-paie">
+            <div class="mini-paie-avatars">
+              <div class="mini-paie-avatar"></div>
+              <div class="mini-paie-avatar"></div>
+              <div class="mini-paie-avatar"></div>
+            </div>
+            <div class="mini-paie-check">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="module-name">Paie</div>
+          <div class="module-status" id="paie-status">Chargement...</div>
+        </div>
+      </div>
+      <div class="module-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
     <!-- Connections -->
     <div class="section-title">Connexions</div>
     <div class="connections-grid">
@@ -780,6 +817,7 @@
     let moduleConfig = null;
     let employeeCount = 0;
     let stockProductCount = 0;
+    let paieEmployeeCount = 0;
     let isTelegramMode = false;
     let telegramUserId = null;
     let telegramSubscription = null;
@@ -1003,6 +1041,20 @@
           document.getElementById('module-stock').classList.add('inactive');
         }
 
+        // Paie employees
+        const { count: empCount } = await supabase
+          .from('employees')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', authData.userId);
+
+        paieEmployeeCount = empCount || 0;
+        if (paieEmployeeCount > 0) {
+          document.getElementById('paie-status').textContent = paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '');
+        } else {
+          document.getElementById('paie-status').textContent = 'Configurer';
+          document.getElementById('module-paie').classList.add('inactive');
+        }
+
         // Telegram est forcement connecte
         document.getElementById('conn-telegram').classList.add('connected');
         document.getElementById('telegram-status').innerHTML = '<span class="dot"></span> Connecte';
@@ -1222,6 +1274,20 @@
           document.getElementById('module-stock').classList.add('inactive');
         }
 
+        // Paie employees
+        const { count: paieCount } = await supabase
+          .from('employees')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', currentUser.id);
+
+        paieEmployeeCount = paieCount || 0;
+        if (paieEmployeeCount > 0) {
+          document.getElementById('paie-status').textContent = paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '');
+        } else {
+          document.getElementById('paie-status').textContent = 'Configurer';
+          document.getElementById('module-paie').classList.add('inactive');
+        }
+
       } catch (err) {
         console.log('No config');
         document.getElementById('module-status').textContent = 'Installer';
@@ -1230,6 +1296,8 @@
         document.getElementById('module-planning').classList.add('inactive');
         document.getElementById('stock-status').textContent = 'Configurer';
         document.getElementById('module-stock').classList.add('inactive');
+        document.getElementById('paie-status').textContent = 'Configurer';
+        document.getElementById('module-paie').classList.add('inactive');
       }
     }
 
@@ -1260,6 +1328,15 @@
         window.location.href = '/stock/' + tgParams;
       } else {
         window.location.href = '/stock/setup/' + tgParams;
+      }
+    }
+
+    function goToPaieModule() {
+      const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
+      if (paieEmployeeCount > 0) {
+        window.location.href = '/paie/' + tgParams;
+      } else {
+        window.location.href = '/setup/?module=paie' + (isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '');
       }
     }
 
