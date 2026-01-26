@@ -858,7 +858,9 @@
     async function analyzeContractWithGemini(filesData) {
       // filesData = [{ data: base64, mimeType: 'image/jpeg', name: 'file.jpg' }, ...]
       try {
-        console.log('Analyzing contract with', filesData.length, 'file(s)');
+        const totalSize = filesData.reduce((sum, f) => sum + f.data.length, 0);
+        console.log('Analyzing contract with', filesData.length, 'file(s), total size:', Math.round(totalSize / 1024), 'KB');
+        console.log('File types:', filesData.map(f => f.mimeType).join(', '));
 
         // Construire les parts: prompt + toutes les images/PDFs
         const parts = [
@@ -903,7 +905,8 @@ IMPORTANT:
         console.log('Gemini response:', data);
 
         if (data.error) {
-          console.error('Gemini error:', data.error);
+          console.error('Gemini error:', data.error.message || data.error);
+          console.error('Gemini error details:', JSON.stringify(data.error, null, 2));
           return null;
         }
 
