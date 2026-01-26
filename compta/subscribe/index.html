@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Compta - Abonnement | iArmy</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -159,12 +160,20 @@
 
     async function init() {
       try {
-        // Check auth
+        // Essayer d'abord via Telegram WebApp initData
+        const tg = window.Telegram?.WebApp;
+        const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
+
+        // Fallback sur session Supabase
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+
+        // On a besoin soit d'initData soit d'une session
+        if (!initData && !session) {
           window.location.href = 'https://iarmy.fr?redirect=/compta/subscribe/';
           return;
         }
+
+        console.log('[SUBSCRIBE] Auth mode:', initData ? 'Telegram' : 'Supabase');
 
         // Check if already has PAID subscription (not tester - testers can subscribe)
         const { data: sub } = await supabase
@@ -195,16 +204,21 @@
 
         // Create checkout session (embedded)
         console.log('Creating checkout session...');
+
+        // Préparer les headers - avec ou sans session
+        const headers = { 'Content-Type': 'application/json' };
+        if (session?.access_token) {
+          headers['Authorization'] = 'Bearer ' + session.access_token;
+        }
+
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + session.access_token
-          },
+          headers,
           body: JSON.stringify({
             moduleName: moduleName,
             embedded: true,
-            successUrl: window.location.origin + '/compta/?success=1&session_id={CHECKOUT_SESSION_ID}'
+            successUrl: window.location.origin + '/compta/?success=1&session_id={CHECKOUT_SESSION_ID}',
+            initData: initData || null
           })
         });
 
