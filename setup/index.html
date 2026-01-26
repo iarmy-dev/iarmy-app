@@ -350,8 +350,18 @@
 
       isTester = sub?.is_tester === true;
 
-      // Si deja abonne -> dashboard
-      if (sub?.status === 'active' || sub?.status === 'trialing' || isTester) {
+      // Check si setup deja complete (telegram connecte)
+      const { data: telegramLink } = await supabaseClient
+        .from('telegram_links')
+        .select('telegram_user_id')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      const setupCompleted = !!telegramLink?.telegram_user_id;
+
+      // Si abonne ET setup complete -> dashboard
+      // Les testeurs passent par le setup (mais skip le paiement)
+      if ((sub?.status === 'active' || sub?.status === 'trialing') && setupCompleted) {
         window.location.href = `/${currentModule}/`;
         return;
       }
