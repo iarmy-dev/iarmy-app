@@ -684,63 +684,40 @@
 
         <!-- Phase 2: Recap equipe + Paiement -->
         <div id="team-recap-phase-${index}" style="display: none;">
-          <div class="team-recap-header">
+          <!-- Header simple -->
+          <div style="text-align: center; margin-bottom: 40px;">
             <div class="team-avatars" id="team-avatars-${index}"></div>
-            <div class="team-recap-title">Ton equipe est <span>prete</span> ✨</div>
-            <div class="team-recap-stats" id="team-stats-${index}"></div>
+            <div style="font-size: 28px; font-weight: 700; margin: 16px 0 8px;">C'est tout bon ✓</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 15px;" id="team-stats-${index}"></div>
           </div>
 
-          <div class="payroll-preview">
-            <div class="payroll-preview-header">
-              <div class="payroll-preview-header-icon">📋</div>
-              <div class="payroll-preview-header-text">
-                Apercu du recap mensuel
-                <span>Ce que tu recevras chaque mois</span>
-              </div>
-            </div>
-            <div id="payroll-preview-rows-${index}"></div>
+          <!-- Preview simple -->
+          <div style="margin-bottom: 40px;">
+            <div style="font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Chaque fin de mois, tu recevras</div>
+            <div id="payroll-preview-rows-${index}" style="background: rgba(255,255,255,0.02); border-radius: 12px; overflow: hidden;"></div>
           </div>
 
-          <div class="value-points">
-            <div class="value-point">
-              <div class="value-point-icon">→</div>
-              <div class="value-point-text"><strong>Note les absences/retards</strong> via Telegram en 2 secondes</div>
+          <!-- CTA -->
+          <div style="background: rgba(255,107,53,0.06); border-radius: 16px; padding: 24px; text-align: center;">
+            <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">7 jours gratuits puis</div>
+            <div style="font-size: 36px; font-weight: 800; color: #FF8B5E; margin-bottom: 16px;">${moduleConfig.price}€<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.4);">/mois</span></div>
+
+            <div id="tester-access-recap-${index}" style="display: none;">
+              <div style="color: #c084fc; font-size: 14px; margin-bottom: 16px;">🧪 Acces testeur</div>
+              <button onclick="saveTeamAndContinue()" class="btn-glow">Continuer</button>
             </div>
-            <div class="value-point">
-              <div class="value-point-icon">→</div>
-              <div class="value-point-text"><strong>Fin de mois</strong> = recap auto avec heures & ajustements</div>
-            </div>
-            <div class="value-point">
-              <div class="value-point-icon">→</div>
-              <div class="value-point-text"><strong>Export 1-clic</strong> pour ton comptable</div>
+            <div id="payment-section-recap-${index}">
+              <button onclick="startCheckoutFromRecap(${index})" class="btn-glow" id="btn-checkout-recap-${index}">
+                Demarrer l'essai gratuit
+              </button>
+              <p style="color: rgba(255,255,255,0.3); font-size: 11px; margin-top: 12px;">
+                Sans engagement
+              </p>
             </div>
           </div>
 
-          <div class="price-box" style="margin-top: 32px;">
-            <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">${moduleConfig.trial_days} jours d'essai gratuit puis</div>
-            <div class="amount">${moduleConfig.price}€</div>
-            <div class="period">/mois</div>
-          </div>
-
-          <div id="tester-access-recap-${index}" style="display: none; text-align: center; margin-top: 24px;">
-            <div class="check-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">Acces testeur !</div>
-            <div style="color: #c084fc; font-size: 14px; margin-bottom: 24px;">🧪 Mode testeur active</div>
-            <button onclick="saveTeamAndContinue()" class="btn-glow">Continuer</button>
-          </div>
-          <div id="payment-section-recap-${index}">
-            <button onclick="startCheckoutFromRecap(${index})" class="btn-glow" id="btn-checkout-recap-${index}">
-              Demarrer l'essai gratuit
-            </button>
-            <p style="text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; margin-top: 16px;">
-              Sans engagement - Annulable a tout moment
-            </p>
-          </div>
-
-          <button onclick="backToTeamEdit(${index})" class="btn-secondary" style="margin-top: 12px;">
-            ← Modifier mon equipe
+          <button onclick="backToTeamEdit(${index})" style="background: none; border: none; color: rgba(255,255,255,0.4); font-size: 13px; cursor: pointer; margin-top: 20px; width: 100%; padding: 12px;">
+            ← Modifier l'equipe
           </button>
         </div>
       `;
@@ -1625,43 +1602,22 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
       }).join('');
       document.getElementById(`team-avatars-${index}`).innerHTML = avatarsHtml;
 
-      // Calculate stats
+      // Simple stats text
       const totalEmployees = employees.length;
-      const totalHours = employees.reduce((sum, e) => sum + (parseFloat(e.hours_per_week) || 0), 0);
-      const totalGross = employees.reduce((sum, e) => sum + (parseFloat(e.gross_salary) || 0), 0);
+      document.getElementById(`team-stats-${index}`).textContent =
+        totalEmployees === 1 ? '1 employe enregistre' : `${totalEmployees} employes enregistres`;
 
-      document.getElementById(`team-stats-${index}`).innerHTML = `
-        <span>${totalEmployees}</span> employe${totalEmployees > 1 ? 's' : ''} •
-        <span>${totalHours.toFixed(1)}</span>h/sem •
-        <span>${totalGross.toFixed(0)}€</span> brut
-      `;
-
-      // Generate payroll preview with real names
-      const previewHtml = employees.slice(0, 4).map((emp, i) => {
-        const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?';
+      // Generate simple payroll preview
+      const previewHtml = employees.slice(0, 5).map((emp, i) => {
         const firstName = emp.name ? emp.name.split(' ')[0] : 'Employe';
-        const hours = emp.hours_per_week || 35;
-        const netRef = emp.net_salary_reference || emp.gross_salary * 0.78 || 0;
-
-        // Simulate some variation for preview
-        const variations = [
-          { status: 'ok', statusText: 'OK', adjustment: 0 },
-          { status: 'warn', statusText: '-2h abs', adjustment: -50 },
-          { status: 'ok', statusText: '+3h sup', adjustment: 80 },
-          { status: 'ok', statusText: 'OK', adjustment: 0 }
-        ];
-        const v = variations[i % variations.length];
-        const finalNet = (netRef + v.adjustment).toFixed(0);
+        const lastName = emp.name && emp.name.split(' ')[1] ? emp.name.split(' ')[1].charAt(0) + '.' : '';
+        const netRef = emp.net_salary_reference || (emp.gross_salary ? Math.round(emp.gross_salary * 0.78) : '—');
+        const netDisplay = typeof netRef === 'number' ? netRef + '€' : netRef;
 
         return `
-          <div class="payroll-row">
-            <div class="payroll-row-name">
-              <div class="payroll-row-mini-avatar">${initials}</div>
-              ${firstName}
-            </div>
-            <div class="payroll-row-hours">${hours}h</div>
-            <div class="payroll-row-status ${v.status}">${v.statusText}</div>
-            <div class="payroll-row-net">${finalNet}€</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <span style="color: rgba(255,255,255,0.7);">${firstName} ${lastName}</span>
+            <span style="font-weight: 600; color: #4ade80;">${netDisplay}</span>
           </div>
         `;
       }).join('');
