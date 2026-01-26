@@ -86,6 +86,32 @@
     .tag-cdd { background: rgba(59,130,246,0.15); color: #60a5fa; }
     .tag-stage { background: rgba(168,85,247,0.15); color: #c084fc; }
 
+    /* Team Setup Cards */
+    .team-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; }
+    .team-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .team-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #FF6B35, #FF8B5E); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; }
+    .team-delete { width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(239,68,68,0.15); color: #f87171; cursor: pointer; font-size: 18px; line-height: 1; transition: all 0.2s; }
+    .team-delete:hover { background: rgba(239,68,68,0.3); }
+    .team-card-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .team-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; color: white; font-size: 14px; transition: all 0.2s; }
+    .team-input:focus { outline: none; border-color: rgba(255,107,53,0.5); background: rgba(255,255,255,0.08); }
+    .team-input::placeholder { color: rgba(255,255,255,0.3); }
+    .team-input-name { font-weight: 600; font-size: 15px; }
+    .team-select { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; color: white; font-size: 14px; cursor: pointer; min-width: 90px; }
+    .team-select:focus { outline: none; border-color: rgba(255,107,53,0.5); }
+    .team-select option { background: #1a1a1a; color: white; }
+    .team-row { display: flex; gap: 10px; }
+    .team-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .team-field label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
+    .team-field-highlight { background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.2); border-radius: 12px; padding: 12px; }
+    .team-field-highlight label { color: #FF8B5E; }
+    .team-details { margin-top: 4px; }
+    .team-details summary { font-size: 12px; color: rgba(255,255,255,0.4); cursor: pointer; padding: 8px 0; }
+    .team-details summary:hover { color: rgba(255,255,255,0.6); }
+    .team-details-content { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .team-add-card { background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.1); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; }
+    .team-add-card:hover { border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.03); }
+
     .price-box { background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.05)); border: 1px solid rgba(255,107,53,0.25); border-radius: 20px; padding: 24px; text-align: center; margin: 24px 0; }
     .price-box .amount { font-size: 42px; font-weight: 800; color: #FF8B5E; }
     .price-box .period { color: rgba(255,255,255,0.5); font-size: 14px; }
@@ -226,8 +252,7 @@
         ],
         setup: {
           steps: [
-            { id: "upload_contracts", type: "multi_photo_upload", title: "Upload les contrats", description: "Photo des contrats de travail", ai_type: "employee_full" },
-            { id: "review_team", type: "team_validation", title: "Recap de ton equipe", description: "Verifie et ajoute le salaire net convenu", editable_fields: ["net_salary_reference"] },
+            { id: "team_setup", type: "team_setup", title: "Ton equipe", description: "Ajoute les contrats de ton equipe" },
             { id: "payment", type: "stripe_checkout", title: "Essai gratuit 7 jours" },
             { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
           ],
@@ -427,6 +452,8 @@
           return renderListValidation(step, index);
         case 'team_validation':
           return renderTeamValidation(step, index);
+        case 'team_setup':
+          return renderTeamSetup(step, index);
         case 'stripe_checkout':
           return renderStripeCheckout(step, index);
         case 'telegram_link':
@@ -595,6 +622,238 @@
       `;
     }
 
+    // === TEAM SETUP (Upload + Review en 1 step) ===
+    function renderTeamSetup(step, index) {
+      return `
+        <div id="team-grid-${index}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+        <div id="team-analyzing-${index}" style="display: none; text-align: center; padding: 40px 0;">
+          <div class="loading-spinner"></div>
+          <div style="font-weight: 600; margin: 16px 0 8px;">Analyse en cours...</div>
+          <div style="color: rgba(255,255,255,0.4); font-size: 14px;" id="team-analyzing-text-${index}">Extraction des infos</div>
+        </div>
+        <div id="team-continue-${index}" style="display: none; margin-top: 24px;">
+          <button onclick="saveTeamAndContinue()" class="btn-glow" style="width: 100%;">Sauvegarder et continuer</button>
+        </div>
+      `;
+    }
+
+    function initTeamSetup(index) {
+      if (!stepData.employees) stepData.employees = [];
+      renderTeamGrid(index);
+    }
+
+    function renderTeamGrid(index) {
+      const grid = document.getElementById(`team-grid-${index}`);
+      const employees = stepData.employees || [];
+
+      let html = '';
+
+      // Cartes des employes existants
+      employees.forEach((emp, i) => {
+        html += renderEmployeeCard(emp, i, index);
+      });
+
+      // Carte "Ajouter"
+      html += `
+        <div class="team-add-card">
+          <input type="file" id="team-file-input-${index}" accept="image/*,.pdf" multiple style="display: none;" onchange="handleTeamUpload(event, ${index})">
+          <div style="font-size: 40px; margin-bottom: 16px;">👤</div>
+          <button onclick="document.getElementById('team-file-input-${index}').click()" class="btn-secondary" style="margin-bottom: 10px; padding: 12px 20px;">
+            📄 Upload contrat
+          </button>
+          <button onclick="addEmptyEmployee(${index})" class="btn-secondary" style="padding: 12px 20px; background: transparent; border: 1px dashed rgba(255,255,255,0.2);">
+            ✏️ Saisie manuelle
+          </button>
+        </div>
+      `;
+
+      grid.innerHTML = html;
+
+      // Afficher bouton continuer si au moins 1 employe
+      document.getElementById(`team-continue-${index}`).style.display = employees.length > 0 ? 'block' : 'none';
+    }
+
+    function renderEmployeeCard(emp, empIndex, stepIndex) {
+      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?';
+      const contractClass = emp.contract_type ? emp.contract_type.toLowerCase() : '';
+
+      return `
+        <div class="team-card" id="emp-card-${empIndex}">
+          <div class="team-card-header">
+            <div class="team-avatar">${initials}</div>
+            <button class="team-delete" onclick="deleteEmployee(${empIndex}, ${stepIndex})" title="Supprimer">×</button>
+          </div>
+          <div class="team-card-body">
+            <input type="text" class="team-input team-input-name" value="${emp.name || ''}" placeholder="Nom complet" onchange="updateEmployee(${empIndex}, 'name', this.value)">
+            <div class="team-row">
+              <input type="text" class="team-input" value="${emp.role || ''}" placeholder="Poste" onchange="updateEmployee(${empIndex}, 'role', this.value)" style="flex: 1;">
+              <select class="team-select" onchange="updateEmployee(${empIndex}, 'contract_type', this.value)">
+                <option value="">Type</option>
+                <option value="CDI" ${emp.contract_type === 'CDI' ? 'selected' : ''}>CDI</option>
+                <option value="CDD" ${emp.contract_type === 'CDD' ? 'selected' : ''}>CDD</option>
+                <option value="Stage" ${emp.contract_type === 'Stage' ? 'selected' : ''}>Stage</option>
+                <option value="Alternance" ${emp.contract_type === 'Alternance' ? 'selected' : ''}>Alternance</option>
+              </select>
+            </div>
+            <div class="team-row">
+              <div class="team-field">
+                <label>Heures/sem</label>
+                <input type="number" class="team-input" value="${emp.hours_per_week || 35}" onchange="updateEmployee(${empIndex}, 'hours_per_week', parseFloat(this.value))">
+              </div>
+              <div class="team-field">
+                <label>Brut mensuel</label>
+                <input type="number" class="team-input" value="${emp.gross_salary || ''}" placeholder="€" onchange="updateEmployee(${empIndex}, 'gross_salary', parseFloat(this.value))">
+              </div>
+            </div>
+            <div class="team-field team-field-highlight">
+              <label>Net convenu</label>
+              <input type="number" class="team-input" value="${emp.net_salary_reference || ''}" placeholder="€ (ce que tu lui dois)" onchange="updateEmployee(${empIndex}, 'net_salary_reference', parseFloat(this.value))">
+            </div>
+            <details class="team-details">
+              <summary>Plus d'infos</summary>
+              <div class="team-details-content">
+                <div class="team-row">
+                  <div class="team-field">
+                    <label>Date debut</label>
+                    <input type="date" class="team-input" value="${emp.start_date || ''}" onchange="updateEmployee(${empIndex}, 'start_date', this.value)">
+                  </div>
+                  <div class="team-field">
+                    <label>Naissance</label>
+                    <input type="date" class="team-input" value="${emp.birth_date || ''}" onchange="updateEmployee(${empIndex}, 'birth_date', this.value)">
+                  </div>
+                </div>
+                <div class="team-field">
+                  <label>N° Securite sociale</label>
+                  <input type="text" class="team-input" value="${emp.social_security_number || ''}" placeholder="1 XX XX XX XXX XXX XX" onchange="updateEmployee(${empIndex}, 'social_security_number', this.value)">
+                </div>
+                <div class="team-field">
+                  <label>Adresse</label>
+                  <input type="text" class="team-input" value="${emp.address || ''}" placeholder="Adresse complete" onchange="updateEmployee(${empIndex}, 'address', this.value)">
+                </div>
+                <div class="team-row">
+                  <div class="team-field">
+                    <label>Telephone</label>
+                    <input type="tel" class="team-input" value="${emp.phone || ''}" placeholder="06..." onchange="updateEmployee(${empIndex}, 'phone', this.value)">
+                  </div>
+                  <div class="team-field">
+                    <label>Email</label>
+                    <input type="email" class="team-input" value="${emp.email || ''}" placeholder="@" onchange="updateEmployee(${empIndex}, 'email', this.value)">
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      `;
+    }
+
+    async function handleTeamUpload(event, index) {
+      const files = Array.from(event.target.files);
+      if (!files.length) return;
+
+      const grid = document.getElementById(`team-grid-${index}`);
+      const analyzing = document.getElementById(`team-analyzing-${index}`);
+
+      grid.style.display = 'none';
+      analyzing.style.display = 'block';
+
+      let processed = 0;
+      for (const file of files) {
+        document.getElementById(`team-analyzing-text-${index}`).textContent = `Contrat ${processed + 1}/${files.length}...`;
+
+        try {
+          const base64 = await fileToBase64(file);
+          const extracted = await analyzeContractWithGemini(base64);
+
+          if (extracted && extracted.name) {
+            stepData.employees.push(extracted);
+          }
+        } catch (err) {
+          console.error('Erreur analyse contrat:', err);
+        }
+
+        processed++;
+      }
+
+      analyzing.style.display = 'none';
+      grid.style.display = 'grid';
+
+      // Reset input et re-render
+      document.getElementById(`team-file-input-${index}`).value = '';
+      renderTeamGrid(index);
+
+      if (processed > 0 && stepData.employees.length > 0) {
+        showToast(`${stepData.employees.length} employe(s) ajoute(s)`);
+      }
+    }
+
+    function updateEmployee(empIndex, field, value) {
+      if (stepData.employees && stepData.employees[empIndex]) {
+        stepData.employees[empIndex][field] = value;
+      }
+    }
+
+    function addEmptyEmployee(index) {
+      stepData.employees.push({
+        name: '',
+        role: '',
+        contract_type: '',
+        hours_per_week: 35,
+        gross_salary: null,
+        net_salary_reference: null
+      });
+      renderTeamGrid(index);
+    }
+
+    async function deleteEmployee(empIndex, stepIndex) {
+      if (stepData.employees && stepData.employees[empIndex]) {
+        // Si deja en DB, supprimer
+        const emp = stepData.employees[empIndex];
+        if (emp.id) {
+          await supabaseClient.from('employees').delete().eq('id', emp.id);
+        }
+        stepData.employees.splice(empIndex, 1);
+        renderTeamGrid(stepIndex);
+      }
+    }
+
+    async function analyzeContractWithGemini(base64) {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: `Analyse ce contrat de travail et extrais les informations au format JSON:
+{
+  "name": "Nom complet",
+  "birth_date": "YYYY-MM-DD",
+  "social_security_number": "numero secu",
+  "address": "adresse complete",
+  "nationality": "nationalite",
+  "role": "poste/fonction",
+  "contract_type": "CDI ou CDD ou Stage ou Alternance",
+  "start_date": "YYYY-MM-DD",
+  "hours_per_week": 35,
+  "monthly_hours": 151.67,
+  "gross_salary": 1800,
+  "work_schedule": "horaires si visible",
+  "phone": "telephone si visible",
+  "email": "email si visible"
+}
+Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON, sans texte.` },
+              { inlineData: { mimeType: 'image/jpeg', data: base64.split(',')[1] } }
+            ]
+          }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    }
+
     function renderStripeCheckout(step, index) {
       return `
         <div class="price-box">
@@ -709,6 +968,9 @@
           break;
         case 'team_validation':
           renderTeamStats(index);
+          break;
+        case 'team_setup':
+          initTeamSetup(index);
           break;
         case 'list_validation':
           renderListPreview(index);
@@ -1147,8 +1409,16 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
         role: data.role || null,
         contract_type: data.contract_type || null,
         hours_per_week: data.hours_per_week || 35,
+        monthly_hours: data.monthly_hours || (data.hours_per_week ? data.hours_per_week * 4.33 : 151.67),
         hourly_rate: data.hourly_rate || null,
+        gross_salary: data.gross_salary || null,
+        net_salary_reference: data.net_salary_reference || null,
         start_date: data.start_date || null,
+        birth_date: data.birth_date || null,
+        social_security_number: data.social_security_number || null,
+        address: data.address || null,
+        nationality: data.nationality || null,
+        work_schedule: data.work_schedule || null,
         work_days: ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'],
         phone: data.phone || null,
         email: data.email || null
@@ -1160,6 +1430,50 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
         return null;
       }
       return inserted;
+    }
+
+    async function saveTeamAndContinue() {
+      const employees = stepData.employees || [];
+
+      if (employees.length === 0) {
+        showToast('Ajoute au moins un employe', true);
+        return;
+      }
+
+      // Sauvegarder les employes qui n'ont pas encore d'ID
+      for (let i = 0; i < employees.length; i++) {
+        if (!employees[i].id) {
+          const saved = await saveEmployee(employees[i]);
+          if (saved) {
+            employees[i] = saved;
+          }
+        } else {
+          // Mettre a jour l'employe existant
+          const { error } = await supabaseClient
+            .from('employees')
+            .update({
+              name: employees[i].name,
+              role: employees[i].role,
+              contract_type: employees[i].contract_type,
+              hours_per_week: employees[i].hours_per_week,
+              monthly_hours: employees[i].monthly_hours || (employees[i].hours_per_week ? employees[i].hours_per_week * 4.33 : 151.67),
+              gross_salary: employees[i].gross_salary,
+              net_salary_reference: employees[i].net_salary_reference,
+              start_date: employees[i].start_date,
+              birth_date: employees[i].birth_date,
+              social_security_number: employees[i].social_security_number,
+              address: employees[i].address,
+              phone: employees[i].phone,
+              email: employees[i].email
+            })
+            .eq('id', employees[i].id);
+
+          if (error) console.error('Update employee error:', error);
+        }
+      }
+
+      showToast('Equipe sauvegardee !');
+      nextStep();
     }
 
     // ============================================
