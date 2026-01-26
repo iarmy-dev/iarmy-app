@@ -94,6 +94,7 @@
     let stripe = null;
     let elements = null;
     let paymentElement = null;
+    let hasTrial = true;
 
     function showError(message) {
       const errorEl = document.getElementById('payment-error');
@@ -152,6 +153,13 @@
           return;
         }
 
+        // Mettre à jour l'UI selon trial ou pas
+        hasTrial = data.hasTrial !== false;
+        if (!hasTrial) {
+          document.getElementById('trial-badge').style.display = 'none';
+          document.getElementById('btn-pay').textContent = 'S\'abonner maintenant';
+        }
+
         // Initialiser Stripe Elements avec thème sombre bleu
         stripe = Stripe(STRIPE_PK);
         elements = stripe.elements({
@@ -200,13 +208,15 @@
     async function confirmPayment() {
       const btn = document.getElementById('btn-pay');
       const errorEl = document.getElementById('payment-error');
+      const btnText = hasTrial ? 'Démarrer l\'essai gratuit' : 'S\'abonner maintenant';
 
       btn.disabled = true;
       btn.textContent = 'Activation en cours...';
       errorEl.style.display = 'none';
 
       try {
-        const { error } = await stripe.confirmSetup({
+        const confirmMethod = hasTrial ? 'confirmSetup' : 'confirmPayment';
+        const { error } = await stripe[confirmMethod]({
           elements,
           confirmParams: {
             return_url: window.location.origin + '/planning/?success=1',
@@ -216,12 +226,12 @@
         if (error) {
           showError(error.message);
           btn.disabled = false;
-          btn.textContent = 'Démarrer l\'essai gratuit';
+          btn.textContent = btnText;
         }
       } catch (err) {
         showError('Erreur: ' + err.message);
         btn.disabled = false;
-        btn.textContent = 'Démarrer l\'essai gratuit';
+        btn.textContent = btnText;
       }
     }
 
