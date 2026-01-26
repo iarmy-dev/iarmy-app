@@ -113,6 +113,50 @@
     .team-add-card:hover { border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.03); }
     .team-add-card.dragover { border-color: #FF6B35; background: rgba(255,107,53,0.1); transform: scale(1.02); }
 
+    /* Team Recap Animation */
+    .team-recap-header { text-align: center; margin-bottom: 32px; }
+    .team-avatars { display: flex; justify-content: center; gap: -8px; margin-bottom: 20px; }
+    .team-avatar-animated {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: white;
+      border: 3px solid #0a0a0a;
+      margin-left: -12px;
+      animation: avatarPop 0.5s ease-out backwards;
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+    .team-avatar-animated:first-child { margin-left: 0; }
+    @keyframes avatarPop {
+      0% { transform: scale(0) translateY(20px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .team-recap-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .team-recap-title span { background: linear-gradient(135deg, #FF6B35, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .team-recap-stats { display: flex; justify-content: center; gap: 24px; color: rgba(255,255,255,0.5); font-size: 14px; }
+    .team-recap-stats span { color: white; font-weight: 600; }
+
+    .payroll-preview { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; margin: 24px 0; }
+    .payroll-preview-header { padding: 16px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px; }
+    .payroll-preview-header-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,107,53,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .payroll-preview-header-text { font-weight: 600; font-size: 14px; }
+    .payroll-preview-header-text span { display: block; color: rgba(255,255,255,0.4); font-weight: 400; font-size: 12px; }
+    .payroll-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: center; }
+    .payroll-row:last-child { border-bottom: none; }
+    .payroll-row-name { font-weight: 500; display: flex; align-items: center; gap: 10px; }
+    .payroll-row-mini-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #FF6B35, #FF8B5E); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+    .payroll-row-hours { color: rgba(255,255,255,0.5); font-size: 13px; }
+    .payroll-row-status { font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+    .payroll-row-status.ok { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .payroll-row-status.warn { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .payroll-row-net { font-weight: 600; color: #4ade80; }
+
+    .value-points { margin: 24px 0; }
+    .value-point { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; }
+    .value-point-icon { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,107,53,0.15); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+    .value-point-text { font-size: 14px; color: rgba(255,255,255,0.7); }
+    .value-point-text strong { color: white; font-weight: 600; }
+
     .price-box { background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.05)); border: 1px solid rgba(255,107,53,0.25); border-radius: 20px; padding: 24px; text-align: center; margin: 24px 0; }
     .price-box .amount { font-size: 42px; font-weight: 800; color: #FF8B5E; }
     .price-box .period { color: rgba(255,255,255,0.5); font-size: 14px; }
@@ -254,7 +298,6 @@
         setup: {
           steps: [
             { id: "team_setup", type: "team_setup", title: "Ton equipe", description: "Ajoute les contrats de ton equipe" },
-            { id: "payment", type: "stripe_checkout", title: "Essai gratuit 7 jours" },
             { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
           ],
           onboarding_message: "Module Paie active !\n\n/equipe - Voir ton equipe\n/paie - Recap du mois\n\nOu envoie : _Ayham absent 2h_"
@@ -626,14 +669,79 @@
     // === TEAM SETUP (Upload + Review en 1 step) ===
     function renderTeamSetup(step, index) {
       return `
-        <div id="team-grid-${index}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
-        <div id="team-analyzing-${index}" style="display: none; text-align: center; padding: 40px 0;">
-          <div class="loading-spinner"></div>
-          <div style="font-weight: 600; margin: 16px 0 8px;">Analyse en cours...</div>
-          <div style="color: rgba(255,255,255,0.4); font-size: 14px;" id="team-analyzing-text-${index}">Extraction des infos</div>
+        <!-- Phase 1: Upload des contrats -->
+        <div id="team-upload-phase-${index}">
+          <div id="team-grid-${index}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+          <div id="team-analyzing-${index}" style="display: none; text-align: center; padding: 40px 0;">
+            <div class="loading-spinner"></div>
+            <div style="font-weight: 600; margin: 16px 0 8px;">Analyse en cours...</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 14px;" id="team-analyzing-text-${index}">Extraction des infos</div>
+          </div>
+          <div id="team-continue-${index}" style="display: none; margin-top: 24px;">
+            <button onclick="showTeamRecap(${index})" class="btn-glow" style="width: 100%;">Valider mon equipe</button>
+          </div>
         </div>
-        <div id="team-continue-${index}" style="display: none; margin-top: 24px;">
-          <button onclick="saveTeamAndContinue()" class="btn-glow" style="width: 100%;">Sauvegarder et continuer</button>
+
+        <!-- Phase 2: Recap equipe + Paiement -->
+        <div id="team-recap-phase-${index}" style="display: none;">
+          <div class="team-recap-header">
+            <div class="team-avatars" id="team-avatars-${index}"></div>
+            <div class="team-recap-title">Ton equipe est <span>prete</span> ✨</div>
+            <div class="team-recap-stats" id="team-stats-${index}"></div>
+          </div>
+
+          <div class="payroll-preview">
+            <div class="payroll-preview-header">
+              <div class="payroll-preview-header-icon">📋</div>
+              <div class="payroll-preview-header-text">
+                Apercu du recap mensuel
+                <span>Ce que tu recevras chaque mois</span>
+              </div>
+            </div>
+            <div id="payroll-preview-rows-${index}"></div>
+          </div>
+
+          <div class="value-points">
+            <div class="value-point">
+              <div class="value-point-icon">→</div>
+              <div class="value-point-text"><strong>Note les absences/retards</strong> via Telegram en 2 secondes</div>
+            </div>
+            <div class="value-point">
+              <div class="value-point-icon">→</div>
+              <div class="value-point-text"><strong>Fin de mois</strong> = recap auto avec heures & ajustements</div>
+            </div>
+            <div class="value-point">
+              <div class="value-point-icon">→</div>
+              <div class="value-point-text"><strong>Export 1-clic</strong> pour ton comptable</div>
+            </div>
+          </div>
+
+          <div class="price-box" style="margin-top: 32px;">
+            <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">${moduleConfig.trial_days} jours d'essai gratuit puis</div>
+            <div class="amount">${moduleConfig.price}€</div>
+            <div class="period">/mois</div>
+          </div>
+
+          <div id="tester-access-recap-${index}" style="display: none; text-align: center; margin-top: 24px;">
+            <div class="check-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">Acces testeur !</div>
+            <div style="color: #c084fc; font-size: 14px; margin-bottom: 24px;">🧪 Mode testeur active</div>
+            <button onclick="saveTeamAndContinue()" class="btn-glow">Continuer</button>
+          </div>
+          <div id="payment-section-recap-${index}">
+            <button onclick="startCheckoutFromRecap(${index})" class="btn-glow" id="btn-checkout-recap-${index}">
+              Demarrer l'essai gratuit
+            </button>
+            <p style="text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; margin-top: 16px;">
+              Sans engagement - Annulable a tout moment
+            </p>
+          </div>
+
+          <button onclick="backToTeamEdit(${index})" class="btn-secondary" style="margin-top: 12px;">
+            ← Modifier mon equipe
+          </button>
         </div>
       `;
     }
@@ -1496,6 +1604,144 @@ Si une info n'est pas visible, mets null. Reponds UNIQUEMENT avec le JSON.` },
         return null;
       }
       return inserted;
+    }
+
+    function showTeamRecap(index) {
+      const employees = stepData.employees || [];
+
+      if (employees.length === 0) {
+        showToast('Ajoute au moins un employe', true);
+        return;
+      }
+
+      // Hide upload phase, show recap phase
+      document.getElementById(`team-upload-phase-${index}`).style.display = 'none';
+      document.getElementById(`team-recap-phase-${index}`).style.display = 'block';
+
+      // Animate avatars
+      const avatarsHtml = employees.map((emp, i) => {
+        const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?';
+        return `<div class="team-avatar-animated" style="animation-delay: ${i * 0.1}s">${initials}</div>`;
+      }).join('');
+      document.getElementById(`team-avatars-${index}`).innerHTML = avatarsHtml;
+
+      // Calculate stats
+      const totalEmployees = employees.length;
+      const totalHours = employees.reduce((sum, e) => sum + (parseFloat(e.hours_per_week) || 0), 0);
+      const totalGross = employees.reduce((sum, e) => sum + (parseFloat(e.gross_salary) || 0), 0);
+
+      document.getElementById(`team-stats-${index}`).innerHTML = `
+        <span>${totalEmployees}</span> employe${totalEmployees > 1 ? 's' : ''} •
+        <span>${totalHours.toFixed(1)}</span>h/sem •
+        <span>${totalGross.toFixed(0)}€</span> brut
+      `;
+
+      // Generate payroll preview with real names
+      const previewHtml = employees.slice(0, 4).map((emp, i) => {
+        const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?';
+        const firstName = emp.name ? emp.name.split(' ')[0] : 'Employe';
+        const hours = emp.hours_per_week || 35;
+        const netRef = emp.net_salary_reference || emp.gross_salary * 0.78 || 0;
+
+        // Simulate some variation for preview
+        const variations = [
+          { status: 'ok', statusText: 'OK', adjustment: 0 },
+          { status: 'warn', statusText: '-2h abs', adjustment: -50 },
+          { status: 'ok', statusText: '+3h sup', adjustment: 80 },
+          { status: 'ok', statusText: 'OK', adjustment: 0 }
+        ];
+        const v = variations[i % variations.length];
+        const finalNet = (netRef + v.adjustment).toFixed(0);
+
+        return `
+          <div class="payroll-row">
+            <div class="payroll-row-name">
+              <div class="payroll-row-mini-avatar">${initials}</div>
+              ${firstName}
+            </div>
+            <div class="payroll-row-hours">${hours}h</div>
+            <div class="payroll-row-status ${v.status}">${v.statusText}</div>
+            <div class="payroll-row-net">${finalNet}€</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById(`payroll-preview-rows-${index}`).innerHTML = previewHtml;
+
+      // Check if tester
+      if (isTester) {
+        document.getElementById(`tester-access-recap-${index}`).style.display = 'block';
+        document.getElementById(`payment-section-recap-${index}`).style.display = 'none';
+      }
+    }
+
+    function backToTeamEdit(index) {
+      document.getElementById(`team-recap-phase-${index}`).style.display = 'none';
+      document.getElementById(`team-upload-phase-${index}`).style.display = 'block';
+    }
+
+    async function startCheckoutFromRecap(index) {
+      const btn = document.getElementById(`btn-checkout-recap-${index}`);
+      btn.disabled = true;
+      btn.textContent = 'Sauvegarde...';
+
+      // First save the team
+      const employees = stepData.employees || [];
+      for (let i = 0; i < employees.length; i++) {
+        if (!employees[i].id) {
+          const saved = await saveEmployee(employees[i]);
+          if (saved) {
+            employees[i] = saved;
+          }
+        } else {
+          // Update existing employee
+          await supabaseClient
+            .from('employees')
+            .update({
+              name: employees[i].name,
+              role: employees[i].role,
+              contract_type: employees[i].contract_type,
+              hours_per_week: employees[i].hours_per_week,
+              monthly_hours: employees[i].monthly_hours || (employees[i].hours_per_week ? employees[i].hours_per_week * 4.33 : 151.67),
+              gross_salary: employees[i].gross_salary,
+              net_salary_reference: employees[i].net_salary_reference,
+              start_date: employees[i].start_date,
+              birth_date: employees[i].birth_date,
+              social_security_number: employees[i].social_security_number,
+              address: employees[i].address,
+              phone: employees[i].phone,
+              email: employees[i].email
+            })
+            .eq('id', employees[i].id);
+        }
+      }
+
+      // Then start Stripe checkout
+      btn.textContent = 'Redirection...';
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token
+          },
+          body: JSON.stringify({
+            module: currentModule,
+            successUrl: window.location.origin + `/setup/?module=${currentModule}&success=1`,
+            cancelUrl: window.location.origin + `/setup/?module=${currentModule}&canceled=1`
+          })
+        });
+
+        const { url, error } = await response.json();
+        if (error) throw new Error(error);
+        if (url) window.location.href = url;
+      } catch (err) {
+        showToast('Erreur: ' + err.message, true);
+        btn.disabled = false;
+        btn.textContent = 'Demarrer l\'essai gratuit';
+      }
     }
 
     async function saveTeamAndContinue() {
