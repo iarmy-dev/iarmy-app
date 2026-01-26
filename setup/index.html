@@ -1589,9 +1589,9 @@
           }
         }
 
-        // Small delay between photos to avoid rate limiting
+        // Longer delay between photos to avoid rate limiting (Gemini limits)
         if (i < menuPhotos.length - 1) {
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 3000)); // 3s between photos
         }
       }
 
