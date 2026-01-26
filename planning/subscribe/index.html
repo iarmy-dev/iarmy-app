@@ -11,55 +11,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; color: white; min-height: 100vh; overflow-x: hidden; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; }
 
-    /* Orbs */
-    .orb { position: fixed; border-radius: 50%; filter: blur(100px); animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
-    .orb-1 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%); top: -150px; right: -100px; }
-    .orb-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); bottom: -150px; left: -100px; opacity: 0.08; animation-delay: -7s; }
-    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+    .container { max-width: 500px; margin: 0 auto; padding: 20px; }
 
     /* Header */
-    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(10,10,10,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .header-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; }
-    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; }
+    .header-text h1 { font-size: 18px; font-weight: 600; }
+    .header-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
 
-    /* Container */
-    .container { max-width: 480px; margin: 0 auto; padding: 100px 20px 40px; position: relative; z-index: 10; }
-
-    /* Visual Section */
-    .visual-section { text-align: center; margin-bottom: 28px; }
-
-    /* Planning Animation - Calendar */
-    .planning-visual { width: 280px; margin: 0 auto 24px; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
-    .planning-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(59, 130, 246, 0.15); border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .planning-month { font-size: 14px; font-weight: 600; color: #60a5fa; }
-    .planning-nav { display: flex; gap: 8px; }
-    .planning-nav span { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
-    .planning-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 12px; }
-    .planning-day-header { font-size: 9px; color: rgba(255,255,255,0.4); text-align: center; padding: 4px; font-weight: 600; }
-    .planning-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 6px; opacity: 0; animation: dayFadeIn 0.3s ease forwards; animation-delay: var(--delay, 0s); }
-    .planning-day.empty { opacity: 1; animation: none; }
-    .planning-day.normal { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.6); }
-    .planning-day.shift { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 600; }
-    .planning-day.today { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white; font-weight: 700; }
-    @keyframes dayFadeIn {
-      0% { opacity: 0; transform: scale(0.8); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    .title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { color: rgba(255,255,255,0.5); font-size: 14px; }
-
-    /* Price */
-    .price-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 16px 0 24px; }
-    .price { font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .period { font-size: 16px; color: rgba(255,255,255,0.5); }
-
-    /* Stripe Embed */
-    .checkout-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; min-height: 450px; }
-    #checkout { width: 100%; min-height: 450px; }
+    /* Checkout */
+    .checkout-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; min-height: 500px; }
+    #checkout { width: 100%; min-height: 500px; }
 
     /* Loading */
     .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; gap: 16px; }
@@ -71,88 +35,18 @@
     .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-top: 16px; }
 
     /* Features */
-    .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px; }
+    .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; }
     .feature { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
     .feature-icon { color: #60a5fa; }
-
-    @media (max-width: 480px) {
-      .container { padding: 90px 16px 32px; }
-      .title { font-size: 20px; }
-      .price { font-size: 36px; }
-      .planning-visual { width: 100%; }
-    }
   </style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo-i">i</div>
-    </div>
-  </header>
-
   <div class="container">
-    <div class="visual-section">
-      <!-- Planning Animation -->
-      <div class="planning-visual">
-        <div class="planning-header">
-          <span class="planning-month">Janvier 2025</span>
-          <div class="planning-nav">
-            <span>‹</span>
-            <span>›</span>
-          </div>
-        </div>
-        <div class="planning-days">
-          <div class="planning-day-header">L</div>
-          <div class="planning-day-header">M</div>
-          <div class="planning-day-header">M</div>
-          <div class="planning-day-header">J</div>
-          <div class="planning-day-header">V</div>
-          <div class="planning-day-header">S</div>
-          <div class="planning-day-header">D</div>
-
-          <div class="planning-day empty"></div>
-          <div class="planning-day empty"></div>
-          <div class="planning-day normal" style="--delay: 0.05s;">1</div>
-          <div class="planning-day shift" style="--delay: 0.1s;">2</div>
-          <div class="planning-day shift" style="--delay: 0.15s;">3</div>
-          <div class="planning-day normal" style="--delay: 0.2s;">4</div>
-          <div class="planning-day normal" style="--delay: 0.25s;">5</div>
-
-          <div class="planning-day shift" style="--delay: 0.3s;">6</div>
-          <div class="planning-day normal" style="--delay: 0.35s;">7</div>
-          <div class="planning-day normal" style="--delay: 0.4s;">8</div>
-          <div class="planning-day shift" style="--delay: 0.45s;">9</div>
-          <div class="planning-day shift" style="--delay: 0.5s;">10</div>
-          <div class="planning-day normal" style="--delay: 0.55s;">11</div>
-          <div class="planning-day normal" style="--delay: 0.6s;">12</div>
-
-          <div class="planning-day normal" style="--delay: 0.65s;">13</div>
-          <div class="planning-day shift" style="--delay: 0.7s;">14</div>
-          <div class="planning-day normal" style="--delay: 0.75s;">15</div>
-          <div class="planning-day normal" style="--delay: 0.8s;">16</div>
-          <div class="planning-day shift" style="--delay: 0.85s;">17</div>
-          <div class="planning-day normal" style="--delay: 0.9s;">18</div>
-          <div class="planning-day normal" style="--delay: 0.95s;">19</div>
-
-          <div class="planning-day shift" style="--delay: 1s;">20</div>
-          <div class="planning-day normal" style="--delay: 1.05s;">21</div>
-          <div class="planning-day normal" style="--delay: 1.1s;">22</div>
-          <div class="planning-day shift" style="--delay: 1.15s;">23</div>
-          <div class="planning-day shift" style="--delay: 1.2s;">24</div>
-          <div class="planning-day today" style="--delay: 1.25s;">25</div>
-          <div class="planning-day normal" style="--delay: 1.3s;">26</div>
-        </div>
-      </div>
-
-      <h1 class="title">Planning</h1>
-      <p class="subtitle">Continue avec ton abonnement</p>
-
-      <div class="price-row">
-        <span class="price">39€</span>
-        <span class="period">/mois</span>
+    <div class="header">
+      <div class="logo-i">i</div>
+      <div class="header-text">
+        <h1>Planning</h1>
+        <p>Finalise ton abonnement</p>
       </div>
     </div>
 
@@ -160,7 +54,7 @@
       <div id="checkout">
         <div class="loading">
           <div class="spinner"></div>
-          <div class="loading-text">Chargement du paiement...</div>
+          <div class="loading-text">Chargement...</div>
         </div>
       </div>
     </div>
@@ -178,9 +72,6 @@
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
     const STRIPE_PK = 'pk_live_51SngyFQnTQdmBOky5RHXtWREIgfaVu1Pd9NsZH5Euf31wEtGRfPi6URQeQjcMIWUc9NssFv8HM6fJOnPVrwUABxH00YQgcVJFr';
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const stripe = Stripe(STRIPE_PK);
     const moduleName = 'planning';
 
     function showError(message) {
@@ -189,51 +80,50 @@
     }
 
     async function init() {
-      // Essayer d'abord via Telegram WebApp initData
-      const tg = window.Telegram?.WebApp;
-      const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
-
-      // Fallback sur session Supabase
-      const { data: { session } } = await supabase.auth.getSession();
-
-      // On a besoin soit d'initData soit d'une session
-      if (!initData && !session) {
-        window.location.href = 'https://iarmy.fr?redirect=/planning/subscribe/';
-        return;
-      }
-
-      const authMode = initData ? 'Telegram' : 'Supabase';
-      console.log('[SUBSCRIBE] Auth mode:', authMode);
-
-      // Vérifications locales seulement si on a une session Supabase
-      if (session?.user?.id) {
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('status, is_tester')
-          .eq('user_id', session.user.id)
-          .eq('module_name', moduleName)
-          .maybeSingle();
-
-        if (sub?.status === 'active' && !sub?.is_tester) {
-          window.location.href = '/planning/';
-          return;
-        }
-
-        const { data: config } = await supabase
-          .from('module_configs')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .eq('module_name', 'planning')
-          .maybeSingle();
-
-        if (!config) {
-          window.location.href = '/planning/setup/';
-          return;
-        }
-      }
-      // Pour Telegram, on skip les checks locaux - le backend vérifiera
-
       try {
+        if (!window.supabase || typeof Stripe === 'undefined') {
+          showError('Erreur de chargement. Recharge la page.');
+          return;
+        }
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const stripe = Stripe(STRIPE_PK);
+
+        const tg = window.Telegram?.WebApp;
+        const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!initData && !session) {
+          showError('Session expirée. Retourne sur Telegram.');
+          return;
+        }
+
+        if (session?.user?.id) {
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('status, is_tester')
+            .eq('user_id', session.user.id)
+            .eq('module_name', moduleName)
+            .maybeSingle();
+
+          if (sub?.status === 'active' && !sub?.is_tester) {
+            window.location.href = '/planning/';
+            return;
+          }
+
+          const { data: config } = await supabase
+            .from('module_configs')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('module_name', 'planning')
+            .maybeSingle();
+
+          if (!config) {
+            window.location.href = '/planning/setup/';
+            return;
+          }
+        }
+
         const headers = { 'Content-Type': 'application/json' };
         if (session?.access_token) {
           headers['Authorization'] = 'Bearer ' + session.access_token;
@@ -251,7 +141,6 @@
         });
 
         const data = await response.json();
-        console.log('Checkout response:', data);
 
         if (data.error) {
           showError(data.error);
@@ -259,7 +148,7 @@
         }
 
         if (!data.clientSecret) {
-          showError('Erreur: pas de clientSecret recu');
+          showError('Erreur: pas de réponse du serveur');
           return;
         }
 

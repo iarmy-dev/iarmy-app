@@ -11,51 +11,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; color: white; min-height: 100vh; overflow-x: hidden; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; }
 
-    /* Orbs */
-    .orb { position: fixed; border-radius: 50%; filter: blur(100px); animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
-    .orb-1 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%); top: -150px; right: -100px; }
-    .orb-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); bottom: -150px; left: -100px; opacity: 0.08; animation-delay: -7s; }
-    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+    .container { max-width: 500px; margin: 0 auto; padding: 20px; }
 
     /* Header */
-    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(10,10,10,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .header-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; }
-    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; }
+    .header-text h1 { font-size: 18px; font-weight: 600; }
+    .header-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
 
-    /* Container */
-    .container { max-width: 480px; margin: 0 auto; padding: 100px 20px 40px; position: relative; z-index: 10; }
-
-    /* Visual Section */
-    .visual-section { text-align: center; margin-bottom: 28px; }
-
-    /* Stock Animation - Bottles/Cocktails */
-    .stock-visual { width: 280px; margin: 0 auto 24px; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); padding: 20px; }
-    .stock-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .stock-item { display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0; animation: stockFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: var(--delay, 0s); }
-    .stock-icon { font-size: 28px; }
-    .stock-qty { font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
-    .stock-qty.good { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .stock-qty.low { background: rgba(245,158,11,0.15); color: #fbbf24; }
-    .stock-qty.out { background: rgba(239,68,68,0.15); color: #f87171; }
-    @keyframes stockFadeIn {
-      0% { opacity: 0; transform: translateY(-8px) scale(0.9); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { color: rgba(255,255,255,0.5); font-size: 14px; }
-
-    /* Price */
-    .price-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 16px 0 24px; }
-    .price { font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #a855f7, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .period { font-size: 16px; color: rgba(255,255,255,0.5); }
-
-    /* Stripe Embed */
-    .checkout-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; min-height: 450px; }
-    #checkout { width: 100%; min-height: 450px; }
+    /* Checkout */
+    .checkout-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; min-height: 500px; }
+    #checkout { width: 100%; min-height: 500px; }
 
     /* Loading */
     .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; gap: 16px; }
@@ -67,74 +35,18 @@
     .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-top: 16px; }
 
     /* Features */
-    .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px; }
+    .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; }
     .feature { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
     .feature-icon { color: #c084fc; }
-
-    @media (max-width: 480px) {
-      .container { padding: 90px 16px 32px; }
-      .title { font-size: 20px; }
-      .price { font-size: 36px; }
-      .stock-visual { width: 100%; }
-    }
   </style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo-i">i</div>
-    </div>
-  </header>
-
   <div class="container">
-    <div class="visual-section">
-      <!-- Stock Animation -->
-      <div class="stock-visual">
-        <div class="stock-grid">
-          <div class="stock-item" style="--delay: 0.1s;">
-            <span class="stock-icon">🍸</span>
-            <span class="stock-qty good">12</span>
-          </div>
-          <div class="stock-item" style="--delay: 0.2s;">
-            <span class="stock-icon">🥃</span>
-            <span class="stock-qty good">8</span>
-          </div>
-          <div class="stock-item" style="--delay: 0.3s;">
-            <span class="stock-icon">🍺</span>
-            <span class="stock-qty low">3</span>
-          </div>
-          <div class="stock-item" style="--delay: 0.4s;">
-            <span class="stock-icon">🍷</span>
-            <span class="stock-qty out">0</span>
-          </div>
-          <div class="stock-item" style="--delay: 0.5s;">
-            <span class="stock-icon">🧊</span>
-            <span class="stock-qty good">24</span>
-          </div>
-          <div class="stock-item" style="--delay: 0.6s;">
-            <span class="stock-icon">🍋</span>
-            <span class="stock-qty good">15</span>
-          </div>
-          <div class="stock-item" style="--delay: 0.7s;">
-            <span class="stock-icon">🫒</span>
-            <span class="stock-qty low">4</span>
-          </div>
-          <div class="stock-item" style="--delay: 0.8s;">
-            <span class="stock-icon">🥤</span>
-            <span class="stock-qty good">20</span>
-          </div>
-        </div>
-      </div>
-
-      <h1 class="title">Stock</h1>
-      <p class="subtitle">Continue avec ton abonnement</p>
-
-      <div class="price-row">
-        <span class="price">29€</span>
-        <span class="period">/mois</span>
+    <div class="header">
+      <div class="logo-i">i</div>
+      <div class="header-text">
+        <h1>Stock</h1>
+        <p>Finalise ton abonnement</p>
       </div>
     </div>
 
@@ -142,12 +54,11 @@
       <div id="checkout">
         <div class="loading">
           <div class="spinner"></div>
-          <div class="loading-text" id="status">Chargement...</div>
+          <div class="loading-text">Chargement...</div>
         </div>
       </div>
     </div>
     <div id="error-container"></div>
-    <script>document.getElementById('status').textContent='Page OK, scripts...';</script>
 
     <div class="features">
       <div class="feature"><span class="feature-icon">✓</span> Scan tickets Z</div>
@@ -168,54 +79,25 @@
       document.getElementById('error-container').innerHTML = `<div class="error-message">${message}</div>`;
     }
 
-    function showDebug(text) {
-      const el = document.getElementById('status');
-      if (el) el.textContent = text;
-      console.log('[DEBUG]', text);
-    }
-
-    // Check dependencies
-    showDebug('Checking deps...');
-    if (!window.supabase) {
-      showError('Supabase non chargé. Recharge la page.');
-      throw new Error('Supabase not loaded');
-    }
-    if (typeof Stripe === 'undefined') {
-      showError('Stripe non chargé. Recharge la page.');
-      throw new Error('Stripe not loaded');
-    }
-
-    showDebug('Creating clients...');
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const stripe = Stripe(STRIPE_PK);
-    showDebug('Clients OK');
-
     async function init() {
       try {
-        showDebug('Init...');
-
-        // Essayer d'abord via Telegram WebApp initData
-        const tg = window.Telegram?.WebApp;
-        showDebug('tg=' + !!tg);
-
-        const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
-        showDebug('initData len=' + (initData?.length || 0));
-
-        // Fallback sur session Supabase
-        showDebug('Getting session...');
-        const { data: { session } } = await supabase.auth.getSession();
-        showDebug('session=' + !!session);
-
-        // On a besoin soit d'initData soit d'une session
-        if (!initData && !session) {
-          showError('Pas de session. tg=' + !!tg + ', initData=' + !!initData + ', session=' + !!session);
+        if (!window.supabase || typeof Stripe === 'undefined') {
+          showError('Erreur de chargement. Recharge la page.');
           return;
         }
 
-        const authMode = initData ? 'Telegram' : 'Supabase';
-        console.log('[SUBSCRIBE] Auth mode:', authMode);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const stripe = Stripe(STRIPE_PK);
 
-        // Vérifications locales seulement si on a une session Supabase
+        const tg = window.Telegram?.WebApp;
+        const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!initData && !session) {
+          showError('Session expirée. Retourne sur Telegram.');
+          return;
+        }
+
         if (session?.user?.id) {
           const { data: sub } = await supabase
             .from('subscriptions')
@@ -239,14 +121,11 @@
             return;
           }
         }
-        // Pour Telegram, on skip les checks locaux - le backend vérifiera
 
         const headers = { 'Content-Type': 'application/json' };
         if (session?.access_token) {
           headers['Authorization'] = 'Bearer ' + session.access_token;
         }
-
-        showDebug('Calling checkout...');
 
         const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
           method: 'POST',
@@ -259,9 +138,7 @@
           })
         });
 
-        showDebug('Response: ' + response.status);
         const data = await response.json();
-        showDebug('Got data: ' + (data.error || 'OK'));
 
         if (data.error) {
           showError(data.error);
@@ -269,7 +146,7 @@
         }
 
         if (!data.clientSecret) {
-          showError('Erreur: pas de clientSecret recu');
+          showError('Erreur: pas de réponse du serveur');
           return;
         }
 
@@ -282,11 +159,11 @@
 
       } catch (err) {
         console.error('Checkout error:', err);
-        showError('Erreur checkout: ' + err.message);
+        showError('Erreur: ' + err.message);
       }
     }
 
-    init().catch(e => showError('Erreur: ' + e.message));
+    init();
   </script>
 </body>
 </html>
