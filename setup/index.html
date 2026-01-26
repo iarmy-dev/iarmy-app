@@ -69,6 +69,9 @@
     .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px 32px; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
     .btn-secondary:hover { background: rgba(255,255,255,0.1); }
 
+    .btn-upload-option { background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); border-radius: 12px; padding: 12px 20px; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .btn-upload-option:hover { background: rgba(255,107,53,0.2); border-color: rgba(255,107,53,0.5); transform: translateY(-1px); }
+
     .btn-telegram { background: linear-gradient(135deg, #0088cc, #00aaff); border: none; border-radius: 14px; padding: 16px 32px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s ease; width: 100%; font-size: 15px; }
     .btn-telegram:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 136, 204, 0.5); }
 
@@ -758,24 +761,34 @@
              ondrop="handleMenuDrop(event, ${index})"
              ondragover="handleMenuDragOver(event, ${index})"
              ondragleave="handleMenuDragLeave(event, ${index})">
-          <input type="file" id="menu-file-${index}" accept="image/*" multiple style="display: none;" onchange="handleMenuFiles(event, ${index})">
+          <input type="file" id="menu-file-${index}" accept="image/*,.pdf" multiple style="display: none;" onchange="handleMenuFiles(event, ${index})">
+          <input type="file" id="menu-camera-${index}" accept="image/*" capture="environment" style="display: none;" onchange="handleMenuFiles(event, ${index})">
 
-          <div id="menu-upload-zone-${index}" class="upload-zone upload-zone-multi"
-               onclick="document.getElementById('menu-file-${index}').click()">
+          <div id="menu-upload-zone-${index}" class="upload-zone upload-zone-multi">
             <div style="font-size: 48px; margin-bottom: 16px;">📸</div>
-            <div style="font-weight: 600; margin-bottom: 8px;">Glisse tes photos ici</div>
-            <div style="color: rgba(255,255,255,0.4); font-size: 14px;">ou clique pour choisir (plusieurs photos OK)</div>
+            <div style="font-weight: 600; margin-bottom: 12px;">Ta carte / menu</div>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+              <button onclick="document.getElementById('menu-camera-${index}').click(); event.stopPropagation();" class="btn-upload-option">
+                <span style="font-size: 20px;">📷</span> Prendre photo
+              </button>
+              <button onclick="document.getElementById('menu-file-${index}').click(); event.stopPropagation();" class="btn-upload-option">
+                <span style="font-size: 20px;">📁</span> Fichiers / PDF
+              </button>
+            </div>
+            <div style="color: rgba(255,255,255,0.3); font-size: 13px; margin-top: 12px;">ou glisse tes fichiers ici</div>
           </div>
 
           <div id="menu-photos-preview-${index}" style="display: none;">
             <div id="menu-photos-grid-${index}" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;"></div>
-            <div class="upload-zone" style="padding: 20px; min-height: auto; margin-bottom: 16px;" onclick="document.getElementById('menu-file-${index}').click()">
-              <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.5);">
-                <span style="font-size: 20px;">+</span>
-                <span>Glisse ou clique pour ajouter</span>
-              </div>
+            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+              <button onclick="document.getElementById('menu-camera-${index}').click()" class="btn-upload-option" style="flex: 1;">
+                <span>📷</span> Photo
+              </button>
+              <button onclick="document.getElementById('menu-file-${index}').click()" class="btn-upload-option" style="flex: 1;">
+                <span>📁</span> Fichier
+              </button>
             </div>
-            <button onclick="analyzeMenuPhotos(${index})" class="btn-glow" id="btn-analyze-menu-${index}">Analyser les photos</button>
+            <button onclick="analyzeMenuPhotos(${index})" class="btn-glow" id="btn-analyze-menu-${index}">Analyser</button>
           </div>
         </div>
         <div id="menu-analyzing-${index}" style="display: none; text-align: center; padding: 40px 0;">
@@ -1523,9 +1536,9 @@
 
     async function addMenuPhotos(files, index) {
       for (const file of files) {
-        if (file.type.startsWith('image/')) {
+        if (file.type.startsWith('image/') || file.type === 'application/pdf') {
           const base64 = await fileToBase64(file);
-          menuPhotos.push({ file, base64, name: file.name });
+          menuPhotos.push({ file, base64, name: file.name, mimeType: file.type });
         }
       }
 
@@ -1538,12 +1551,17 @@
 
     function renderMenuPhotosGrid(index) {
       const grid = document.getElementById(`menu-photos-grid-${index}`);
-      grid.innerHTML = menuPhotos.map((photo, i) => `
+      grid.innerHTML = menuPhotos.map((photo, i) => {
+        const isPdf = photo.mimeType === 'application/pdf';
+        const preview = isPdf
+          ? `<div style="width: 100%; height: 100%; background: rgba(255,107,53,0.2); border-radius: 12px; border: 2px solid rgba(255,107,53,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;"><span style="font-size: 28px;">📄</span><span style="font-size: 10px; color: rgba(255,255,255,0.6); max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${photo.name}</span></div>`
+          : `<img src="${photo.base64}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);">`;
+        return `
         <div style="position: relative; width: 100px; height: 100px;">
-          <img src="${photo.base64}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);">
+          ${preview}
           <button onclick="removeMenuPhoto(${i}, ${index})" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: #ef4444; border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 14px;">×</button>
         </div>
-      `).join('');
+      `}).join('');
     }
 
     function removeMenuPhoto(photoIndex, stepIndex) {
@@ -1564,8 +1582,9 @@
       document.getElementById(`menu-analyzing-text-${index}`).textContent = `Analyse de ${menuPhotos.length} photo${menuPhotos.length > 1 ? 's' : ''}...`;
 
       try {
-        // Send ALL photos in a single request (avoids rate limiting)
+        // Send ALL photos/PDFs in a single request (avoids rate limiting)
         const images = menuPhotos.map(p => p.base64.split(',')[1]);
+        const mimeTypes = menuPhotos.map(p => p.mimeType || 'image/jpeg');
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-menu`, {
           method: 'POST',
@@ -1576,6 +1595,7 @@
           },
           body: JSON.stringify({
             images: images,
+            mimeTypes: mimeTypes,
             type: 'menu_complet'
           })
         });
