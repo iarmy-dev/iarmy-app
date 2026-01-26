@@ -320,7 +320,11 @@
       // Check auth
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        window.location.href = `https://iarmy.fr?redirect=/setup/?module=${currentModule}`;
+        // Pas de session - lancer OAuth directement
+        await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.href }
+        });
         return;
       }
       currentUser = session.user;
