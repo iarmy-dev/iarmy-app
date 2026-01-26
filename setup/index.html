@@ -1561,57 +1561,61 @@
 
       document.getElementById(`menu-photos-preview-${index}`).style.display = 'none';
       document.getElementById(`menu-analyzing-${index}`).style.display = 'block';
+      document.getElementById(`menu-analyzing-text-${index}`).textContent = `Analyse de ${menuPhotos.length} photo${menuPhotos.length > 1 ? 's' : ''}...`;
 
-      const allItems = [];
-      let hasError = false;
+      try {
+        // Send ALL photos in a single request (avoids rate limiting)
+        const images = menuPhotos.map(p => p.base64.split(',')[1]);
 
-      for (let i = 0; i < menuPhotos.length; i++) {
-        document.getElementById(`menu-analyzing-text-${index}`).textContent = `Photo ${i + 1}/${menuPhotos.length}...`;
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-menu`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            images: images,
+            type: 'menu_complet'
+          })
+        });
 
-        // Retry logic for rate limiting
-        let retries = 3;
-        let success = false;
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
 
-        while (retries > 0 && !success) {
-          try {
-            const items = await analyzeWithGemini(menuPhotos[i].base64, 'menu_complet');
-            allItems.push(...items);
-            success = true;
-          } catch (err) {
-            console.error('Error analyzing photo:', err);
-            retries--;
-            if (retries > 0) {
-              document.getElementById(`menu-analyzing-text-${index}`).textContent = `Photo ${i + 1}/${menuPhotos.length}... (retry)`;
-              await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
-            } else {
-              hasError = true;
-            }
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        const allItems = data.result || [];
+
+        // Deduplicate by name
+        const uniqueItems = allItems.reduce((acc, item) => {
+          const existing = acc.find(i => i.name.toLowerCase() === item.name.toLowerCase());
+          if (!existing) {
+            acc.push(item);
           }
+          return acc;
+        }, []);
+
+        if (uniqueItems.length === 0) {
+          showToast('Aucun produit detecte. Verifie les photos.', true);
+          resetMenuUpload(index);
+          return;
         }
 
-        // Longer delay between photos to avoid rate limiting (Gemini limits)
-        if (i < menuPhotos.length - 1) {
-          await new Promise(r => setTimeout(r, 3000)); // 3s between photos
-        }
-      }
+        stepData.extractedItems = uniqueItems;
+        showMenuResults(index, uniqueItems);
 
-      // Deduplicate by name
-      const uniqueItems = allItems.reduce((acc, item) => {
-        const existing = acc.find(i => i.name.toLowerCase() === item.name.toLowerCase());
-        if (!existing) {
-          acc.push(item);
-        }
-        return acc;
-      }, []);
-
-      if (uniqueItems.length === 0 && hasError) {
-        showToast('Erreur d\'analyse. Attends quelques secondes et reessaie.', true);
+      } catch (err) {
+        console.error('Error analyzing photos:', err);
+        showToast('Erreur d\'analyse. Reessaie.', true);
         resetMenuUpload(index);
         return;
       }
-
-      stepData.extractedItems = uniqueItems;
-      showMenuResults(index, uniqueItems);
     }
 
     function showMenuResults(index, items) {
