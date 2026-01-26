@@ -8,80 +8,37 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; color: white; min-height: 100vh; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; padding: 16px; }
 
-    .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+    .container { max-width: 500px; margin: 0 auto; }
 
-    /* Header */
-    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    .logo-i { width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
-    .header-text h1 { font-size: 18px; font-weight: 600; }
-    .header-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
+    #payment-element { margin-bottom: 20px; }
 
-    /* Price card */
-    .price-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: center; }
-    .price { font-size: 36px; font-weight: 800; background: linear-gradient(135deg, #0f9d58, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .price-period { color: rgba(255,255,255,0.5); font-size: 14px; }
-    .trial-badge { display: inline-block; background: rgba(15,157,88,0.15); color: #4ade80; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; margin-top: 12px; }
-
-    /* Payment form */
-    .payment-container { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; }
-    #payment-element { margin-bottom: 16px; }
     .btn-pay { width: 100%; padding: 16px; background: linear-gradient(135deg, #0f9d58, #4ade80); border: none; border-radius: 12px; color: white; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; }
     .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(15,157,88,0.4); }
     .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    /* Loading */
     .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; gap: 16px; }
     .spinner { width: 32px; height: 32px; border: 2px solid rgba(15,157,88,0.2); border-top-color: #0f9d58; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { color: rgba(255,255,255,0.5); font-size: 14px; }
 
-    /* Error */
     .error-message { padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; color: #f87171; font-size: 14px; text-align: center; margin-bottom: 16px; }
-
-    /* Features */
-    .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; }
-    .feature { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
-    .feature-icon { color: #4ade80; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <div class="logo-i">i</div>
-      <div class="header-text">
-        <h1>Compta</h1>
-        <p>Finalise ton abonnement</p>
-      </div>
+    <div id="payment-loading" class="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Chargement...</div>
     </div>
-
-    <div class="price-card">
-      <div class="price">39€<span class="price-period">/mois</span></div>
-      <div class="trial-badge" id="trial-badge">7 jours d'essai gratuit</div>
-    </div>
-
-    <div class="payment-container">
-      <div id="payment-loading" class="loading">
-        <div class="spinner"></div>
-        <div class="loading-text">Chargement...</div>
-      </div>
-      <div id="payment-form" style="display: none;">
-        <div id="payment-error" class="error-message" style="display: none;"></div>
-        <div id="payment-element"></div>
-        <button id="btn-pay" class="btn-pay" onclick="confirmPayment()">Démarrer l'essai gratuit</button>
-      </div>
-    </div>
-
-    <div class="features">
-      <div class="feature"><span class="feature-icon">✓</span> Saisie vocale</div>
-      <div class="feature"><span class="feature-icon">✓</span> Export Sheets</div>
-      <div class="feature"><span class="feature-icon">✓</span> IA</div>
-      <div class="feature"><span class="feature-icon">✓</span> Annulation facile</div>
+    <div id="payment-form" style="display: none;">
+      <div id="payment-error" class="error-message" style="display: none;"></div>
+      <div id="payment-element"></div>
+      <button id="btn-pay" class="btn-pay">Démarrer l'essai gratuit</button>
     </div>
   </div>
 
@@ -93,7 +50,6 @@
 
     let stripe = null;
     let elements = null;
-    let paymentElement = null;
     let hasTrial = true;
 
     function showError(message) {
@@ -106,6 +62,8 @@
       try {
         if (!window.supabase || typeof Stripe === 'undefined') {
           showError('Erreur de chargement. Recharge la page.');
+          document.getElementById('payment-loading').style.display = 'none';
+          document.getElementById('payment-form').style.display = 'block';
           return;
         }
 
@@ -122,7 +80,6 @@
           return;
         }
 
-        // Appeler create-subscription
         const headers = { 'Content-Type': 'application/json' };
         if (session?.access_token) {
           headers['Authorization'] = 'Bearer ' + session.access_token;
@@ -153,14 +110,10 @@
           return;
         }
 
-        // Mettre à jour l'UI selon trial ou pas
         hasTrial = data.hasTrial !== false;
-        if (!hasTrial) {
-          document.getElementById('trial-badge').style.display = 'none';
-          document.getElementById('btn-pay').textContent = 'S\'abonner maintenant';
-        }
+        const btn = document.getElementById('btn-pay');
+        btn.textContent = hasTrial ? 'Démarrer l\'essai gratuit' : 'S\'abonner - 39€/mois';
 
-        // Initialiser Stripe Elements avec thème sombre
         stripe = Stripe(STRIPE_PK);
         elements = stripe.elements({
           clientSecret: data.clientSecret,
@@ -172,8 +125,7 @@
               colorText: '#ffffff',
               colorDanger: '#f87171',
               fontFamily: 'Inter, sans-serif',
-              borderRadius: '12px',
-              spacingUnit: '4px'
+              borderRadius: '12px'
             },
             rules: {
               '.Input': {
@@ -191,11 +143,16 @@
           }
         });
 
-        paymentElement = elements.create('payment');
+        const paymentElement = elements.create('payment');
         paymentElement.mount('#payment-element');
 
-        document.getElementById('payment-loading').style.display = 'none';
-        document.getElementById('payment-form').style.display = 'block';
+        // Attendre que l'élément soit prêt
+        paymentElement.on('ready', () => {
+          document.getElementById('payment-loading').style.display = 'none';
+          document.getElementById('payment-form').style.display = 'block';
+        });
+
+        btn.onclick = confirmPayment;
 
       } catch (err) {
         console.error('Init error:', err);
@@ -208,31 +165,31 @@
     async function confirmPayment() {
       const btn = document.getElementById('btn-pay');
       const errorEl = document.getElementById('payment-error');
-      const btnText = hasTrial ? 'Démarrer l\'essai gratuit' : 'S\'abonner maintenant';
 
       btn.disabled = true;
-      btn.textContent = 'Activation en cours...';
+      btn.textContent = 'Traitement...';
       errorEl.style.display = 'none';
 
       try {
-        // Avec trial: confirmSetup, sans trial: confirmPayment
-        const confirmMethod = hasTrial ? 'confirmSetup' : 'confirmPayment';
-        const { error } = await stripe[confirmMethod]({
-          elements,
-          confirmParams: {
-            return_url: window.location.origin + '/compta/?success=1',
-          },
-        });
+        const result = hasTrial
+          ? await stripe.confirmSetup({
+              elements,
+              confirmParams: { return_url: window.location.origin + '/compta/?success=1' }
+            })
+          : await stripe.confirmPayment({
+              elements,
+              confirmParams: { return_url: window.location.origin + '/compta/?success=1' }
+            });
 
-        if (error) {
-          showError(error.message);
+        if (result.error) {
+          showError(result.error.message);
           btn.disabled = false;
-          btn.textContent = btnText;
+          btn.textContent = hasTrial ? 'Démarrer l\'essai gratuit' : 'S\'abonner - 39€/mois';
         }
       } catch (err) {
         showError('Erreur: ' + err.message);
         btn.disabled = false;
-        btn.textContent = btnText;
+        btn.textContent = hasTrial ? 'Démarrer l\'essai gratuit' : 'S\'abonner - 39€/mois';
       }
     }
 
