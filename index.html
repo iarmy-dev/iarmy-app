@@ -1245,6 +1245,8 @@
 
       // Initialize compta module
       // En mode Telegram, passer la config déjà chargée par telegram-auth pour éviter une requête RLS bloquée
+      console.log('[loadComptaSettings] Passing moduleConfig to initComptaModule:', JSON.stringify(moduleConfig));
+      console.log('[loadComptaSettings] isTelegramMode:', isTelegramMode, 'userId:', currentUser?.id);
       await window.initComptaModule(currentUser.id, supabaseClient, isTelegramMode, telegramUserId, moduleConfig);
     }
 
@@ -1783,6 +1785,7 @@
 
         // Module config - only show modules user has
         moduleConfig = authData.moduleConfig;
+        console.log('[TG] moduleConfig from telegram-auth:', JSON.stringify(moduleConfig));
         if (moduleConfig?.sheetId) {
           document.getElementById('module-compta').style.display = 'flex';
           document.getElementById('module-status').textContent = 'Actif';
