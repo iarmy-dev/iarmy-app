@@ -843,7 +843,7 @@ async function comptaDoResetConfig() {
   if (!session) return;
 
   await supabaseClient.from('module_configs').delete().eq('user_id', session.user.id).eq('module_name', 'compta');
-  window.location.href = '/compta/setup/';
+  window.location.href = '/setup/?module=compta';
 }
 
 // Export data manually

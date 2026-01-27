@@ -1587,7 +1587,7 @@
           window.location.href = '/compta/' + (tgParams ? '?' + tgParams.substring(1) : '');
           break;
         case 'stock':
-          window.location.href = '/stock/setup/' + (tgParams ? '?' + tgParams.substring(1) : '');
+          window.location.href = '/setup/?module=stock' + (tgParams ? '?' + tgParams.substring(1) : '');
           break;
         case 'paie':
           window.location.href = '/setup/?module=paie' + tgParams;
@@ -2063,7 +2063,7 @@
       if (isConfigured) {
         window.location.href = '/?soldat=compta' + tgParams;
       } else {
-        window.location.href = '/compta/setup/' + (tgParams ? '?' + tgParams.substring(1) : '');
+        window.location.href = '/setup/?module=compta' + (tgParams ? '?' + tgParams.substring(1) : '');
       }
     }
 
@@ -2081,7 +2081,7 @@
       if (count > 0) {
         window.location.href = '/?soldat=stock' + tgParams;
       } else {
-        window.location.href = '/stock/setup/' + (tgParams ? '?' + tgParams.substring(1) : '');
+        window.location.href = '/setup/?module=stock' + (tgParams ? '?' + tgParams.substring(1) : '');
       }
     }
 
