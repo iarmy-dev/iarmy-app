@@ -1,114 +1,245 @@
 # iArmy App - Guide pour Claude
 
+## IMPORTANT - Lire en premier !
+
+**iArmy appelle ses modules des "SOLDATS"** (pas "modules").
+
+### Source unique de verite : Table Supabase `modules`
+
+Tous les soldats sont stockes dans la table `modules` de Supabase.
+- **Admin pour gerer les soldats** : `/admin/modules/`
+- **Toutes les pages lisent depuis Supabase** = ajouter un soldat dans l'admin le fait apparaitre partout automatiquement
+
+---
+
+## Ou apparaissent les soldats ?
+
+Quand tu ajoutes un soldat dans Supabase, il apparait automatiquement :
+
+| Page | Fichier | Description |
+|------|---------|-------------|
+| **Catalogue soldats** | `/soldats/index.html` | Liste de tous les soldats disponibles |
+| **Page compte** | `/index.html` | Dashboard avec les soldats installes de l'utilisateur |
+| **Site marketing** | `iarmy-site/index.html` | Landing page avec presentation des soldats |
+
+### Pages specifiques par soldat
+
+Chaque soldat a ses propres pages :
+- `/{soldat}/setup/` - Page de configuration initiale (ex: `/compta/setup/`)
+- `/{soldat}/index.html` - Dashboard du soldat (ex: `/compta/index.html`)
+- `/?soldat={soldat}` - Parametres du soldat dans la page compte
+
+---
+
+## Structure Supabase - Table `modules`
+
+```sql
+CREATE TABLE modules (
+  id UUID PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,      -- ex: compta, stock, paie
+  name TEXT NOT NULL,              -- ex: Compta, Stock, Paie
+  description TEXT,                -- HTML avec mots en couleur
+  color TEXT NOT NULL,             -- #22c55e
+  status TEXT NOT NULL,            -- available, coming_soon, beta
+  price TEXT,                      -- 9.99
+  setup_url TEXT,                  -- /compta/setup/
+  settings_url TEXT,               -- /?soldat=compta
+  icon_type TEXT,                  -- telegram_sheets, bottles_count, people_pdf, calendar, reservation, star, custom
+  icon_left TEXT,                  -- SVG (si custom)
+  icon_right TEXT,                 -- SVG (si custom)
+  categories TEXT[],               -- ['restaurant', 'bar']
+  tags TEXT[],                     -- ['Restaurant', 'Commerce']
+  sort_order INTEGER
+);
+```
+
+### Types d'icones disponibles
+
+| icon_type | Description | Utilise pour |
+|-----------|-------------|--------------|
+| `telegram_sheets` | Telegram → Sheets | Compta |
+| `bottles_count` | Bouteilles → Compteur | Stock |
+| `people_pdf` | Personnes → PDF | Paie |
+| `calendar` | Calendrier + horloge | Planning |
+| `reservation` | Check + liste | Reservations |
+| `star` | Etoile + coeur | Fidelite |
+| `custom` | SVG personnalise | Autres |
+
+---
+
+## Pour creer un nouveau soldat
+
+### 1. Ajouter dans Supabase (via admin `/admin/modules/`)
+
+Aller sur https://app.iarmy.fr/admin/modules/ et cliquer "Nouveau Module".
+
+Ou via SQL :
+```sql
+INSERT INTO modules (slug, name, description, color, status, price, setup_url, icon_type, categories, tags)
+VALUES (
+  'nouveau_soldat',
+  'Nom Affiche',
+  'Description avec <strong style="color:#xxx;">mots</strong> en couleur',
+  '#couleur_hex',
+  'available',
+  '9.99',
+  '/nouveau_soldat/setup/',
+  'telegram_sheets',
+  ARRAY['restaurant', 'bar'],
+  ARRAY['Tag1', 'Tag2']
+);
+```
+
+### 2. Creer les pages du soldat
+
+```
+/iarmy-app/
+└── nouveau_soldat/
+    ├── index.html      # Dashboard du soldat
+    └── setup/
+        └── index.html  # Page de configuration
+```
+
+### 3. Ajouter la logique dans le bot (si besoin)
+
+Dans `/iarmy-bot/bot.js` :
+- Ajouter le handler dans le switch des modules
+- Creer les fonctions specifiques au soldat
+
+### 4. Creer le Stripe Price (si payant)
+
+1. Aller sur https://dashboard.stripe.com/products
+2. Creer un produit avec le nom du soldat
+3. Ajouter un prix recurrent mensuel
+4. Copier l'ID du prix (price_xxx)
+5. L'ajouter dans l'edge function stripe-checkout
+
+---
+
 ## Structure du projet
 
 ```
 /iarmy-app/
-├── index.html          # Page compte (/compte) - dashboard principal
-├── auth/
-│   └── callback.html   # Callback OAuth Google
-├── compta/
-│   ├── index.html      # Ancienne page compta (redirige vers setup si pas config)
-│   └── setup/          # Setup compta
-├── stock/
-│   ├── index.html      # Page stock
-│   └── setup/          # Setup stock
-├── paie/
-│   └── index.html      # Page paie
+├── index.html              # Page compte - dashboard principal
 ├── soldats/
-│   └── index.html      # Catalogue/repertoire de tous les modules
+│   └── index.html          # Catalogue de tous les soldats (lit depuis Supabase)
+├── admin/
+│   └── modules/
+│       └── index.html      # Admin pour gerer les soldats
+├── compta/
+│   ├── index.html          # Dashboard Compta
+│   └── setup/              # Setup Compta
+├── stock/
+│   ├── index.html          # Dashboard Stock
+│   └── setup/              # Setup Stock
+├── paie/
+│   └── index.html          # Dashboard Paie
 ├── js/
-│   ├── soldats-config.js  # CONFIG CENTRALISEE DES MODULES
-│   ├── compta.js          # JS du module compta (charge dynamiquement)
-│   └── analytics.js
+│   ├── soldats-config.js   # DEPRECATED - utiliser table Supabase modules
+│   └── compta.js           # JS specifique compta
 ├── css/
-│   ├── header.css      # Header + logo CSS
-│   └── compta.css      # Styles module compta
+│   ├── header.css          # Header + logo anime
+│   └── compta.css          # Styles compta
 └── img/
 ```
 
-## Ajouter un nouveau Soldat (Module)
-
-Pour ajouter un nouveau module a iArmy, modifier `/js/soldats-config.js` :
-
-```javascript
-{
-  id: 'nouveau_module',           // ID unique
-  name: 'Nom du Module',          // Nom affiche
-  description: 'Description...',  // Description courte
-  icon: '📊',                     // Emoji icone
-  color: '#22c55e',               // Couleur principale (hex)
-  colorLight: 'rgba(34,197,94,0.15)', // Couleur claire pour fond
-  price: '9.99',                  // Prix sans le symbole
-  priceUnit: '€/mois',            // Unite de prix
-  features: [                     // Liste des fonctionnalites
-    'Feature 1',
-    'Feature 2',
-    'Feature 3'
-  ],
-  setupUrl: '/nouveau_module/setup/',  // URL de configuration
-  settingsUrl: '/?soldat=nouveau_module', // URL parametres (page unifiee)
-  status: 'available',            // available | coming_soon | beta
-  configCheck: 'nouveau_module'   // module_name dans module_configs (Supabase)
-}
-```
-
-Le module apparaitra automatiquement :
-- Dans `/soldats/` (catalogue)
-- Avec le bon statut (installe/disponible/bientot)
-
-## Page Compte Unifiee
-
-La page `/compte` (index.html) utilise le parametre `?soldat=xxx` pour afficher les parametres d'un module :
-- `/?soldat=compta` → Parametres Compta
-- `/?soldat=stock` → Parametres Stock
-- `/?soldat=paie` → Parametres Paie
-
-Le JS du module est charge dynamiquement depuis `/js/{module}.js` et le CSS depuis `/css/{module}.css`.
-
-## Cache SessionStorage
-
-Pour eviter le loading entre les navigations de modules, on utilise `sessionStorage` :
-- `compte_loaded` : boolean si la page a deja ete chargee
-- `compte_cache` : JSON avec les donnees UI et variables (moduleConfig, counts)
-
-## Telegram Mini-App
-
-L'app fonctionne aussi en mode Telegram :
-- Detecte via `window.Telegram?.WebApp`
-- Parametre URL `?tg=1&tguid={telegram_user_id}`
-- Force le theme sombre avec `tg.setBackgroundColor('#0f0f0f')`
-- Bouton retour Telegram configure
+---
 
 ## Supabase
 
-- URL: `https://byqfnpdcnifauhwgetcq.supabase.co`
-- Tables principales:
-  - `profiles` - Profils utilisateurs
-  - `module_configs` - Config des modules (sheet_id, etc.)
-  - `subscriptions` - Abonnements
-  - `telegram_links` - Liens comptes Telegram
-  - `stock_products` - Produits stock
-  - `employees` - Employes paie
+- **URL**: `https://byqfnpdcnifauhwgetcq.supabase.co`
+- **Dashboard**: https://supabase.com/dashboard/project/byqfnpdcnifauhwgetcq
+
+### Tables principales
+
+| Table | Description |
+|-------|-------------|
+| `modules` | **CONFIG DES SOLDATS** - source unique de verite |
+| `profiles` | Profils utilisateurs |
+| `module_configs` | Config user par soldat (sheet_id, etc.) |
+| `subscriptions` | Abonnements Stripe |
+| `telegram_links` | Liens comptes Telegram |
+| `stock_products` | Produits pour Stock |
+| `employees` | Employes pour Paie |
+
+---
 
 ## Design System
 
-- Couleurs:
-  - Orange principal: `#FF6B35`
-  - Fond sombre: `#0f0f0f` ou `#030303`
-  - Vert (compta): `#22c55e`
-  - Cyan (stock): `#06b6d4`
-  - Amber (paie): `#f59e0b`
-  - Violet (planning): `#8b5cf6`
+### Couleurs des soldats
 
-- Composants:
-  - Cards avec `background: rgba(255,255,255,0.02)` et `border: 1px solid rgba(255,255,255,0.06)`
-  - Border radius: 16-20px
-  - Orbs animes en background (blur 100px)
-  - Dot grid pattern
+| Soldat | Couleur | Hex |
+|--------|---------|-----|
+| Compta | Vert | `#22c55e` |
+| Stock | Cyan | `#06b6d4` |
+| Paie | Amber | `#f59e0b` |
+| Planning | Violet | `#8b5cf6` |
+| Reservations | Rose | `#ec4899` |
+| Fidelite | Jaune | `#eab308` |
+
+### Couleurs generales
+
+- Orange iArmy: `#FF6B35`
+- Fond sombre: `#0f0f0f` ou `#030303`
+
+### Composants
+
+- Cards: `background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);`
+- Border radius: 16-24px
+- Animations: Orbs flous, dot grid, pulse waves
+
+---
+
+## Header uniforme
+
+Le header est defini dans `/css/header.css` et doit etre inclus sur toutes les pages.
+
+Structure HTML :
+```html
+<nav>
+  <div class="nav-inner">
+    <a id="logo-link" href="/" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
+      <div class="logo-i">
+        <div class="logo-i-new">
+          <div class="logo-i-helmet"></div>
+          <div class="logo-i-head"></div>
+          <div class="logo-i-stem"></div>
+        </div>
+      </div>
+      <span style="font-weight: 600;">iArmy</span>
+    </a>
+    <div class="nav-right">
+      <!-- Boutons navigation -->
+    </div>
+  </div>
+</nav>
+```
+
+---
+
+## Telegram Mini-App
+
+L'app fonctionne en mode Telegram :
+- Detection: `window.Telegram?.WebApp`
+- Parametres URL: `?tg=1&tguid={telegram_user_id}`
+- Theme: `tg.setBackgroundColor('#0f0f0f')`
+- Bouton retour: `tg.BackButton.show()`
+
+---
 
 ## Deploiement
 
-- GitHub Pages depuis la branche `main`
-- Domaine: `app.iarmy.fr`
-- Push sur main = deploy automatique
+- **Frontend (iarmy-app)**: GitHub Pages - push sur main = deploy auto
+- **Bot (iarmy-bot)**: Render - push sur main = deploy auto
+- **Edge Functions**: `supabase functions deploy <function-name>`
+
+---
+
+## Checklist nouveau soldat
+
+- [ ] Ajouter dans table `modules` (via admin ou SQL)
+- [ ] Creer dossier `/{soldat}/` avec setup et dashboard
+- [ ] Ajouter logique dans bot.js (si interaction Telegram)
+- [ ] Creer Stripe Price (si payant)
+- [ ] Tester sur `/soldats/` qu'il apparait
+- [ ] Tester le flow setup complet
