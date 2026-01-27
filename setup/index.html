@@ -802,6 +802,11 @@
                 📁 Fichiers / PDF
               </button>
             </div>
+            <div style="margin-top: 20px;">
+              <button onclick="skipMenuStep(${index}); event.stopPropagation();" style="background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 13px; text-decoration: underline;">
+                Je ferai plus tard
+              </button>
+            </div>
           </div>
 
           <div id="menu-photos-preview-${index}" style="display: none;">
@@ -1801,6 +1806,13 @@
       document.getElementById(`menu-analyzing-${index}`).style.display = 'none';
       document.getElementById(`menu-results-${index}`).style.display = 'none';
       document.getElementById(`menu-file-${index}`).value = '';
+    }
+
+    function skipMenuStep(index) {
+      stepData.extractedItems = [];
+      stepData.menuSkipped = true;
+      showToast('Tu pourras ajouter ta carte plus tard dans les reglages');
+      nextStep();
     }
 
     async function validateMenuResults(index) {
