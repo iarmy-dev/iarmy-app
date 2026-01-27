@@ -10,6 +10,7 @@
   <script src="https://js.stripe.com/v3/"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/header.css">
   <style>
     * { font-family: 'Inter', sans-serif; }
     body { background: #0a0a0a; color: white; min-height: 100vh; overflow-x: hidden; }
@@ -20,16 +21,6 @@
     .orb-1 { width: 400px; height: 400px; top: -200px; right: -100px; }
     .orb-2 { width: 300px; height: 300px; bottom: -150px; left: -100px; animation-delay: -7s; }
     @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
-
-    /* Nav */
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .nav-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .logo-i { width: 36px; height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
-    .nav-right { display: flex; align-items: center; gap: 8px; }
-    .btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; }
-    .btn-icon:hover { background: rgba(255,255,255,0.08); color: white; }
-    .btn-icon.danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
 
     .glass-card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: all 0.4s ease; }
 
