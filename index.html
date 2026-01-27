@@ -985,9 +985,24 @@
       }
     }
 
-    // Si on navigue entre modules, cacher le loading immediatement
+    // Si on navigue entre modules, afficher le contenu immediatement
     if (skipLoading) {
       document.getElementById('loading-screen')?.classList.add('hidden');
+      // Afficher le contenu sans transition
+      const urlParams = new URLSearchParams(window.location.search);
+      const soldatParam = urlParams.get('soldat');
+      if (soldatParam) {
+        document.getElementById('account-dashboard').style.display = 'none';
+        const moduleSettings = document.getElementById('module-settings');
+        moduleSettings.style.display = 'block';
+        moduleSettings.style.opacity = '1';
+        moduleSettings.classList.add('visible');
+      } else {
+        const dashboard = document.getElementById('account-dashboard');
+        dashboard.style.opacity = '1';
+        dashboard.classList.add('visible');
+        document.getElementById('module-settings').style.display = 'none';
+      }
     }
 
     // Cookie storage pour partager la session entre iarmy.fr et app.iarmy.fr
