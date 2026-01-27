@@ -511,7 +511,11 @@
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 
-  <!-- Loading Screen -->
+  <!-- Loading Screen - hidden si navigation entre modules -->
+  <script>
+    // Skip loading si on navigue entre modules (session deja chargee)
+    var skipLoading = sessionStorage.getItem('compte_loaded') === 'true';
+  </script>
   <div class="loading-screen" id="loading-screen">
     <div class="loading-grid"></div>
     <div class="loading-glow"></div>
@@ -967,6 +971,9 @@
       const loader = document.getElementById('loading-screen');
       if (loader) loader.classList.add('hidden');
 
+      // Marquer que la page compte est chargee (pour skip loading lors navigation modules)
+      sessionStorage.setItem('compte_loaded', 'true');
+
       // Afficher le bon container selon le mode
       if (currentModuleView) {
         document.getElementById('account-dashboard').style.display = 'none';
@@ -976,6 +983,11 @@
         document.getElementById('account-dashboard').classList.add('visible');
         document.getElementById('module-settings').style.display = 'none';
       }
+    }
+
+    // Si on navigue entre modules, cacher le loading immediatement
+    if (skipLoading) {
+      document.getElementById('loading-screen')?.classList.add('hidden');
     }
 
     // Cookie storage pour partager la session entre iarmy.fr et app.iarmy.fr
