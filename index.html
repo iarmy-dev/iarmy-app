@@ -1077,25 +1077,12 @@
       }
     }
 
-    // Si on navigue entre modules, afficher le contenu avec les donnees cachees
+    // Si on navigue entre modules, loading discret (pas l'animation soldat)
     if (skipLoading) {
-      document.getElementById('loading-screen')?.classList.add('hidden');
-      restoreUICache(); // Restaurer les donnees immediatement
-
-      // Afficher le contenu sans transition
-      const urlParams = new URLSearchParams(window.location.search);
-      const soldatParam = urlParams.get('soldat');
-      if (soldatParam) {
-        document.getElementById('account-dashboard').style.display = 'none';
-        const moduleSettings = document.getElementById('module-settings');
-        moduleSettings.style.display = 'block';
-        moduleSettings.style.opacity = '1';
-        moduleSettings.classList.add('visible');
-      } else {
-        const dashboard = document.getElementById('account-dashboard');
-        dashboard.style.opacity = '1';
-        dashboard.classList.add('visible');
-        document.getElementById('module-settings').style.display = 'none';
+      // Cacher l'animation soldat, montrer juste un spinner discret
+      const loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;"><div class="spinner" style="width:32px;height:32px;border:3px solid rgba(255,255,255,0.1);border-top-color:#FF6B35;border-radius:50%;animation:spin 0.6s linear infinite;"></div></div>';
       }
     }
 
