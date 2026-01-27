@@ -43,64 +43,120 @@ nav {
   box-shadow: 0 8px 30px rgba(255,107,53,0.5) !important;
 }
 
-/* Soldat animé */
-.logo-i-soldier {
+/* Logo "i" avec casque - Style Gemini */
+.logo-i-new {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  animation: gardeAVous 2.5s ease-in-out infinite !important;
-}
-
-@keyframes gardeAVous {
-  0%, 40%, 100% { transform: translateY(0); }
-  50%, 60% { transform: translateY(-2px); }
-}
-
-/* Casque militaire */
-.logo-i-cap {
-  width: 9px !important;
-  height: 4px !important;
-  background: white !important;
-  border-radius: 5px 5px 1px 1px !important;
   position: relative !important;
-  margin-bottom: 0px !important;
-  z-index: 2 !important;
-  animation: capBounce 2.5s ease-in-out infinite !important;
+  padding-top: 1px !important;
 }
 
-.logo-i-cap::after {
+/* Casque militaire - dome */
+.logo-i-helmet {
+  width: 12px !important;
+  height: 7px !important;
+  background: white !important;
+  border-radius: 50% 50% 40% 40% !important;
+  position: relative !important;
+  z-index: 4 !important;
+  margin-left: 1px !important;
+  animation: helmetBounce 3s ease-in-out infinite !important;
+}
+
+/* Visiere du casque - part vers la gauche */
+.logo-i-helmet::after {
   content: '' !important;
   position: absolute !important;
-  bottom: -2px !important;
+  bottom: 1px !important;
+  left: -4px !important;
+  width: 16px !important;
+  height: 4px !important;
+  background: white !important;
+  border-radius: 3px 8px 2px 2px !important;
+  transform: rotate(-5deg) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3) !important;
+}
+
+/* Bord sombre sous la visiere */
+.logo-i-helmet::before {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -1px !important;
+  left: -3px !important;
+  width: 14px !important;
+  height: 2px !important;
+  background: rgba(0,0,0,0.35) !important;
+  border-radius: 0 0 2px 2px !important;
+  transform: rotate(-5deg) !important;
+  z-index: -1 !important;
+}
+
+@keyframes helmetBounce {
+  0%, 85%, 100% { transform: translateY(0) rotate(0deg); }
+  88% { transform: translateY(-1px) rotate(-4deg); }
+  92% { transform: translateY(0.5px) rotate(2deg); }
+  96% { transform: translateY(0) rotate(-1deg); }
+}
+
+/* Tete (point du i) - ovale */
+.logo-i-head {
+  width: 9px !important;
+  height: 7px !important;
+  background: white !important;
+  border-radius: 50% !important;
+  margin-top: -1px !important;
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* Corps du "i" - style serif avec ombre */
+.logo-i-stem {
+  width: 7px !important;
+  height: 11px !important;
+  background: white !important;
+  border-radius: 1px !important;
+  margin-top: 2px !important;
+  position: relative !important;
+  box-shadow: 2px 0 0 rgba(0,0,0,0.12) !important;
+}
+
+/* Empattement haut */
+.logo-i-stem::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
   left: -2px !important;
-  width: 13px !important;
+  width: 11px !important;
   height: 2px !important;
   background: white !important;
   border-radius: 1px !important;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.2) !important;
+  box-shadow: 2px 0 0 rgba(0,0,0,0.08) !important;
 }
 
-@keyframes capBounce {
-  0%, 35% { transform: translateY(0) translateX(0) rotate(0deg); }
-  42% { transform: translateY(2px) translateX(-1px) rotate(-4deg); }
-  52%, 58% { transform: translateY(-2px) translateX(1px) rotate(3deg); }
-  65% { transform: translateY(1px) translateX(-0.5px) rotate(-2deg); }
-  75%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
-}
-
-.logo-i-dot {
-  width: 7px !important;
-  height: 6px !important;
+/* Empattement bas (base) */
+.logo-i-stem::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: -3px !important;
+  width: 13px !important;
+  height: 3px !important;
   background: white !important;
-  border-radius: 50% !important;
-  margin-bottom: 2px !important;
+  border-radius: 1px 1px 2px 2px !important;
+  box-shadow: 2px 0 0 rgba(0,0,0,0.08) !important;
 }
 
-.logo-i-body {
-  width: 5px !important;
-  height: 9px !important;
-  background: white !important;
-  border-radius: 2px !important;
+/* Animation au hover */
+.logo-i:hover .logo-i-helmet {
+  animation: salute 0.5s ease-out !important;
+}
+
+@keyframes salute {
+  0% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-2px) rotate(-8deg); }
+  60% { transform: translateY(-1px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
 }
 
 .nav-right {
