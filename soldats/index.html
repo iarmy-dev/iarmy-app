@@ -333,36 +333,52 @@
         tg.expand();
         tg.setBackgroundColor('#0f0f0f');
         tg.setHeaderColor('#0f0f0f');
-        tg.BackButton.show();
+        // Bouton retour - supprimer anciens handlers d'abord
+        tg.BackButton.offClick();
         tg.BackButton.onClick(() => {
           window.location.href = '/?tg=1&tguid=' + telegramUserId;
         });
+        tg.BackButton.show();
       }
 
       // Charger les modules depuis Supabase
       await loadModulesFromDB();
 
-      // En mode Telegram, utiliser l'API telegram-auth pour obtenir les infos user
+      // En mode Telegram, utiliser le sessionToken de la page compte
       if (isTelegramMode && telegramUserId) {
         try {
-          const tg = window.Telegram?.WebApp;
-          const response = await fetch(SUPABASE_URL + '/functions/v1/telegram-auth', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              initData: tg?.initData || '',
-              telegramUserId: telegramUserId
-            })
-          });
-          const authData = await response.json();
-          if (authData.userId) {
-            currentUser = { id: authData.userId };
-            // Charger directement depuis authData si disponible
-            if (authData.moduleConfig?.sheetId) {
-              userModules.push('compta');
+          const sessionToken = sessionStorage.getItem('tg_session_token');
+          if (sessionToken) {
+            // Valider le token et récupérer userId
+            const response = await fetch(SUPABASE_URL + '/functions/v1/telegram-validate-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionToken })
+            });
+            const data = await response.json();
+            if (data.userId) {
+              currentUser = { id: data.userId };
+              await loadUserModulesFromTelegram(data.userId);
             }
-            // Charger stock et paie
-            await loadUserModulesFromTelegram(authData.userId);
+          } else {
+            // Fallback: appeler telegram-auth
+            const tgApp = window.Telegram?.WebApp;
+            const response = await fetch(SUPABASE_URL + '/functions/v1/telegram-auth', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                initData: tgApp?.initData || '',
+                telegramUserId: telegramUserId
+              })
+            });
+            const authData = await response.json();
+            if (authData.userId) {
+              currentUser = { id: authData.userId };
+              if (authData.moduleConfig?.sheetId) {
+                userModules.push('compta');
+              }
+              await loadUserModulesFromTelegram(authData.userId);
+            }
           }
         } catch (err) {
           console.log('Telegram auth error:', err);
@@ -482,9 +498,15 @@
           ? '<span class="card-badge installe">INSTALLE</span>'
           : '<span class="card-badge nouveau">NOUVEAU</span>';
 
-        const url = isInstalled
-          ? (m.settings_url || `/?soldat=${m.slug}`) + (tgParams ? (m.settings_url?.includes('?') ? '&' : '?') + tgParams.substring(1) : '')
-          : (m.setup_url || `/${m.slug}/setup/`) + tgParams;
+        // En mode Telegram, toujours aller vers settings (la page compte gère)
+        let url;
+        if (isTelegramMode) {
+          url = `/?soldat=${m.slug}&tg=1&tguid=${telegramUserId}`;
+        } else {
+          url = isInstalled
+            ? (m.settings_url || `/?soldat=${m.slug}`)
+            : (m.setup_url || `/${m.slug}/setup/`);
+        }
 
         // Get icons from template or custom
         const icons = ICON_TEMPLATES[m.icon_type] || { left: m.icon_left || '', right: m.icon_right || '' };
