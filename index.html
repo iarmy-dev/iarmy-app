@@ -1244,7 +1244,8 @@
       document.getElementById('module-actions-grid').style.display = 'none';
 
       // Initialize compta module
-      await window.initComptaModule(currentUser.id, supabaseClient, isTelegramMode, telegramUserId);
+      // En mode Telegram, passer la config déjà chargée par telegram-auth pour éviter une requête RLS bloquée
+      await window.initComptaModule(currentUser.id, supabaseClient, isTelegramMode, telegramUserId, moduleConfig);
     }
 
     // Get compta HTML template

@@ -15,16 +15,30 @@ const comptaCols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 let comptaAutoSaveTimeout = null;
 
 // Initialize compta module
-async function initComptaModule(userId, supabaseClient, isTelegramMode, telegramUserId) {
-  console.log('[Compta] Initializing module for user:', userId);
+// passedConfig: config déjà chargée en mode Telegram (évite requête RLS bloquée)
+async function initComptaModule(userId, supabaseClient, isTelegramMode, telegramUserId, passedConfig) {
+  console.log('[Compta] Initializing module for user:', userId, 'passedConfig:', !!passedConfig);
 
-  // Load config from Supabase
-  const { data: moduleConfig } = await supabaseClient
-    .from('module_configs')
-    .select('sheet_id, config, created_at')
-    .eq('user_id', userId)
-    .eq('module_name', 'compta')
-    .single();
+  let moduleConfig = null;
+
+  // En mode Telegram avec config déjà passée, l'utiliser directement
+  if (isTelegramMode && passedConfig && passedConfig.sheetId) {
+    console.log('[Compta] Using passed config from telegram-auth');
+    moduleConfig = {
+      sheet_id: passedConfig.sheetId,
+      config: passedConfig.config,
+      created_at: passedConfig.createdAt
+    };
+  } else {
+    // Mode web normal: charger depuis Supabase
+    const { data } = await supabaseClient
+      .from('module_configs')
+      .select('sheet_id, config, created_at')
+      .eq('user_id', userId)
+      .eq('module_name', 'compta')
+      .single();
+    moduleConfig = data;
+  }
 
   if (!moduleConfig || !moduleConfig.sheet_id) {
     // En mode Telegram, afficher un message au lieu de rediriger
