@@ -103,6 +103,74 @@
       </div>
     </div>
 
+    <!-- SumUp Import Section -->
+    <div id="sumup-section" class="mt-8 hidden">
+      <div class="glass p-4 mb-4" style="border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.05);">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-green-400">SumUp connecte</div>
+              <div class="text-xs text-white/40" id="sumup-merchant-name"></div>
+            </div>
+          </div>
+          <button onclick="importFromSumUp()" class="btn-primary text-sm py-2 px-4" id="import-btn">
+            Importer ventes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Results Modal -->
+    <div id="import-modal" class="fixed inset-0 z-50 hidden" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="glass p-6 w-full max-w-md" style="background: #1a1a1a;">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Ventes du jour</h3>
+            <button onclick="closeImportModal()" class="text-white/40 hover:text-white">&times;</button>
+          </div>
+          <div id="import-loading" class="text-center py-8">
+            <div class="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p class="text-white/40">Recuperation des ventes...</p>
+          </div>
+          <div id="import-results" class="hidden">
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="glass p-3 text-center">
+                <div class="text-2xl font-bold text-blue-400" id="result-cb">0€</div>
+                <div class="text-xs text-white/40">Carte Bancaire</div>
+              </div>
+              <div class="glass p-3 text-center">
+                <div class="text-2xl font-bold text-green-400" id="result-esp">0€</div>
+                <div class="text-xs text-white/40">Especes</div>
+              </div>
+            </div>
+            <div class="glass p-3 text-center mb-4">
+              <div class="text-3xl font-bold text-orange-400" id="result-total">0€</div>
+              <div class="text-xs text-white/40"><span id="result-count">0</span> transactions</div>
+            </div>
+            <div id="products-sold-section" class="hidden mb-4">
+              <h4 class="text-sm font-medium text-white/50 mb-2">Produits vendus</h4>
+              <div id="products-sold-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            </div>
+            <button onclick="closeImportModal()" class="btn-primary w-full">OK</button>
+          </div>
+          <div id="import-error" class="hidden text-center py-4">
+            <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </div>
+            <p class="text-red-400 mb-2" id="import-error-msg">Erreur</p>
+            <button onclick="closeImportModal()" class="btn-secondary">Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="mt-8 grid grid-cols-2 gap-3">
       <button onclick="openTelegram()" class="btn-secondary flex items-center justify-center gap-2 text-sm">
@@ -209,6 +277,7 @@
       }
 
       loadData();
+      checkSumUpConnection();
     }
 
     async function loadData() {
@@ -297,6 +366,91 @@
 
     function openTelegram() {
       window.open('https://t.me/iArmy_bot', '_blank');
+    }
+
+    // Check if SumUp is connected
+    async function checkSumUpConnection() {
+      if (!currentUser) return;
+
+      const { data: connection } = await supabase
+        .from('pos_connections')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('pos_type', 'sumup')
+        .eq('status', 'connected')
+        .maybeSingle();
+
+      if (connection) {
+        document.getElementById('sumup-section').classList.remove('hidden');
+        document.getElementById('sumup-merchant-name').textContent = connection.merchant_name || 'Compte connecte';
+      }
+    }
+
+    // Import sales from SumUp
+    async function importFromSumUp() {
+      const modal = document.getElementById('import-modal');
+      const loading = document.getElementById('import-loading');
+      const results = document.getElementById('import-results');
+      const errorDiv = document.getElementById('import-error');
+
+      // Show modal with loading
+      modal.classList.remove('hidden');
+      loading.classList.remove('hidden');
+      results.classList.add('hidden');
+      errorDiv.classList.add('hidden');
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/sumup-transactions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            user_id: currentUser.id,
+            date: new Date().toISOString().split('T')[0]
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'Erreur lors de la recuperation');
+        }
+
+        // Show results
+        loading.classList.add('hidden');
+        results.classList.remove('hidden');
+
+        document.getElementById('result-cb').textContent = data.summary.total_cb + '€';
+        document.getElementById('result-esp').textContent = data.summary.total_esp + '€';
+        document.getElementById('result-total').textContent = data.summary.total + '€';
+        document.getElementById('result-count').textContent = data.summary.transaction_count;
+
+        // Show products sold if available
+        if (data.products_sold && data.products_sold.length > 0) {
+          document.getElementById('products-sold-section').classList.remove('hidden');
+          document.getElementById('products-sold-list').innerHTML = data.products_sold.map(p => `
+            <div class="glass p-2 flex items-center justify-between">
+              <span class="text-sm">${p.name}</span>
+              <span class="text-sm text-white/60">${p.quantity}x = ${p.total.toFixed(2)}€</span>
+            </div>
+          `).join('');
+        } else {
+          document.getElementById('products-sold-section').classList.add('hidden');
+        }
+
+      } catch (err) {
+        console.error('Import error:', err);
+        loading.classList.add('hidden');
+        errorDiv.classList.remove('hidden');
+        document.getElementById('import-error-msg').textContent = err.message;
+      }
+    }
+
+    function closeImportModal() {
+      document.getElementById('import-modal').classList.add('hidden');
     }
 
     init();
