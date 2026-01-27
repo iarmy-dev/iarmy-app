@@ -2266,8 +2266,11 @@
       },
       square: {
         name: 'Square',
-        hasOAuth: false,
-        comingSoon: true
+        hasOAuth: true,
+        authUrl: 'https://connect.squareup.com/oauth2/authorize',
+        clientId: 'sq0idp-HlyGaDsGLEtmYK7Q66QQhw',
+        redirectUri: 'https://app.iarmy.fr/callback/square/',
+        scopes: 'MERCHANT_PROFILE_READ ORDERS_READ ITEMS_READ PAYMENTS_READ'
       }
     };
 
