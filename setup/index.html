@@ -862,7 +862,8 @@
               <div class="pos-name">Zelty</div>
               <div class="pos-check">✓</div>
             </button>
-            <button class="pos-btn" onclick="selectPos('sumup', ${index})" data-name="sumup">
+            <button class="pos-btn pos-btn-oauth" onclick="connectSumUp(${index})" data-name="sumup">
+              <span class="pos-badge" style="background:#10B981;">OAuth</span>
               <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/sumup.com" alt="SumUp" onerror="this.parentElement.innerHTML='<span class=pos-icon>💳</span>'"></div>
               <div class="pos-name">SumUp</div>
               <div class="pos-check">✓</div>
@@ -2216,6 +2217,29 @@
 
       const data = await response.json();
       return data.result || { name: 'Caisse inconnue', type: 'other', known: false };
+    }
+
+    // SumUp OAuth connection
+    const SUMUP_CLIENT_ID = 'cc_classic_CRRAg5NnxQnZJWB8Y0umsy1VF6Cet';
+    const SUMUP_REDIRECT_URI = 'https://app.iarmy.fr/callback/sumup';
+    const SUMUP_SCOPES = 'transactions.history products user.profile_readonly user.app-settings';
+
+    function connectSumUp(index) {
+      if (!currentUser) {
+        alert('Connecte-toi d\'abord');
+        return;
+      }
+
+      // Build OAuth URL with state containing user_id
+      const authUrl = new URL('https://api.sumup.com/authorize');
+      authUrl.searchParams.set('response_type', 'code');
+      authUrl.searchParams.set('client_id', SUMUP_CLIENT_ID);
+      authUrl.searchParams.set('redirect_uri', SUMUP_REDIRECT_URI);
+      authUrl.searchParams.set('scope', SUMUP_SCOPES);
+      authUrl.searchParams.set('state', currentUser.id); // Pass user_id in state
+
+      // Redirect to SumUp
+      window.location.href = authUrl.toString();
     }
 
     function skipPos(index) {

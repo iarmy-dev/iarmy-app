@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion SumUp | iArmy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0f0f0f;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 400px;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #10B981;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 32px;
+    }
+    .icon-success { background: rgba(16, 185, 129, 0.2); }
+    .icon-error { background: rgba(239, 68, 68, 0.2); }
+    h1 { font-size: 24px; margin-bottom: 12px; }
+    p { color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.6; }
+    .btn {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    #status { display: none; }
+    #loading { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Loading -->
+    <div id="loading">
+      <div class="spinner"></div>
+      <h1>Connexion en cours...</h1>
+      <p>Synchronisation avec SumUp</p>
+    </div>
+
+    <!-- Success -->
+    <div id="success" style="display:none;">
+      <div class="icon icon-success">✓</div>
+      <h1>SumUp connecté !</h1>
+      <p>Ton compte SumUp est maintenant lié à iArmy. Tes ventes seront synchronisées automatiquement.</p>
+      <a href="/setup/?module=stock" class="btn">Continuer</a>
+    </div>
+
+    <!-- Error -->
+    <div id="error" style="display:none;">
+      <div class="icon icon-error">✗</div>
+      <h1>Erreur de connexion</h1>
+      <p id="error-message">Une erreur est survenue lors de la connexion à SumUp.</p>
+      <a href="/setup/?module=stock" class="btn">Réessayer</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+
+    // Cookie storage for session
+    const cookieStorage = {
+      getItem: (key) => {
+        const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : null;
+      }
+    };
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
+    });
+
+    async function handleCallback() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state'); // Contains user_id
+      const error = urlParams.get('error');
+      const errorDescription = urlParams.get('error_description');
+
+      // Check for errors from SumUp
+      if (error) {
+        showError(errorDescription || error);
+        return;
+      }
+
+      // Check for code
+      if (!code) {
+        showError('Code d\'autorisation manquant');
+        return;
+      }
+
+      // Get user_id from state parameter or from session
+      let userId = state;
+
+      if (!userId) {
+        // Try to get from Supabase session
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        userId = user?.id;
+      }
+
+      if (!userId) {
+        showError('Session expirée. Reconnecte-toi et réessaie.');
+        return;
+      }
+
+      try {
+        // Call edge function to exchange code for tokens
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/sumup-oauth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ code, user_id: userId })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'Erreur lors de l\'échange du token');
+        }
+
+        // Success!
+        showSuccess();
+
+      } catch (err) {
+        console.error('OAuth error:', err);
+        showError(err.message);
+      }
+    }
+
+    function showSuccess() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+    }
+
+    function showError(message) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('error-message').textContent = message;
+    }
+
+    // Run on page load
+    handleCallback();
+  </script>
+</body>
+</html>
