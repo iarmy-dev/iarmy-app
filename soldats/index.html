@@ -13,6 +13,12 @@
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0f0f0f; color: white; min-height: 100vh; overflow-x: hidden; }
 
+    .orb { position: fixed; border-radius: 50%; filter: blur(100px); animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 1; }
+    .orb-1 { width: 500px; height: 500px; background: linear-gradient(135deg, #FF6B35, #FF3D00); top: -200px; right: -100px; opacity: 0.25; }
+    .orb-2 { width: 450px; height: 450px; background: linear-gradient(135deg, #06B6D4, #0891B2); bottom: -150px; left: -150px; opacity: 0.2; animation-delay: -5s; }
+    .orb-3 { width: 350px; height: 350px; background: linear-gradient(135deg, #A855F7, #7C3AED); top: 40%; left: 60%; opacity: 0.15; animation-delay: -10s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+
     .bg-grid {
       position: fixed;
       inset: 0;
@@ -224,6 +230,9 @@
   </style>
 </head>
 <body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
   <div class="bg-grid"></div>
 
   <nav>
