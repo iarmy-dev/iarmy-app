@@ -130,6 +130,19 @@
       transform: none;
     }
 
+    /* Add module card */
+    .module-card.add-module {
+      background: rgba(255,255,255,0.02);
+      border: 2px dashed rgba(255,255,255,0.1);
+    }
+    .module-card.add-module:hover {
+      border-color: rgba(255,107,53,0.4);
+      background: rgba(255,107,53,0.05);
+    }
+    .module-card.add-module:hover .module-icon span {
+      color: #FF6B35;
+    }
+
     .module-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
     .module-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
     .module-status { font-size: 11px; color: rgba(255,255,255,0.5); }
@@ -676,6 +689,15 @@
         </div>
         <div class="module-name">Paie</div>
         <div class="module-status" id="paie-status">Chargement...</div>
+      </div>
+
+      <!-- Add more modules -->
+      <div class="module-card add-module" onclick="goToSoldats()">
+        <div class="module-icon" style="background: rgba(255,255,255,0.06);">
+          <span style="font-size: 28px; color: rgba(255,255,255,0.4);">+</span>
+        </div>
+        <div class="module-name" style="color: rgba(255,255,255,0.5);">Plus</div>
+        <div class="module-status" style="color: rgba(255,255,255,0.3);">Voir tous les soldats</div>
       </div>
     </div>
 
@@ -2149,6 +2171,11 @@
       } else {
         window.location.href = '/setup/?module=paie' + tgParams;
       }
+    }
+
+    function goToSoldats() {
+      const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
+      window.location.href = '/soldats/' + tgParams;
     }
 
     // Modals
