@@ -1481,6 +1481,9 @@
           .select('*')
           .eq('user_id', currentUser.id);
 
+        console.log('📦 Subscriptions from Supabase:', userModules);
+        console.log('👤 User ID:', currentUser.id);
+
         if (error) throw error;
 
         // Filtrer uniquement les modules actifs (tester, active, trialing, ou annulé mais encore actif)
@@ -1491,6 +1494,8 @@
           m.status === 'trialing' ||
           m.status === 'canceled'
         );
+
+        console.log('✅ Active modules after filter:', activeModules);
 
         // Si au moins un module payant, charger les infos Stripe
         const hasPaidModule = activeModules.some(m => !m.is_tester && m.status !== 'tester');
