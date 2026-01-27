@@ -2100,8 +2100,14 @@
     function goToModule() {
       // Unified module settings view with ?soldat=compta
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
-      // Telegram mode uses sheetId (camelCase), web mode uses sheet_id (snake_case)
-      const hasConfig = moduleConfig?.sheet_id || moduleConfig?.sheetId;
+      // Check variable first, then cache if variable not loaded yet
+      let hasConfig = moduleConfig?.sheet_id || moduleConfig?.sheetId;
+      if (!hasConfig) {
+        try {
+          const cache = JSON.parse(sessionStorage.getItem('compte_cache') || '{}');
+          hasConfig = cache.moduleConfig?.sheet_id || cache.moduleConfig?.sheetId;
+        } catch (e) {}
+      }
       if (hasConfig) {
         window.location.href = '/?soldat=compta' + tgParams;
       } else {
@@ -2112,7 +2118,15 @@
     function goToStockModule() {
       // Unified module settings view with ?soldat=stock
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
-      if (stockProductCount > 0) {
+      // Check variable first, then cache
+      let count = stockProductCount;
+      if (!count) {
+        try {
+          const cache = JSON.parse(sessionStorage.getItem('compte_cache') || '{}');
+          count = cache.stockProductCount || 0;
+        } catch (e) {}
+      }
+      if (count > 0) {
         window.location.href = '/?soldat=stock' + tgParams;
       } else {
         window.location.href = '/stock/setup/' + (tgParams ? '?' + tgParams.substring(1) : '');
@@ -2122,7 +2136,15 @@
     function goToPaieModule() {
       // Unified module settings view with ?soldat=paie
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
-      if (paieEmployeeCount > 0) {
+      // Check variable first, then cache
+      let count = paieEmployeeCount;
+      if (!count) {
+        try {
+          const cache = JSON.parse(sessionStorage.getItem('compte_cache') || '{}');
+          count = cache.paieEmployeeCount || 0;
+        } catch (e) {}
+      }
+      if (count > 0) {
         window.location.href = '/?soldat=paie' + tgParams;
       } else {
         window.location.href = '/setup/?module=paie' + tgParams;
