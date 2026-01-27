@@ -1470,7 +1470,7 @@
           return;
         }
 
-        if (!session) {
+        if (!session || !currentUser) {
           document.getElementById('billing-loading').innerHTML = '<p style="color: rgba(255,255,255,0.5);">Connecte-toi pour voir la facturation</p>';
           return;
         }
