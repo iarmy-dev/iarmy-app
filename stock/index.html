@@ -56,8 +56,13 @@
     /* Nav */
     nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
     .nav-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .logo-i { width: 36px; height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
+    .logo-i { width: 36px; height: 36px; min-width: 36px; min-height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; position: relative; overflow: hidden; }
+    .logo-i:hover { transform: scale(1.1); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
+    .logo-i svg { width: 100%; height: 100%; object-fit: contain; }
+    .logo-i #i-helmet { transform-origin: 70px 60px; animation: helmetBounce 3s ease-in-out infinite; }
+    @keyframes helmetBounce { 0%, 85%, 100% { transform: rotate(0deg) translateY(0); } 88% { transform: rotate(-3deg) translateY(-1px); } 92% { transform: rotate(1deg) translateY(0.5px); } 96% { transform: rotate(-1deg) translateY(0); } }
+    .logo-i:hover #i-helmet { animation: salute 0.5s ease-out; }
+    @keyframes salute { 0% { transform: rotate(0deg) translateY(0); } 30% { transform: rotate(-8deg) translateY(-3px); } 60% { transform: rotate(2deg) translateY(-1px); } 100% { transform: rotate(0deg) translateY(0); } }
     .nav-right { display: flex; align-items: center; gap: 8px; }
     .btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; }
     .btn-icon:hover { background: rgba(255,255,255,0.08); color: white; }
@@ -69,7 +74,14 @@
   <nav>
     <div class="nav-inner">
       <a href="/" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
-        <div class="logo-i">i</div>
+        <div class="logo-i">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 139.61 327.81">
+            <defs><style>.logo-body{fill:#fff;stroke:#fff;stroke-miterlimit:10}.logo-shadow{fill:#cecdd1;stroke-miterlimit:10}.logo-shadow-stroke{fill:#cecdd1;stroke:#cecdd1;stroke-miterlimit:10}.logo-helmet{fill:#47330f;stroke:#47330f;stroke-miterlimit:10}</style></defs>
+            <g id="i-body"><path class="logo-body" d="M85.32,142.54c-2.41.32-5.05.57-7.21.96-8.54,1.56-33.88,6.95-43.99,9.8-12.24,3.46-13.3,11.97-14.1,17.56-.8,5.59,1.41,17.88,11.17,17.88,8.54,0,8.25,10.59,8.25,10.59,0,0,.14,68.63,0,84.86-.16,17.89-10.64,17.82-10.64,17.82,0,0-7.71,0-7.71,12.24,0,13.39,14.1,13.03,14.1,13.03h85.12c10.91,0,11.7-14.63,11.7-14.63,0,0,1.6-13.83-10.64-13.83-8.78,0-8.25-15.69-8.25-15.69v-112.79s1.05-15.65-4.69-20.55c-7.08-6.86-15.9-8.21-23.11-7.24Z"/><path class="logo-shadow" d="M51.63,148.52c-15.07,6.79-15.86,21.93-15.86,21.93,0,0-1.5,12.05,11.76,14.95,6.69,1.42,6.63,13.69,6.63,13.69v85.37c0,16.21-8.04,17.97-8.04,17.97,0,0-7.31.55-7.31,12.31,0,13.47,11.31,13.07,11.31,13.07h-14.97s-14.9.36-14.89-13.11c0-12.31,7.71-13.2,7.71-13.2,0,0,10.92.15,10.92-17.04v-85.37s.24-9.76-7.67-9.76c-10.37,0-12.68-13.36-11.88-18.98.8-5.62,2.46-14.33,14.77-17.81l17.49-4.02Z"/></g>
+            <g id="i-head"><circle class="logo-body" cx="71.97" cy="86.29" r="47.78"/><path class="logo-shadow-stroke" d="M28.09,105.24c-2.51-5.81-3.9-12.22-3.9-18.95,0-26.39,21.39-47.78,47.78-47.78,21.31,0,39.36,13.95,45.52,33.22,0,0-57.76-3.29-89.39,33.5Z"/><path class="logo-shadow" d="M11.18,94.6c7.57,0,22.75-16.13,22.75-16.13,0,0,9.63-8.94,22.45-13.62,0,0-15.61,5.19-20.22,5.09-5.54-.13-18.51-29.21,3.34-53.81-18.29,6.35-31.42,23.73-31.42,44.18,0,0,.43,7.31,1.24,10.76,0,0,2.7,9.61,1.85,23.53Z"/><path class="logo-shadow" d="M90.21,58.98c22.66-6.38,45.01-.4,37.63-3.02-8.45-2.99-7.62-11.85-7.62-11.85,0,0-3.34,4.39-30,14.86Z"/></g>
+            <g id="i-helmet"><path class="logo-helmet" d="M.66,106c.84,4.08,18.82,3.64,28.44,2.78,44.27-4.52,100.5-34,107.13-40.41,2.2-2.13,2.98-3.92,2.8-5.49,0,0-22.99-6.11-65.67,3.07-25.04,4.53-39.22,19.55-39.22,19.55,0,0-23.43,24.08-33.47,20.51"/><path class="logo-body" d="M.66,106s-1.06-3.33,2.22-6.38c4.51-4.19-.15-23.54-.15-23.54-1.07-4.54-1.64-9.28-1.64-14.14C1.09,28.01,28.6.5,62.53.5c28.39,0,52.29,19.26,59.33,45.43,0,0,.69,6.19,7.75,9.4,4.72,2.14,9.06,4.39,9.43,7.55,0,0-22.99-6.11-65.67,3.07-25.04,4.53-39.22,19.55-39.22,19.55,0,0-23.43,24.08-33.47,20.51Z"/><path class="logo-helmet" d="M.66,106c10.04,3.58,33.47-20.51,33.47-20.51,0,0,14.19-15.02,39.22-19.55,42.68-9.18,65.67-3.07,65.67-3.07.14,1.18-.2,2.38-1.34,3.86l-.02.03c-5.59-1.12-27.75-4.42-64.31,3.45-25.04,4.53-39.22,19.55-39.22,19.55,0,0-13.82,14.38-24.79,19.32,0,0-8.43-.46-8.68-3.09Z"/></g>
+          </svg>
+        </div>
         <span style="font-weight: 600;">Stock</span>
       </a>
       <div class="nav-right">
@@ -105,6 +117,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="products" onclick="switchTab('products')">Produits</div>
       <div class="tab" data-tab="cocktails" onclick="switchTab('cocktails')">Cocktails</div>
+      <div class="tab" data-tab="repartition" onclick="switchTab('repartition')">Repartition</div>
     </div>
 
     <!-- Products Tab -->
@@ -123,6 +136,29 @@
         <p class="text-white/40 mb-4">Aucun cocktail configure</p>
         <button onclick="openAddCocktailModal()" class="btn-primary">+ Ajouter un cocktail</button>
       </div>
+    </div>
+
+    <!-- Repartition Tab -->
+    <div id="repartition-tab" class="hidden">
+      <div class="glass p-4 mb-4" style="background: rgba(139,92,246,0.05); border-color: rgba(139,92,246,0.2);">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-medium text-purple-300">Touches generiques</div>
+            <div class="text-xs text-white/40 mt-1">Si ton POS a une touche "Cocktail" sans detail, configure ici comment repartir les ventes vers tes cocktails reels pour deduire le stock.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mappings-list"></div>
+
+      <button onclick="openMappingModal()" class="w-full glass p-4 text-center text-white/40 hover:text-white hover:border-purple-500/30 transition-all mt-3">
+        + Ajouter une touche generique
+      </button>
     </div>
 
     <!-- Empty State -->
@@ -299,6 +335,53 @@
       </div>
     </div>
 
+    <!-- Mapping Modal -->
+    <div id="mapping-modal" class="modal">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3 class="font-semibold text-lg" id="mapping-modal-title">Configurer une touche generique</h3>
+          <button onclick="closeMappingModal()" class="text-white/40 hover:text-white text-2xl">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="mapping-pos-name-edit">
+
+          <div class="input-group">
+            <label>Nom de la touche POS</label>
+            <input type="text" id="mapping-pos-name" placeholder="Ex: Cocktail, Cocktail 11€, Boisson">
+            <div class="text-xs text-white/30 mt-1">Le nom exact tel qu'il apparait sur ton POS</div>
+          </div>
+
+          <div class="input-group">
+            <label>Prix (optionnel)</label>
+            <input type="number" step="0.5" id="mapping-pos-price" placeholder="11">
+            <div class="text-xs text-white/30 mt-1">Pour distinguer plusieurs touches avec le meme nom</div>
+          </div>
+
+          <div class="input-group">
+            <label class="flex items-center justify-between">
+              <span>Repartition vers les cocktails</span>
+              <span class="text-purple-400 font-medium" id="total-percentage">0%</span>
+            </label>
+            <div id="mapping-distributions" class="space-y-2 mt-2"></div>
+            <button type="button" onclick="addDistributionRow()" class="add-ingredient-btn mt-3">+ Ajouter un cocktail</button>
+          </div>
+
+          <div id="mapping-warning" class="hidden glass p-3 mt-4" style="background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3);">
+            <div class="flex items-center gap-2 text-yellow-400 text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              <span>Le total doit faire 100%</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="closeMappingModal()" class="btn-secondary flex-1">Annuler</button>
+          <button onclick="saveMapping()" class="btn-primary flex-1" id="save-mapping-btn">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="mt-8 grid grid-cols-2 gap-3">
       <button onclick="openTelegram()" class="btn-secondary flex items-center justify-center gap-2 text-sm">
@@ -343,6 +426,7 @@
     let allProducts = [];
     let allCocktails = [];
     let allRecipes = [];
+    let allMappings = [];
 
     const tg = window.Telegram?.WebApp;
     if (tg) {
@@ -432,9 +516,17 @@
         .select('*')
         .eq('user_id', currentUser.id);
 
+      // Load generic mappings
+      const { data: mappings } = await supabase
+        .from('stock_generic_mappings')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('is_active', true);
+
       allProducts = products || [];
       allCocktails = cocktails || [];
       allRecipes = recipes || [];
+      allMappings = mappings || [];
 
       document.getElementById('loading').classList.add('hidden');
 
@@ -490,6 +582,7 @@
 
       renderProducts();
       renderCocktails();
+      renderMappings();
     }
 
     function renderProducts() {
@@ -591,6 +684,7 @@
 
       document.getElementById('products-tab').classList.toggle('hidden', tabName !== 'products');
       document.getElementById('cocktails-tab').classList.toggle('hidden', tabName !== 'cocktails');
+      document.getElementById('repartition-tab').classList.toggle('hidden', tabName !== 'repartition');
     }
 
     // Product Modal
@@ -741,11 +835,6 @@
         return;
       }
 
-      // Delete old recipes
-      if (cocktailId) {
-        await supabase.from('stock_recipes').delete().eq('cocktail_id', cocktailId);
-      }
-
       // Save new recipes
       const rows = document.querySelectorAll('.ingredient-row');
       const recipesToSave = [];
@@ -763,9 +852,28 @@
         }
       });
 
+      // Backup old recipes before deletion (for rollback)
+      let oldRecipes = [];
+      if (cocktailId) {
+        const { data: backup } = await supabase.from('stock_recipes').select('*').eq('cocktail_id', cocktailId);
+        oldRecipes = backup || [];
+        // Delete old recipes
+        await supabase.from('stock_recipes').delete().eq('cocktail_id', cocktailId);
+      }
+
       if (recipesToSave.length > 0) {
         const { error: recipeError } = await supabase.from('stock_recipes').insert(recipesToSave);
         if (recipeError) {
+          // Rollback: restore old recipes
+          if (oldRecipes.length > 0) {
+            const recipesToRestore = oldRecipes.map(r => ({
+              user_id: r.user_id,
+              cocktail_id: r.cocktail_id,
+              product_id: r.product_id,
+              quantity_cl: r.quantity_cl
+            }));
+            await supabase.from('stock_recipes').insert(recipesToRestore);
+          }
           alert('Erreur recette: ' + recipeError.message);
           return;
         }
@@ -777,6 +885,214 @@
 
     function openAddCocktailModal() {
       openRecipeModal();
+    }
+
+    // ==================== MAPPINGS (Repartition) ====================
+
+    function renderMappings() {
+      const container = document.getElementById('mappings-list');
+
+      // Group mappings by pos_item_name
+      const groupedMappings = {};
+      for (const m of allMappings) {
+        const key = m.pos_item_name + (m.pos_item_price ? '_' + m.pos_item_price : '');
+        if (!groupedMappings[key]) {
+          groupedMappings[key] = {
+            pos_item_name: m.pos_item_name,
+            pos_item_price: m.pos_item_price,
+            distributions: []
+          };
+        }
+        groupedMappings[key].distributions.push({
+          cocktail_id: m.cocktail_id,
+          percentage: m.percentage
+        });
+      }
+
+      if (Object.keys(groupedMappings).length === 0) {
+        container.innerHTML = `
+          <div class="glass p-8 text-center">
+            <p class="text-white/40 mb-2">Aucune touche generique configuree</p>
+            <p class="text-xs text-white/30">Si tu as des touches "Cocktail" ou "Boisson" sur ton POS sans detail, configure ici la repartition.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = Object.values(groupedMappings).map(group => {
+        const totalPercent = group.distributions.reduce((sum, d) => sum + d.percentage, 0);
+        const isComplete = totalPercent === 100;
+
+        return `
+          <div class="product-card glass p-4 mb-3" onclick="openMappingModal('${group.pos_item_name}', ${group.pos_item_price || 'null'})">
+            <div class="flex items-center gap-4 mb-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center text-xl">
+                🎯
+              </div>
+              <div class="flex-1">
+                <div class="font-medium">${group.pos_item_name}</div>
+                <div class="text-sm text-white/40">${group.pos_item_price ? group.pos_item_price + '€' : 'Tous les prix'}</div>
+              </div>
+              <span class="tag ${isComplete ? 'tag-green' : 'tag-orange'}">${totalPercent}%</span>
+            </div>
+            <div class="space-y-1">
+              ${group.distributions.map(d => {
+                const cocktail = allCocktails.find(c => c.id === d.cocktail_id);
+                return cocktail ? `
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-white/60">${cocktail.name}</span>
+                    <span class="text-purple-400">${d.percentage}%</span>
+                  </div>
+                ` : '';
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openMappingModal(posItemName = null, posItemPrice = null) {
+      const modal = document.getElementById('mapping-modal');
+
+      // Reset form
+      document.getElementById('mapping-pos-name-edit').value = posItemName || '';
+      document.getElementById('mapping-pos-name').value = posItemName || '';
+      document.getElementById('mapping-pos-price').value = posItemPrice || '';
+      document.getElementById('mapping-pos-name').disabled = !!posItemName;
+
+      document.getElementById('mapping-modal-title').textContent = posItemName ? 'Modifier la repartition' : 'Nouvelle touche generique';
+
+      // Render distributions
+      const distributionsContainer = document.getElementById('mapping-distributions');
+      distributionsContainer.innerHTML = '';
+
+      if (posItemName) {
+        // Load existing distributions
+        const existingMappings = allMappings.filter(m =>
+          m.pos_item_name === posItemName &&
+          (posItemPrice === null || m.pos_item_price === posItemPrice)
+        );
+        for (const m of existingMappings) {
+          addDistributionRow(m.cocktail_id, m.percentage);
+        }
+      }
+
+      if (distributionsContainer.children.length === 0) {
+        addDistributionRow();
+      }
+
+      updateTotalPercentage();
+      modal.classList.add('show');
+    }
+
+    function closeMappingModal() {
+      document.getElementById('mapping-modal').classList.remove('show');
+      document.getElementById('mapping-pos-name').disabled = false;
+    }
+
+    function addDistributionRow(cocktailId = '', percentage = '') {
+      const container = document.getElementById('mapping-distributions');
+      const row = document.createElement('div');
+      row.className = 'ingredient-row';
+      row.innerHTML = `
+        <select class="dist-cocktail" onchange="updateTotalPercentage()">
+          <option value="">Choisir un cocktail</option>
+          ${allCocktails.map(c => `<option value="${c.id}" ${c.id === cocktailId ? 'selected' : ''}>${c.name}</option>`).join('')}
+        </select>
+        <input type="number" class="dist-percentage" placeholder="%" value="${percentage}" min="1" max="100" onchange="updateTotalPercentage()">
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove(); updateTotalPercentage();">&times;</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function updateTotalPercentage() {
+      const rows = document.querySelectorAll('#mapping-distributions .ingredient-row');
+      let total = 0;
+      rows.forEach(row => {
+        const pct = parseInt(row.querySelector('.dist-percentage').value) || 0;
+        total += pct;
+      });
+
+      const display = document.getElementById('total-percentage');
+      const warning = document.getElementById('mapping-warning');
+      const saveBtn = document.getElementById('save-mapping-btn');
+
+      display.textContent = total + '%';
+      display.className = total === 100 ? 'text-green-400 font-medium' : 'text-purple-400 font-medium';
+
+      if (total !== 100 && total > 0) {
+        warning.classList.remove('hidden');
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+      } else {
+        warning.classList.add('hidden');
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+      }
+    }
+
+    async function saveMapping() {
+      const posItemName = document.getElementById('mapping-pos-name').value.trim();
+      const posItemPrice = parseFloat(document.getElementById('mapping-pos-price').value) || null;
+      const editingName = document.getElementById('mapping-pos-name-edit').value;
+
+      if (!posItemName) {
+        alert('Le nom de la touche est requis');
+        return;
+      }
+
+      // Collect distributions
+      const rows = document.querySelectorAll('#mapping-distributions .ingredient-row');
+      const distributions = [];
+      let totalPercent = 0;
+
+      rows.forEach(row => {
+        const cocktailId = row.querySelector('.dist-cocktail').value;
+        const pct = parseInt(row.querySelector('.dist-percentage').value) || 0;
+        if (cocktailId && pct > 0) {
+          distributions.push({ cocktail_id: cocktailId, percentage: pct });
+          totalPercent += pct;
+        }
+      });
+
+      if (totalPercent !== 100) {
+        alert('Le total doit faire exactement 100%');
+        return;
+      }
+
+      if (distributions.length === 0) {
+        alert('Ajoute au moins un cocktail');
+        return;
+      }
+
+      // Delete old mappings for this pos_item_name if editing
+      if (editingName) {
+        await supabase
+          .from('stock_generic_mappings')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('pos_item_name', editingName);
+      }
+
+      // Insert new mappings
+      const toInsert = distributions.map(d => ({
+        user_id: currentUser.id,
+        pos_item_name: posItemName,
+        pos_item_price: posItemPrice,
+        cocktail_id: d.cocktail_id,
+        percentage: d.percentage,
+        is_active: true
+      }));
+
+      const { error } = await supabase.from('stock_generic_mappings').insert(toInsert);
+
+      if (error) {
+        alert('Erreur: ' + error.message);
+        return;
+      }
+
+      closeMappingModal();
+      loadData();
     }
 
     function openTelegram() {
