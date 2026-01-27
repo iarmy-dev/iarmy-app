@@ -671,26 +671,38 @@ function loadComptaExportSettings() {
 
   if (!toggle) return;
 
-  if (comptaExportSettings.auto_export_enabled) {
-    toggle.checked = true;
-    const dot = document.getElementById('compta-toggle-dot');
-    if (dot) {
-      dot.classList.add('toggle-dot-active');
-      dot.previousElementSibling.classList.add('toggle-active');
-    }
-  }
+  // Charger l'email
   if (comptaExportSettings.export_email && emailInput) {
     emailInput.value = comptaExportSettings.export_email;
   }
+
+  // Charger le jour
   if (comptaExportSettings.auto_export_day && daySelect) {
     daySelect.value = comptaExportSettings.auto_export_day;
   }
+
+  // Charger le format
   if (comptaExportSettings.auto_export_format && formatSelect) {
     formatSelect.value = comptaExportSettings.auto_export_format;
   }
 
+  // Activer le toggle si necessaire
+  if (comptaExportSettings.auto_export_enabled) {
+    toggle.checked = true;
+    const dot = document.getElementById('compta-toggle-dot');
+    if (dot) {
+      dot.style.left = '23px';
+      dot.style.background = '#4ade80';
+      dot.previousElementSibling.style.background = 'rgba(74,222,128,0.3)';
+    }
+    comptaUpdateAutoExportBadge(true);
+  }
+
   // Init month/year selects
   initComptaExportSelects();
+
+  // Mettre a jour l'apercu du mail
+  comptaUpdateEmailPreview();
 }
 
 function initComptaExportSelects() {
@@ -1100,9 +1112,11 @@ function comptaUpdateEmailPreview() {
   const email = emailInput?.value || '';
   previewTo.textContent = email || 'comptable@...';
 
-  // Update CC with user's email (use comptaConfig if available)
+  // Update CC with user's email (get from DOM or global currentUser)
   if (previewCc) {
-    previewCc.textContent = comptaConfig?.user_email || 'ton email';
+    const userEmailEl = document.getElementById('user-email');
+    const userEmail = userEmailEl?.textContent || window.currentUser?.email || 'ton email';
+    previewCc.textContent = userEmail;
   }
 
   // Get checked columns
