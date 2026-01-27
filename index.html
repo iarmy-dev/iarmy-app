@@ -1239,33 +1239,70 @@
             <div onclick="comptaToggleAutoExportAccordion()" style="padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 10px;">
                 <div>
-                  <div style="font-size: 13px; font-weight: 600; color: white;">📧 Envoi automatique</div>
-                  <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;">Envoie le PDF a ta comptable chaque mois</div>
+                  <div style="font-size: 13px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px;">
+                    📧 Envoi automatique
+                    <span id="compta-auto-export-status-badge" style="display: none; font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(74,222,128,0.15); color: #4ade80;">Actif</span>
+                  </div>
+                  <div id="compta-auto-export-subtitle" style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;">Envoie le PDF a ta comptable chaque mois</div>
                 </div>
               </div>
               <span id="compta-auto-export-arrow" style="color: rgba(255,255,255,0.4); transition: transform 0.2s;">▼</span>
             </div>
             <div id="compta-auto-export-content" style="display: none; padding: 0 14px 14px; border-top: 1px solid rgba(255,255,255,0.06);">
+              <!-- Email -->
               <div style="margin-top: 12px;">
-                <input type="email" id="compta-export-email" placeholder="Email de ta comptable" style="width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 13px;" onchange="comptaSaveAutoExportSettings()">
+                <input type="email" id="compta-export-email" placeholder="Email de ta comptable" style="width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 13px;" oninput="comptaUpdateEmailPreview(); comptaValidateExportEmail(); comptaUpdateAutoExportBadge(document.getElementById('compta-auto-export-toggle').checked);" onchange="comptaSaveAutoExportSettings();">
+                <div id="compta-email-error" style="display: none; font-size: 11px; color: #f87171; margin-top: 6px; padding-left: 4px;">Email invalide</div>
               </div>
+              <!-- Options -->
               <div style="display: flex; gap: 8px; margin: 10px 0;">
-                <select id="compta-auto-export-day" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="comptaSaveAutoExportSettings()">
+                <select id="compta-auto-export-day" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="comptaSaveAutoExportSettings();">
                   <option value="1">1er du mois</option>
                   <option value="5">5 du mois</option>
                 </select>
-                <select id="compta-auto-export-format" style="width: 80px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="comptaSaveAutoExportSettings()">
+                <select id="compta-auto-export-format" style="width: 80px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="comptaSaveAutoExportSettings();">
                   <option value="pdf">PDF</option>
                   <option value="xlsx">Excel</option>
                 </select>
               </div>
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+              <!-- Colonnes a inclure -->
+              <div style="margin-bottom: 10px;">
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">Colonnes a inclure :</div>
+                <div id="compta-export-columns-list" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <!-- Genere dynamiquement -->
+                </div>
+              </div>
+              <!-- Info Telegram -->
+              <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 12px; padding: 8px 10px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                📱 Tu recevras une validation sur Telegram avant l'envoi
+              </div>
+              <input type="hidden" id="compta-require-telegram-confirm" value="true">
+              <!-- Toggle activation -->
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 12px;">
                 <div style="font-size: 13px; color: white;">Activer l'envoi automatique</div>
                 <label style="position: relative; width: 44px; height: 24px;">
-                  <input type="checkbox" id="compta-auto-export-toggle" onchange="comptaSaveAutoExportSettings()" style="opacity: 0; width: 0; height: 0;">
+                  <input type="checkbox" id="compta-auto-export-toggle" onchange="comptaToggleAutoExport()" style="opacity: 0; width: 0; height: 0;">
                   <span style="position: absolute; cursor: pointer; inset: 0; background: rgba(255,255,255,0.1); border-radius: 12px; transition: 0.3s;"></span>
                   <span id="compta-toggle-dot" style="position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s;"></span>
                 </label>
+              </div>
+              <!-- Preview email -->
+              <div style="padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;">
+                <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Apercu du mail</div>
+                <div style="background: white; border-radius: 8px; padding: 12px; color: #333;">
+                  <div style="font-size: 10px; color: #666; margin-bottom: 8px;">
+                    <div>De: <span style="color: #333;">noreply@iarmy.fr</span></div>
+                    <div>A: <span id="compta-preview-to" style="color: #333;">comptable@...</span></div>
+                    <div>CC: <span id="compta-preview-cc" style="color: #333;">toi</span></div>
+                  </div>
+                  <div style="border-top: 1px solid #eee; padding-top: 8px;">
+                    <div style="font-size: 11px; font-weight: 600; color: #333; margin-bottom: 6px;">📎 Compta <span id="compta-preview-month">Janvier</span> 2026</div>
+                    <div id="compta-preview-table" style="font-size: 10px; overflow-x: auto;">
+                      <!-- Table preview generated by JS -->
+                    </div>
+                  </div>
+                </div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 8px; text-align: center;">Apercu simplifie · Le vrai mail sera plus detaille</div>
               </div>
             </div>
           </div>

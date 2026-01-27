@@ -124,6 +124,7 @@ function renderComptaUI() {
   updateComptaCounts();
   loadComptaExportSettings();
   comptaLoadNotificationSettings();
+  comptaRenderExportColumns();
 }
 
 // Render keywords
@@ -910,8 +911,8 @@ function comptaLoadNotificationSettings() {
   comptaToggleObjectiveInput();
 }
 
-// Preview export
-function comptaPreviewExport() {
+// Preview export - generates real PDF like original
+async function comptaPreviewExport() {
   if (!comptaConfig?.sheet_id) { comptaToast('Aucun fichier configure', true); return; }
 
   const month = document.getElementById('compta-export-month')?.value;
@@ -919,10 +920,62 @@ function comptaPreviewExport() {
   const monthNames = ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'];
   const sheetName = monthNames[parseInt(month) - 1] + ' ' + year;
 
-  // Open Google Sheet at the right tab
-  const url = `https://docs.google.com/spreadsheets/d/${comptaConfig.sheet_id}/edit#gid=0`;
-  window.open(url, '_blank');
-  comptaToast('Ouverture du fichier...');
+  comptaToast('Chargement de la previsualisation...');
+
+  try {
+    // Refresh session to get fresh token
+    const { data: { session }, error: sessionError } = await supabaseClient.auth.refreshSession();
+
+    if (sessionError || !session?.access_token) {
+      console.error('[Compta] Session error:', sessionError);
+      comptaToast('Session expiree, reconnecte-toi', true);
+      setTimeout(() => location.href = 'https://iarmy.fr', 1500);
+      return;
+    }
+
+    console.log('[Compta] Calling generate-pdf with:', { sheetId: comptaConfig.sheet_id, sheetName });
+
+    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+
+    const pdfRes = await fetch(SUPABASE_URL + '/functions/v1/generate-pdf', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({
+        sheetId: comptaConfig.sheet_id,
+        sheetName: sheetName,
+        title: `Compta - ${sheetName}`
+      })
+    });
+
+    console.log('[Compta] Response status:', pdfRes.status);
+
+    if (!pdfRes.ok) {
+      const errText = await pdfRes.text();
+      console.error('[Compta] PDF error response:', errText);
+      try {
+        const err = JSON.parse(errText);
+        throw new Error(err.error || 'Impossible de generer le PDF');
+      } catch {
+        throw new Error(errText || 'Impossible de generer le PDF');
+      }
+    }
+
+    const blob = await pdfRes.blob();
+    const url = URL.createObjectURL(blob);
+
+    // Ouvrir dans un nouvel onglet
+    window.open(url, '_blank');
+
+    comptaToast('PDF ouvert dans un nouvel onglet');
+  } catch (err) {
+    console.error('[Compta] Preview error:', err);
+    comptaToast('Erreur: ' + err.message, true);
+  }
 }
 
 // Export full year
@@ -993,6 +1046,184 @@ function comptaUpdateMonthOptions() {
   }
 }
 
+// Render export columns checkboxes
+function comptaRenderExportColumns() {
+  const container = document.getElementById('compta-export-columns-list');
+  if (!container) return;
+
+  // Colonnes de base toujours presentes
+  const baseColumns = [
+    { id: 'date', nom: 'Date', checked: true }
+  ];
+
+  // Colonnes des mots-cles configures
+  const kwColumns = comptaKeywords.filter(k => k.nom && k.colonne).map(k => ({
+    id: k.nom.toLowerCase(),
+    nom: k.nom,
+    checked: comptaExportSettings.export_columns ? comptaExportSettings.export_columns.includes(k.nom) : true
+  }));
+
+  // Colonnes calculees
+  const calcColumns = [
+    { id: 'total', nom: 'TOTAL', checked: comptaExportSettings.export_columns ? comptaExportSettings.export_columns.includes('TOTAL') : true },
+    { id: 'tva', nom: 'TVA', checked: comptaExportSettings.export_columns ? comptaExportSettings.export_columns.includes('TVA') : true }
+  ];
+
+  const allColumns = [...baseColumns, ...kwColumns, ...calcColumns];
+
+  // Si pas de settings sauvegardes, tout coche par defaut
+  if (!comptaExportSettings.export_columns) {
+    allColumns.forEach(c => c.checked = true);
+  }
+
+  container.innerHTML = allColumns.map(col => `
+    <label style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; cursor: pointer; font-size: 12px;">
+      <input type="checkbox" class="compta-export-col-checkbox" data-col="${col.nom}" ${col.checked ? 'checked' : ''} onchange="comptaSaveAutoExportSettings(); comptaUpdateEmailPreview();" style="accent-color: #FF6B35;">
+      <span>${col.nom}</span>
+    </label>
+  `).join('');
+
+  // Update preview after rendering
+  comptaUpdateEmailPreview();
+}
+
+// Update email preview in auto-export section
+function comptaUpdateEmailPreview() {
+  const emailInput = document.getElementById('compta-export-email');
+  const previewTo = document.getElementById('compta-preview-to');
+  const previewCc = document.getElementById('compta-preview-cc');
+  const previewTable = document.getElementById('compta-preview-table');
+
+  if (!previewTo || !previewTable) return;
+
+  // Update recipient
+  const email = emailInput?.value || '';
+  previewTo.textContent = email || 'comptable@...';
+
+  // Update CC with user's email (use comptaConfig if available)
+  if (previewCc) {
+    previewCc.textContent = comptaConfig?.user_email || 'ton email';
+  }
+
+  // Get checked columns
+  const checkedCols = [];
+  document.querySelectorAll('.compta-export-col-checkbox:checked').forEach(cb => {
+    checkedCols.push(cb.dataset.col);
+  });
+
+  if (checkedCols.length === 0) {
+    previewTable.innerHTML = '<div style="color: #999; font-style: italic;">Selectionne des colonnes</div>';
+    return;
+  }
+
+  // Generate mini table preview with example data
+  const exampleData = {
+    'Date': '15/01',
+    'CB': '245',
+    'ESP': '180',
+    'TR': '95',
+    'DEP': '45',
+    'RAZ': '520',
+    'TOTAL': '520',
+    'TVA': '52'
+  };
+
+  // Fill missing columns with random values
+  checkedCols.forEach(col => {
+    if (!exampleData[col]) {
+      exampleData[col] = String(Math.floor(Math.random() * 200) + 50);
+    }
+  });
+
+  const headerRow = checkedCols.map(c => `<th style="padding: 4px 8px; background: #0f9d58; color: white; font-size: 9px; white-space: nowrap;">${c}</th>`).join('');
+  const dataRow = checkedCols.map(c => `<td style="padding: 4px 8px; border: 1px solid #e0e0e0; font-size: 9px; text-align: center;">${exampleData[c] || '-'}</td>`).join('');
+
+  previewTable.innerHTML = `
+    <table style="border-collapse: collapse; width: 100%; margin-top: 4px;">
+      <tr>${headerRow}</tr>
+      <tr>${dataRow}</tr>
+      <tr style="color: #999;">${checkedCols.map(() => '<td style="padding: 2px 8px; font-size: 8px; text-align: center;">...</td>').join('')}</tr>
+    </table>
+  `;
+}
+
+// Validate export email
+function comptaValidateExportEmail() {
+  const emailInput = document.getElementById('compta-export-email');
+  const errorDiv = document.getElementById('compta-email-error');
+  const email = emailInput?.value?.trim() || '';
+
+  if (!email) {
+    if (errorDiv) errorDiv.style.display = 'none';
+    if (emailInput) emailInput.style.borderColor = 'rgba(255,255,255,0.08)';
+    return true; // Vide = OK (pas encore rempli)
+  }
+
+  // Regex simple pour validation email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = emailRegex.test(email);
+
+  if (!isValid) {
+    if (errorDiv) errorDiv.style.display = 'block';
+    if (emailInput) emailInput.style.borderColor = 'rgba(248,113,113,0.5)';
+  } else {
+    if (errorDiv) errorDiv.style.display = 'none';
+    if (emailInput) emailInput.style.borderColor = 'rgba(74,222,128,0.3)';
+  }
+
+  return isValid;
+}
+
+// Update auto export badge
+function comptaUpdateAutoExportBadge(isActive) {
+  const badge = document.getElementById('compta-auto-export-status-badge');
+  const subtitle = document.getElementById('compta-auto-export-subtitle');
+  const email = document.getElementById('compta-export-email')?.value || '';
+
+  if (isActive && email) {
+    if (badge) badge.style.display = 'inline';
+    if (subtitle) subtitle.textContent = email;
+  } else {
+    if (badge) badge.style.display = 'none';
+    if (subtitle) subtitle.textContent = 'Envoie le PDF a ta comptable chaque mois';
+  }
+}
+
+// Toggle auto export
+function comptaToggleAutoExport() {
+  const toggle = document.getElementById('compta-auto-export-toggle');
+  const dot = document.getElementById('compta-toggle-dot');
+  const email = document.getElementById('compta-export-email')?.value?.trim() || '';
+
+  // Si on essaie d'activer, verifier l'email
+  if (toggle?.checked) {
+    if (!email) {
+      comptaToast('Entre l\'email de ta comptable', true);
+      toggle.checked = false;
+      return;
+    }
+    if (!comptaValidateExportEmail()) {
+      comptaToast('Email invalide', true);
+      toggle.checked = false;
+      return;
+    }
+    if (dot) {
+      dot.style.left = '23px';
+      dot.style.background = '#4ade80';
+      dot.previousElementSibling.style.background = 'rgba(74,222,128,0.3)';
+    }
+  } else {
+    if (dot) {
+      dot.style.left = '3px';
+      dot.style.background = 'rgba(255,255,255,0.4)';
+      dot.previousElementSibling.style.background = 'rgba(255,255,255,0.1)';
+    }
+  }
+
+  comptaUpdateAutoExportBadge(toggle?.checked);
+  comptaSaveAutoExportSettings();
+}
+
 // Make functions globally available
 window.comptaToggleKwSection = comptaToggleKwSection;
 window.comptaToggleRulesSection = comptaToggleRulesSection;
@@ -1026,4 +1257,9 @@ window.comptaToggleObjectiveInput = comptaToggleObjectiveInput;
 window.comptaPreviewExport = comptaPreviewExport;
 window.comptaExportFullYear = comptaExportFullYear;
 window.comptaLoadNotificationSettings = comptaLoadNotificationSettings;
+window.comptaRenderExportColumns = comptaRenderExportColumns;
+window.comptaUpdateEmailPreview = comptaUpdateEmailPreview;
+window.comptaValidateExportEmail = comptaValidateExportEmail;
+window.comptaUpdateAutoExportBadge = comptaUpdateAutoExportBadge;
+window.comptaToggleAutoExport = comptaToggleAutoExport;
 window.initComptaModule = initComptaModule;
