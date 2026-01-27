@@ -236,6 +236,24 @@
     .invoice-download { color: rgba(255,255,255,0.4); padding: 4px; cursor: pointer; transition: color 0.2s; }
     .invoice-download:hover { color: white; }
 
+    /* Billing Module Card */
+    .billing-module-card { display: flex; align-items: center; gap: 14px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; margin-bottom: 10px; }
+    .billing-module-card:last-child { margin-bottom: 0; }
+    .billing-module-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .billing-module-info { flex: 1; min-width: 0; }
+    .billing-module-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .billing-module-name { font-size: 15px; font-weight: 600; }
+    .billing-module-badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+    .billing-module-badge.active { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .billing-module-badge.tester { background: rgba(168,85,247,0.15); color: #c084fc; }
+    .billing-module-badge.trial { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .billing-module-badge.canceled { background: rgba(239,68,68,0.15); color: #f87171; }
+    .billing-module-details { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .billing-module-price { text-align: right; flex-shrink: 0; }
+    .billing-module-amount { font-size: 15px; font-weight: 600; }
+    .billing-module-period { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .billing-empty { text-align: center; padding: 24px; color: rgba(255,255,255,0.4); font-size: 13px; }
+
     /* Settings */
     .settings-section { margin-bottom: 24px; }
     .settings-section:last-child { margin-bottom: 0; }
@@ -706,28 +724,14 @@
       <div class="modal-body">
         <div id="billing-loading" class="loading"><div class="spinner"></div></div>
         <div id="billing-content" style="display: none;">
-          <!-- Subscription -->
-          <div class="billing-card">
-            <div class="billing-row">
-              <span class="billing-label">Abonnement</span>
-              <span class="billing-value" id="billing-product">-</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Statut</span>
-              <span class="badge" id="billing-badge">-</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Prix</span>
-              <span class="billing-value" id="billing-price">-</span>
-            </div>
-            <div class="billing-row" id="billing-date-row">
-              <span class="billing-label" id="billing-date-label">Renouvellement</span>
-              <span class="billing-value" id="billing-date">-</span>
-            </div>
+          <!-- Modules List - Populated dynamically -->
+          <div class="settings-title">Mes soldats</div>
+          <div id="billing-modules-list">
+            <!-- Rendered by JS -->
           </div>
 
           <!-- Payment Method -->
-          <div id="payment-section" style="display: none;">
+          <div id="payment-section" style="display: none; margin-top: 24px;">
             <div class="settings-title">Moyen de paiement</div>
             <div class="payment-box">
               <div class="payment-info">
@@ -736,15 +740,6 @@
               </div>
               <button class="btn-small" onclick="openCardModal()">Modifier</button>
             </div>
-          </div>
-
-          <!-- Cancel/Reactivate -->
-          <div id="cancel-section" style="display: none;">
-            <button class="btn-danger-outline" onclick="cancelSubscription()">Annuler l'abonnement</button>
-          </div>
-          <div id="reactivate-section" style="display: none;">
-            <p id="cancel-notice" style="font-size: 13px; color: #fbbf24; margin-bottom: 12px; text-align: center;"></p>
-            <button class="btn-success-outline" onclick="reactivateSubscription()">Reactiver l'abonnement</button>
           </div>
 
           <!-- Invoices -->
@@ -917,6 +912,41 @@
     let isTelegramMode = false;
     let telegramUserId = null;
     let telegramSubscription = null;
+
+    // ========================================
+    // CONFIG MODULES - Ajouter ici les nouveaux modules
+    // ========================================
+    const MODULES_CONFIG = {
+      compta: {
+        name: 'Compta',
+        color: '#22c55e',
+        colorLight: 'rgba(34,197,94,0.15)',
+        price: 29,
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>`
+      },
+      stock: {
+        name: 'Stock',
+        color: '#06B6D4',
+        colorLight: 'rgba(6,182,212,0.15)',
+        price: 19,
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/></svg>`
+      },
+      paie: {
+        name: 'Paie',
+        color: '#f59e0b',
+        colorLight: 'rgba(245,158,11,0.15)',
+        price: 39,
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`
+      }
+      // Pour ajouter un nouveau module:
+      // nouveau_module: {
+      //   name: 'Nom Affiche',
+      //   color: '#HEXCOLOR',
+      //   colorLight: 'rgba(r,g,b,0.15)',
+      //   price: XX,
+      //   icon: `<svg>...</svg>`
+      // }
+    };
 
     // SECURITY: Escape HTML to prevent XSS
     function escapeHtml(text) {
@@ -1418,19 +1448,21 @@
       });
     });
 
-    // Billing
+    // Billing - Charge tous les modules actifs
     async function loadBillingData() {
       try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+
         // Mode Telegram: utiliser les données de subscription déjà récupérées
         if (isTelegramMode && telegramSubscription) {
           document.getElementById('billing-loading').style.display = 'none';
           document.getElementById('billing-content').style.display = 'block';
           billingData = {
-            subscription: {
-              isTester: telegramSubscription.isTester,
-              status: telegramSubscription.status,
-              productName: 'iArmy Compta'
-            },
+            modules: [{
+              module_name: 'compta',
+              status: telegramSubscription.isTester ? 'tester' : telegramSubscription.status,
+              is_tester: telegramSubscription.isTester
+            }],
             paymentMethod: null,
             invoices: []
           };
@@ -1438,44 +1470,52 @@
           return;
         }
 
-        const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
           document.getElementById('billing-loading').innerHTML = '<p style="color: rgba(255,255,255,0.5);">Connecte-toi pour voir la facturation</p>';
           return;
         }
 
-        // D'abord verifier le statut dans Supabase (testeur, etc)
-        const { data: supabaseSub } = await supabaseClient
+        // Charger TOUS les modules de l'utilisateur depuis Supabase
+        const { data: userModules, error } = await supabaseClient
           .from('subscriptions')
-          .select('status, is_tester')
-          .eq('user_id', currentUser.id)
-          .eq('module_name', 'compta')
-          .maybeSingle();
+          .select('module_name, status, is_tester, trial_end, current_period_end, stripe_subscription_id')
+          .eq('user_id', currentUser.id);
 
-        const isTester = supabaseSub?.is_tester || supabaseSub?.status === 'tester';
+        if (error) throw error;
 
-        if (isTester) {
-          // Testeur: pas besoin d'appeler Stripe
-          billingData = {
-            subscription: {
-              isTester: true,
-              status: 'tester',
-              productName: 'iArmy Compta'
-            },
-            paymentMethod: null,
-            invoices: []
-          };
-        } else {
-          // Pas testeur: appeler Stripe pour les vraies donnees
-          const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-billing', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + session.access_token
-            }
-          });
-          billingData = await response.json();
+        // Filtrer uniquement les modules actifs (tester, active, trialing, ou annulé mais encore actif)
+        const activeModules = (userModules || []).filter(m =>
+          m.status === 'tester' ||
+          m.is_tester ||
+          m.status === 'active' ||
+          m.status === 'trialing' ||
+          m.status === 'canceled'
+        );
+
+        // Si au moins un module payant, charger les infos Stripe
+        const hasPaidModule = activeModules.some(m => !m.is_tester && m.status !== 'tester');
+        let stripeData = { paymentMethod: null, invoices: [] };
+
+        if (hasPaidModule && session) {
+          try {
+            const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-billing', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + session.access_token
+              }
+            });
+            stripeData = await response.json();
+          } catch (e) {
+            console.error('Stripe billing error:', e);
+          }
         }
+
+        billingData = {
+          modules: activeModules,
+          paymentMethod: stripeData.paymentMethod,
+          invoices: stripeData.invoices || []
+        };
 
         document.getElementById('billing-loading').style.display = 'none';
         document.getElementById('billing-content').style.display = 'block';
@@ -1488,58 +1528,82 @@
     }
 
     function renderBillingData() {
-      const sub = billingData.subscription;
+      const modules = billingData.modules || [];
       const pm = billingData.paymentMethod;
       const invoices = billingData.invoices;
+      const listEl = document.getElementById('billing-modules-list');
 
-      if (sub) {
-        document.getElementById('billing-product').textContent = sub.productName || 'iArmy Compta';
-
-        const badge = document.getElementById('billing-badge');
-
-        if (sub.isTester || sub.status === 'tester') {
-          badge.textContent = 'Testeur';
-          badge.className = 'badge tester';
-          document.getElementById('billing-price').textContent = 'Gratuit';
-          document.getElementById('billing-date-label').textContent = 'Statut';
-          document.getElementById('billing-date').textContent = 'Illimite';
-        } else if (sub.status === 'active') {
-          badge.textContent = 'Actif';
-          badge.className = 'badge active';
-          document.getElementById('billing-price').textContent = formatAmount(sub.amount) + '/mois';
-          document.getElementById('billing-date-label').textContent = 'Prochaine facture';
-          document.getElementById('billing-date').textContent = formatDate(sub.currentPeriodEnd);
-          document.getElementById('cancel-section').style.display = 'block';
-        } else if (sub.status === 'trialing') {
-          badge.textContent = 'Essai';
-          badge.className = 'badge trial';
-          document.getElementById('billing-price').textContent = formatAmount(sub.amount) + '/mois';
-          document.getElementById('billing-date-label').textContent = 'Fin de l\'essai';
-          document.getElementById('billing-date').textContent = formatDate(sub.trialEnd);
-          document.getElementById('cancel-section').style.display = 'block';
-        } else if (sub.cancelAtPeriodEnd) {
-          badge.textContent = 'Annule';
-          badge.className = 'badge';
-          badge.style.background = 'rgba(239,68,68,0.15)';
-          badge.style.color = '#f87171';
-          document.getElementById('billing-price').textContent = formatAmount(sub.amount) + '/mois';
-          document.getElementById('billing-date-label').textContent = 'Acces jusqu\'au';
-          document.getElementById('billing-date').textContent = formatDate(sub.currentPeriodEnd);
-          document.getElementById('reactivate-section').style.display = 'block';
-          document.getElementById('cancel-notice').textContent = 'Ton abonnement sera desactive le ' + formatDate(sub.currentPeriodEnd);
-        }
-
-        // Payment method
-        if (pm) {
-          document.getElementById('payment-section').style.display = 'block';
-          document.getElementById('card-brand').textContent = pm.brand.toUpperCase();
-          document.getElementById('card-details').textContent = '•••• ' + pm.last4 + ' · ' + pm.expMonth + '/' + pm.expYear;
-        }
+      // Render modules
+      if (modules.length === 0) {
+        listEl.innerHTML = '<div class="billing-empty">Aucun module actif</div>';
       } else {
-        document.getElementById('billing-product').textContent = 'Aucun';
-        document.getElementById('billing-badge').textContent = '-';
-        document.getElementById('billing-price').textContent = '-';
-        document.getElementById('billing-date-row').style.display = 'none';
+        listEl.innerHTML = modules.map(mod => {
+          const config = MODULES_CONFIG[mod.module_name] || {
+            name: mod.module_name,
+            color: '#FF6B35',
+            colorLight: 'rgba(255,107,53,0.15)',
+            price: 0,
+            icon: ''
+          };
+
+          const isTester = mod.is_tester || mod.status === 'tester';
+          const isActive = mod.status === 'active';
+          const isTrial = mod.status === 'trialing';
+          const isCanceled = mod.status === 'canceled';
+
+          let badgeClass = 'active';
+          let badgeText = 'Actif';
+          let priceText = config.price + '€';
+          let periodText = '/mois';
+          let detailText = '';
+
+          if (isTester) {
+            badgeClass = 'tester';
+            badgeText = 'Testeur';
+            priceText = 'Gratuit';
+            periodText = '';
+            detailText = 'Acces illimite';
+          } else if (isTrial) {
+            badgeClass = 'trial';
+            badgeText = 'Essai';
+            detailText = mod.trial_end ? 'Fin le ' + formatDate(mod.trial_end) : '';
+          } else if (isCanceled) {
+            badgeClass = 'canceled';
+            badgeText = 'Annule';
+            detailText = mod.current_period_end ? 'Acces jusqu\'au ' + formatDate(mod.current_period_end) : '';
+          } else if (isActive) {
+            detailText = mod.current_period_end ? 'Renouvellement le ' + formatDate(mod.current_period_end) : '';
+          }
+
+          return `
+            <div class="billing-module-card" style="border-color: ${config.color}22;">
+              <div class="billing-module-icon" style="background: ${config.colorLight}; color: ${config.color};">
+                ${config.icon}
+              </div>
+              <div class="billing-module-info">
+                <div class="billing-module-header">
+                  <span class="billing-module-name">${config.name}</span>
+                  <span class="billing-module-badge ${badgeClass}">${badgeText}</span>
+                </div>
+                <div class="billing-module-details">${detailText}</div>
+              </div>
+              <div class="billing-module-price">
+                <div class="billing-module-amount">${priceText}</div>
+                <div class="billing-module-period">${periodText}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Payment method (seulement si au moins un module payant)
+      const hasPaidModule = modules.some(m => !m.is_tester && m.status !== 'tester');
+      if (pm && hasPaidModule) {
+        document.getElementById('payment-section').style.display = 'block';
+        document.getElementById('card-brand').textContent = pm.brand.toUpperCase();
+        document.getElementById('card-details').textContent = '•••• ' + pm.last4 + ' · ' + pm.expMonth + '/' + pm.expYear;
+      } else {
+        document.getElementById('payment-section').style.display = 'none';
       }
 
       // Invoices
