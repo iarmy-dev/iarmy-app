@@ -138,7 +138,7 @@
     .module-badge.setup { background: rgba(255,107,53,0.2); color: #FF8B5E; }
 
     /* Mini spreadsheet animation */
-    .mini-sheet { width: 32px; height: 32px; background: #1a472a; border-radius: 4px; overflow: hidden; }
+    .mini-sheet { width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
     .mini-sheet-row { display: flex; height: 8px; }
     .mini-sheet-cell { flex: 1; background: rgba(255,255,255,0.1); margin: 1px; border-radius: 1px; }
     .mini-sheet-cell.fill { animation: cellFill 2s ease-in-out infinite; }
@@ -297,14 +297,14 @@
       .footer-links { flex-wrap: wrap; gap: 16px; }
     }
 
-    /* Loading Screen - Badass Edition */
+    /* Loading Screen - Army Edition */
     .loading-screen {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: #030303;
+      background: #0f0f0f;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -318,120 +318,166 @@
       visibility: hidden;
       pointer-events: none;
     }
-    .loading-screen.hidden .loading-logo-wrapper {
-      transform: scale(1.5);
+    .loading-screen.hidden .loading-army {
+      transform: scale(1.2);
       opacity: 0;
+    }
+
+    /* Dot grid on loading screen */
+    .loading-grid {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+      background-size: 32px 32px;
+      pointer-events: none;
     }
 
     /* Glow background effect */
     .loading-glow {
       position: absolute;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(255,107,53,0.15) 0%, transparent 70%);
-      animation: glowPulse 2s ease-in-out infinite;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255,107,53,0.12) 0%, transparent 70%);
+      animation: glowPulse 2.5s ease-in-out infinite;
     }
     @keyframes glowPulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.3); opacity: 1; }
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; }
     }
 
-    /* Logo wrapper with ring */
-    .loading-logo-wrapper {
-      position: relative;
-      width: 120px;
-      height: 120px;
+    /* Army container */
+    .loading-army {
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
+      gap: 24px;
       transition: transform 0.5s ease, opacity 0.5s ease;
+      position: relative;
     }
 
-    /* Spinning ring */
-    .loading-ring {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      border: 2px solid rgba(255,107,53,0.1);
+    /* Individual soldier in loading */
+    .loading-soldier {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: soldierGardeAVous 2.5s ease-in-out infinite;
     }
-    .loading-ring::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      border-radius: 50%;
-      border: 2px solid transparent;
-      border-top-color: #FF6B35;
-      animation: ringSpin 1s linear infinite;
-    }
-    @keyframes ringSpin {
-      to { transform: rotate(360deg); }
+    .loading-soldier:nth-child(1) { animation-delay: 0s; }
+    .loading-soldier:nth-child(2) { animation-delay: 0.15s; }
+    .loading-soldier:nth-child(3) { animation-delay: 0.3s; }
+    .loading-soldier:nth-child(4) { animation-delay: 0.45s; }
+    .loading-soldier:nth-child(5) { animation-delay: 0.6s; }
+
+    @keyframes soldierGardeAVous {
+      0%, 40%, 100% { transform: translateY(0); }
+      50%, 60% { transform: translateY(-5px); }
     }
 
-    /* Outer dashed ring */
-    .loading-ring-outer {
-      position: absolute;
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      border: 1px dashed rgba(255,107,53,0.2);
-      animation: ringSpinSlow 8s linear infinite;
-    }
-    @keyframes ringSpinSlow {
-      to { transform: rotate(-360deg); }
-    }
-
-    /* The logo itself */
-    .loading-logo {
-      width: 72px;
-      height: 72px;
+    /* Soldier box */
+    .loading-soldier-box {
+      width: 56px;
+      height: 56px;
       background: linear-gradient(135deg, #FF6B35, #FF8B5E);
-      border-radius: 18px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 40px rgba(255,107,53,0.4);
-      animation: logoFloat 3s ease-in-out infinite;
+      box-shadow: 0 4px 20px rgba(255,107,53,0.3);
     }
-    /* Soldat dans le loading */
-    .loading-logo .logo-i-soldier { transform: scale(1.8); }
-    .loading-logo .logo-i-cap { animation: none; }
-    @keyframes logoFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
+    .loading-soldier:nth-child(1) .loading-soldier-box { box-shadow: 0 4px 25px rgba(255,107,53,0.4); }
+    .loading-soldier:nth-child(3) .loading-soldier-box { box-shadow: 0 4px 30px rgba(255,107,53,0.5); }
+    .loading-soldier:nth-child(5) .loading-soldier-box { box-shadow: 0 4px 25px rgba(255,107,53,0.4); }
+
+    /* Soldier parts in loading */
+    .loading-soldier-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform: scale(1.4);
     }
 
-    /* Shine effect */
-    .loading-logo::before {
+    /* Helmet animation for loading soldiers */
+    .loading-soldier-cap {
+      width: 9px;
+      height: 4px;
+      background: white;
+      border-radius: 5px 5px 1px 1px;
+      position: relative;
+      margin-bottom: 0px;
+      z-index: 2;
+    }
+    .loading-soldier-cap::after {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        45deg,
-        transparent 40%,
-        rgba(255,255,255,0.3) 50%,
-        transparent 60%
-      );
-      animation: logoShine 2s ease-in-out infinite;
-    }
-    @keyframes logoShine {
-      0% { transform: translateX(-100%) translateY(-100%); }
-      100% { transform: translateX(100%) translateY(100%); }
+      bottom: -2px;
+      left: -2px;
+      width: 13px;
+      height: 2px;
+      background: white;
+      border-radius: 1px;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
     }
 
-    /* Particles */
+    /* Staggered helmet bounce */
+    .loading-soldier:nth-child(1) .loading-soldier-cap { animation: loadingCapBounce 2.5s ease-in-out infinite 0s; }
+    .loading-soldier:nth-child(2) .loading-soldier-cap { animation: loadingCapBounce 2.5s ease-in-out infinite 0.15s; }
+    .loading-soldier:nth-child(3) .loading-soldier-cap { animation: loadingCapBounce 2.5s ease-in-out infinite 0.3s; }
+    .loading-soldier:nth-child(4) .loading-soldier-cap { animation: loadingCapBounce 2.5s ease-in-out infinite 0.45s; }
+    .loading-soldier:nth-child(5) .loading-soldier-cap { animation: loadingCapBounce 2.5s ease-in-out infinite 0.6s; }
+
+    @keyframes loadingCapBounce {
+      0%, 35% { transform: translateY(0) translateX(0) rotate(0deg); }
+      42% { transform: translateY(3px) translateX(-1px) rotate(-5deg); }
+      52%, 58% { transform: translateY(-3px) translateX(1px) rotate(4deg); }
+      65% { transform: translateY(1px) translateX(-0.5px) rotate(-2deg); }
+      75%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+    }
+
+    .loading-soldier-head {
+      width: 7px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      margin-bottom: 2px;
+    }
+
+    .loading-soldier-body {
+      width: 5px;
+      height: 9px;
+      background: white;
+      border-radius: 2px;
+    }
+
+    /* Ground line */
+    .loading-ground {
+      width: 320px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,107,53,0.3), transparent);
+      margin-top: 16px;
+      border-radius: 1px;
+    }
+
+    /* Loading text */
+    .loading-text {
+      margin-top: 28px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      animation: textPulse 2s ease-in-out infinite;
+    }
+    @keyframes textPulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+
+    /* Floating particles around army */
     .loading-particles {
       position: absolute;
-      width: 200px;
-      height: 200px;
+      width: 350px;
+      height: 150px;
+      pointer-events: none;
     }
     .particle {
       position: absolute;
@@ -441,24 +487,15 @@
       border-radius: 50%;
       animation: particleFloat 3s ease-in-out infinite;
     }
-    .particle:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
-    .particle:nth-child(2) { top: 20%; right: 15%; animation-delay: 0.5s; }
-    .particle:nth-child(3) { bottom: 25%; left: 10%; animation-delay: 1s; }
-    .particle:nth-child(4) { bottom: 15%; right: 20%; animation-delay: 1.5s; }
-    .particle:nth-child(5) { top: 50%; left: 5%; animation-delay: 0.3s; width: 3px; height: 3px; }
-    .particle:nth-child(6) { top: 40%; right: 5%; animation-delay: 0.8s; width: 3px; height: 3px; }
+    .particle:nth-child(1) { top: 0; left: 10%; animation-delay: 0s; }
+    .particle:nth-child(2) { top: 20%; right: 5%; animation-delay: 0.5s; }
+    .particle:nth-child(3) { bottom: 30%; left: 5%; animation-delay: 1s; }
+    .particle:nth-child(4) { bottom: 10%; right: 10%; animation-delay: 1.5s; }
+    .particle:nth-child(5) { top: 40%; left: 0; animation-delay: 0.3s; width: 3px; height: 3px; }
+    .particle:nth-child(6) { top: 30%; right: 0; animation-delay: 0.8s; width: 3px; height: 3px; }
     @keyframes particleFloat {
-      0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
-      50% { transform: translateY(-10px) scale(1.2); opacity: 1; }
-    }
-
-    /* Loading text */
-    .loading-text {
-      margin-top: 32px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
-      letter-spacing: 3px;
-      text-transform: uppercase;
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+      50% { transform: translateY(-8px) scale(1.2); opacity: 0.8; }
     }
   </style>
 </head>
@@ -471,6 +508,7 @@
 
   <!-- Loading Screen -->
   <div class="loading-screen" id="loading-screen">
+    <div class="loading-grid"></div>
     <div class="loading-glow"></div>
     <div class="loading-particles">
       <div class="particle"></div>
@@ -480,18 +518,60 @@
       <div class="particle"></div>
       <div class="particle"></div>
     </div>
-    <div class="loading-logo-wrapper">
-      <div class="loading-ring-outer"></div>
-      <div class="loading-ring"></div>
-      <div class="loading-logo">
-        <div class="logo-i-soldier">
-          <div class="logo-i-cap"></div>
-          <div class="logo-i-dot"></div>
-          <div class="logo-i-body"></div>
+    <div class="loading-army">
+      <!-- Soldat 1 -->
+      <div class="loading-soldier">
+        <div class="loading-soldier-box">
+          <div class="loading-soldier-inner">
+            <div class="loading-soldier-cap"></div>
+            <div class="loading-soldier-head"></div>
+            <div class="loading-soldier-body"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Soldat 2 -->
+      <div class="loading-soldier">
+        <div class="loading-soldier-box">
+          <div class="loading-soldier-inner">
+            <div class="loading-soldier-cap"></div>
+            <div class="loading-soldier-head"></div>
+            <div class="loading-soldier-body"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Soldat 3 -->
+      <div class="loading-soldier">
+        <div class="loading-soldier-box">
+          <div class="loading-soldier-inner">
+            <div class="loading-soldier-cap"></div>
+            <div class="loading-soldier-head"></div>
+            <div class="loading-soldier-body"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Soldat 4 -->
+      <div class="loading-soldier">
+        <div class="loading-soldier-box">
+          <div class="loading-soldier-inner">
+            <div class="loading-soldier-cap"></div>
+            <div class="loading-soldier-head"></div>
+            <div class="loading-soldier-body"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Soldat 5 -->
+      <div class="loading-soldier">
+        <div class="loading-soldier-box">
+          <div class="loading-soldier-inner">
+            <div class="loading-soldier-cap"></div>
+            <div class="loading-soldier-head"></div>
+            <div class="loading-soldier-body"></div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="loading-text">Chargement</div>
+    <div class="loading-ground"></div>
+    <div class="loading-text">Rassemblement</div>
   </div>
 
   <nav>
@@ -569,7 +649,20 @@
       <div class="module-card compta" id="module-compta" onclick="goToModule()">
         <span class="module-badge active" id="compta-badge" style="display:none;">Actif</span>
         <div class="module-icon" style="background: linear-gradient(180deg, #22c55e, #16a34a);">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>
+          <div class="mini-sheet">
+            <div class="mini-sheet-row">
+              <div class="mini-sheet-cell fill fill-1"></div>
+              <div class="mini-sheet-cell fill fill-2"></div>
+            </div>
+            <div class="mini-sheet-row">
+              <div class="mini-sheet-cell fill fill-3"></div>
+              <div class="mini-sheet-cell fill fill-4"></div>
+            </div>
+            <div class="mini-sheet-row">
+              <div class="mini-sheet-cell fill fill-5"></div>
+              <div class="mini-sheet-cell fill fill-6"></div>
+            </div>
+          </div>
         </div>
         <div class="module-name">Compta</div>
         <div class="module-status" id="module-status">Chargement...</div>
@@ -590,6 +683,7 @@
               <div class="mini-bottle-neck"></div>
               <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
             </div>
+            <div class="mini-stock-count">12</div>
           </div>
         </div>
         <div class="module-name">Stock</div>
@@ -600,12 +694,23 @@
       <div class="module-card paie" id="module-paie" onclick="goToPaieModule()">
         <span class="module-badge active" id="paie-badge" style="display:none;">Actif</span>
         <div class="module-icon" style="background: linear-gradient(180deg, #fbbf24, #f59e0b);">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="9" cy="7" r="3" fill="white"/>
-            <circle cx="17" cy="7" r="2.5" fill="rgba(255,255,255,0.7)"/>
-            <path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-            <path d="M15 13c2.2 0 4 1.8 4 4v2" stroke="rgba(255,255,255,0.7)" stroke-width="2" fill="none" stroke-linecap="round"/>
-          </svg>
+          <div class="mini-paie">
+            <div class="mini-paie-people">
+              <div class="mini-paie-person mini-paie-person-1">
+                <div class="mini-paie-head"></div>
+                <div class="mini-paie-body"></div>
+              </div>
+              <div class="mini-paie-person mini-paie-person-2">
+                <div class="mini-paie-head"></div>
+                <div class="mini-paie-body"></div>
+              </div>
+              <div class="mini-paie-person mini-paie-person-3">
+                <div class="mini-paie-head"></div>
+                <div class="mini-paie-body"></div>
+              </div>
+            </div>
+            <div class="mini-paie-euro">€</div>
+          </div>
         </div>
         <div class="module-name">Paie</div>
         <div class="module-status" id="paie-status">Chargement...</div>
