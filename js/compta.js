@@ -27,9 +27,23 @@ async function initComptaModule(userId, supabaseClient, isTelegramMode, telegram
     .single();
 
   if (!moduleConfig || !moduleConfig.sheet_id) {
+    // En mode Telegram, afficher un message au lieu de rediriger
+    if (isTelegramMode) {
+      const container = document.getElementById('module-content');
+      if (container) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">⚙️</div>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configuration requise</h2>
+            <p style="color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 24px;">Configure Compta sur le site web d'abord.</p>
+            <a href="https://app.iarmy.fr/compta/setup/" target="_blank" style="display: inline-block; padding: 12px 24px; background: #22c55e; border-radius: 8px; color: white; font-weight: 600; text-decoration: none;">Configurer sur le site →</a>
+          </div>
+        `;
+      }
+      return false;
+    }
     // Redirect to setup
-    const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
-    window.location.href = '/compta/setup/' + tgParams;
+    window.location.href = '/compta/setup/';
     return false;
   }
 
