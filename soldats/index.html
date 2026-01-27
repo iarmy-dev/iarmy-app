@@ -342,15 +342,65 @@
       // Charger les modules depuis Supabase
       await loadModulesFromDB();
 
-      const { data: { session } } = await supabaseClient.auth.getSession();
-
-      if (session?.user) {
-        currentUser = session.user;
-        await loadUserModules();
+      // En mode Telegram, utiliser l'API telegram-auth pour obtenir les infos user
+      if (isTelegramMode && telegramUserId) {
+        try {
+          const tg = window.Telegram?.WebApp;
+          const response = await fetch(SUPABASE_URL + '/functions/v1/telegram-auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              initData: tg?.initData || '',
+              telegramUserId: telegramUserId
+            })
+          });
+          const authData = await response.json();
+          if (authData.userId) {
+            currentUser = { id: authData.userId };
+            // Charger directement depuis authData si disponible
+            if (authData.moduleConfig?.sheetId) {
+              userModules.push('compta');
+            }
+            // Charger stock et paie
+            await loadUserModulesFromTelegram(authData.userId);
+          }
+        } catch (err) {
+          console.log('Telegram auth error:', err);
+        }
+      } else {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user) {
+          currentUser = session.user;
+          await loadUserModules();
+        }
       }
 
       renderModules();
       setupFilters();
+    }
+
+    async function loadUserModulesFromTelegram(userId) {
+      try {
+        const { count: stockCount } = await supabaseClient
+          .from('stock_products')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        if (stockCount > 0 && !userModules.includes('stock')) {
+          userModules.push('stock');
+        }
+
+        const { count: paieCount } = await supabaseClient
+          .from('employees')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        if (paieCount > 0 && !userModules.includes('paie')) {
+          userModules.push('paie');
+        }
+      } catch (err) {
+        console.log('Error loading user modules from telegram:', err);
+      }
     }
 
     async function loadModulesFromDB() {
