@@ -1219,7 +1219,7 @@
         const link = document.createElement('link');
         link.id = 'compta-css';
         link.rel = 'stylesheet';
-        link.href = '/css/compta.css';
+        link.href = '/css/compta.css?v=' + Date.now();
         document.head.appendChild(link);
       }
 
@@ -1228,7 +1228,7 @@
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
           script.id = 'compta-js';
-          script.src = '/js/compta.js';
+          script.src = '/js/compta.js?v=' + Date.now();
           script.onload = resolve;
           script.onerror = reject;
           document.head.appendChild(script);
