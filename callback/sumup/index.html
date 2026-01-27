@@ -153,24 +153,68 @@
           throw new Error(data.error || 'Erreur lors de l\'échange du token');
         }
 
-        // Success!
-        showSuccess();
+        // Success! Notify parent window if in popup
+        showSuccess(data.merchant_name || data.business_name);
+
+        // Send message to parent window (for popup mode)
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'POS_OAUTH_SUCCESS',
+            posType: 'sumup',
+            merchantName: data.merchant_name || data.business_name
+          }, window.location.origin);
+
+          // Close popup after short delay
+          setTimeout(() => window.close(), 1500);
+        }
 
       } catch (err) {
         console.error('OAuth error:', err);
         showError(err.message);
+
+        // Send error to parent window
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'POS_OAUTH_ERROR',
+            posType: 'sumup',
+            error: err.message
+          }, window.location.origin);
+        }
       }
     }
 
-    function showSuccess() {
+    function showSuccess(merchantName) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('success').style.display = 'block';
+
+      // Update message if we have merchant name
+      if (merchantName) {
+        document.querySelector('#success p').innerHTML =
+          `<strong>${merchantName}</strong> est maintenant connecté à iArmy.`;
+      }
+
+      // If in popup, show closing message
+      if (window.opener) {
+        document.querySelector('#success .btn').style.display = 'none';
+        const p = document.createElement('p');
+        p.style.cssText = 'margin-top: 16px; color: rgba(255,255,255,0.4); font-size: 12px;';
+        p.textContent = 'Cette fenêtre va se fermer...';
+        document.querySelector('#success').appendChild(p);
+      }
     }
 
     function showError(message) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error').style.display = 'block';
       document.getElementById('error-message').textContent = message;
+
+      // If in popup, add close button
+      if (window.opener) {
+        const btn = document.querySelector('#error .btn');
+        btn.textContent = 'Fermer';
+        btn.href = '#';
+        btn.onclick = () => window.close();
+      }
     }
 
     // Run on page load

@@ -839,20 +839,26 @@
         <div id="pos-selection-${index}" class="pos-container">
           <input type="text" class="pos-search" placeholder="🔍 Rechercher ta caisse..." oninput="filterPos(this.value)">
           <div class="pos-grid" id="pos-grid-${index}">
+            <button class="pos-btn pos-btn-oauth" onclick="connectPOS('sumup', ${index})" data-name="sumup">
+              <span class="pos-badge" style="background:#10B981;">Connecter</span>
+              <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/sumup.com" alt="SumUp" onerror="this.parentElement.innerHTML='<span class=pos-icon>💳</span>'"></div>
+              <div class="pos-name">SumUp</div>
+              <div class="pos-check">✓</div>
+            </button>
             <button class="pos-btn" onclick="selectPos('tiller', ${index})" data-name="tiller">
-              <span class="pos-badge">Top</span>
+              <span class="pos-badge" style="background:#6366f1;">Bientôt</span>
               <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/tillersystems.com" alt="Tiller" onerror="this.parentElement.innerHTML='<span class=pos-icon>📟</span>'"></div>
               <div class="pos-name">Tiller</div>
               <div class="pos-check">✓</div>
             </button>
             <button class="pos-btn" onclick="selectPos('lightspeed', ${index})" data-name="lightspeed">
-              <span class="pos-badge">Top</span>
+              <span class="pos-badge" style="background:#6366f1;">Bientôt</span>
               <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/lightspeedhq.com" alt="Lightspeed" onerror="this.parentElement.innerHTML='<span class=pos-icon>⚡</span>'"></div>
               <div class="pos-name">Lightspeed</div>
               <div class="pos-check">✓</div>
             </button>
             <button class="pos-btn" onclick="selectPos('laddition', ${index})" data-name="laddition addition">
-              <span class="pos-badge">Top</span>
+              <span class="pos-badge" style="background:#6366f1;">Bientôt</span>
               <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/laddition.com" alt="L'Addition" onerror="this.parentElement.innerHTML='<span class=pos-icon>➕</span>'"></div>
               <div class="pos-name">L'Addition</div>
               <div class="pos-check">✓</div>
@@ -860,12 +866,6 @@
             <button class="pos-btn" onclick="selectPos('zelty', ${index})" data-name="zelty">
               <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/zelty.fr" alt="Zelty" onerror="this.parentElement.innerHTML='<span class=pos-icon>🧾</span>'"></div>
               <div class="pos-name">Zelty</div>
-              <div class="pos-check">✓</div>
-            </button>
-            <button class="pos-btn pos-btn-oauth" onclick="connectSumUp(${index})" data-name="sumup">
-              <span class="pos-badge" style="background:#10B981;">OAuth</span>
-              <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/sumup.com" alt="SumUp" onerror="this.parentElement.innerHTML='<span class=pos-icon>💳</span>'"></div>
-              <div class="pos-name">SumUp</div>
               <div class="pos-check">✓</div>
             </button>
             <button class="pos-btn" onclick="selectPos('square', ${index})" data-name="square">
@@ -2219,27 +2219,210 @@
       return data.result || { name: 'Caisse inconnue', type: 'other', known: false };
     }
 
-    // SumUp OAuth connection
-    const SUMUP_CLIENT_ID = 'cc_classic_CRRAg5NnxQnZJWB8Y0umsy1VF6Cet';
-    const SUMUP_REDIRECT_URI = 'https://app.iarmy.fr/callback/sumup';
-    const SUMUP_SCOPES = 'transactions.history products user.profile_readonly user.app-settings';
+    // ============================================
+    // SYSTÈME UNIFIÉ DE CONNEXION POS (OAuth)
+    // ============================================
 
-    function connectSumUp(index) {
+    const POS_PROVIDERS = {
+      sumup: {
+        name: 'SumUp',
+        hasOAuth: true,
+        authUrl: 'https://api.sumup.com/authorize',
+        clientId: 'cc_classic_CRRAg5NnxQnZJWB8Y0umsy1VF6Cet',
+        redirectUri: 'https://app.iarmy.fr/callback/sumup',
+        scopes: 'transactions.history products user.profile_readonly user.app-settings'
+      },
+      tiller: {
+        name: 'Tiller',
+        hasOAuth: false, // En attente d'accès API
+        comingSoon: true
+      },
+      lightspeed: {
+        name: 'Lightspeed',
+        hasOAuth: false,
+        comingSoon: true
+      },
+      laddition: {
+        name: "L'Addition",
+        hasOAuth: false,
+        comingSoon: true
+      },
+      zelty: {
+        name: 'Zelty',
+        hasOAuth: false,
+        comingSoon: true
+      },
+      square: {
+        name: 'Square',
+        hasOAuth: false,
+        comingSoon: true
+      }
+    };
+
+    let posPopup = null;
+    let currentPosIndex = null;
+
+    // Écouter les messages du popup OAuth
+    window.addEventListener('message', (event) => {
+      // Vérifier l'origine
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data.type === 'POS_OAUTH_SUCCESS') {
+        if (posPopup) posPopup.close();
+        hidePosOverlay();
+        showPosSuccess(currentPosIndex, event.data.posType, event.data.merchantName);
+      } else if (event.data.type === 'POS_OAUTH_ERROR') {
+        if (posPopup) posPopup.close();
+        hidePosOverlay();
+        showPosError(currentPosIndex, event.data.error);
+      }
+    });
+
+    function connectPOS(posType, index) {
+      const provider = POS_PROVIDERS[posType];
+
+      if (!provider) {
+        // POS sans config OAuth - sélection simple
+        selectPos(posType, index);
+        return;
+      }
+
+      if (!provider.hasOAuth) {
+        // OAuth pas encore dispo - sélection simple avec message
+        selectPos(posType, index);
+        return;
+      }
+
       if (!currentUser) {
         alert('Connecte-toi d\'abord');
         return;
       }
 
-      // Build OAuth URL with state containing user_id
-      const authUrl = new URL('https://api.sumup.com/authorize');
-      authUrl.searchParams.set('response_type', 'code');
-      authUrl.searchParams.set('client_id', SUMUP_CLIENT_ID);
-      authUrl.searchParams.set('redirect_uri', SUMUP_REDIRECT_URI);
-      authUrl.searchParams.set('scope', SUMUP_SCOPES);
-      authUrl.searchParams.set('state', currentUser.id); // Pass user_id in state
+      currentPosIndex = index;
 
-      // Redirect to SumUp
-      window.location.href = authUrl.toString();
+      // Construire l'URL OAuth
+      const authUrl = new URL(provider.authUrl);
+      authUrl.searchParams.set('response_type', 'code');
+      authUrl.searchParams.set('client_id', provider.clientId);
+      authUrl.searchParams.set('redirect_uri', provider.redirectUri);
+      authUrl.searchParams.set('scope', provider.scopes);
+      authUrl.searchParams.set('state', currentUser.id);
+
+      // Afficher l'overlay de chargement
+      showPosOverlay(provider.name);
+
+      // Ouvrir le popup centré
+      const width = 500;
+      const height = 700;
+      const left = (screen.width - width) / 2;
+      const top = (screen.height - height) / 2;
+
+      posPopup = window.open(
+        authUrl.toString(),
+        'pos_oauth',
+        `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
+      );
+
+      // Vérifier si le popup est bloqué
+      if (!posPopup || posPopup.closed) {
+        hidePosOverlay();
+        alert('Le popup a été bloqué. Autorise les popups pour ce site.');
+        return;
+      }
+
+      // Vérifier périodiquement si le popup est fermé manuellement
+      const checkPopup = setInterval(() => {
+        if (posPopup && posPopup.closed) {
+          clearInterval(checkPopup);
+          hidePosOverlay();
+        }
+      }, 500);
+    }
+
+    function showPosOverlay(posName) {
+      // Créer l'overlay s'il n'existe pas
+      let overlay = document.getElementById('pos-oauth-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'pos-oauth-overlay';
+        overlay.innerHTML = `
+          <div class="pos-overlay-content">
+            <div class="pos-overlay-spinner"></div>
+            <h3>Connexion à <span id="pos-overlay-name"></span></h3>
+            <p>Termine l'authentification dans la fenêtre popup</p>
+            <button onclick="cancelPosOAuth()" class="pos-overlay-cancel">Annuler</button>
+          </div>
+        `;
+        overlay.style.cssText = `
+          position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 10000; backdrop-filter: blur(8px);
+        `;
+        const style = document.createElement('style');
+        style.textContent = `
+          .pos-overlay-content { text-align: center; color: white; }
+          .pos-overlay-content h3 { font-size: 20px; margin: 20px 0 8px; }
+          .pos-overlay-content p { color: rgba(255,255,255,0.6); font-size: 14px; }
+          .pos-overlay-spinner {
+            width: 48px; height: 48px; margin: 0 auto;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #10B981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          .pos-overlay-cancel {
+            margin-top: 24px; padding: 10px 24px;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: white; border-radius: 8px; cursor: pointer;
+            font-size: 14px; transition: background 0.2s;
+          }
+          .pos-overlay-cancel:hover { background: rgba(255,255,255,0.2); }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(overlay);
+      }
+
+      document.getElementById('pos-overlay-name').textContent = posName;
+      overlay.style.display = 'flex';
+    }
+
+    function hidePosOverlay() {
+      const overlay = document.getElementById('pos-oauth-overlay');
+      if (overlay) overlay.style.display = 'none';
+    }
+
+    function cancelPosOAuth() {
+      if (posPopup) posPopup.close();
+      hidePosOverlay();
+    }
+
+    function showPosSuccess(index, posType, merchantName) {
+      const provider = POS_PROVIDERS[posType] || { name: posNames[posType] || posType };
+
+      document.getElementById(`pos-selection-${index}`).style.display = 'none';
+      document.getElementById(`pos-result-${index}`).style.display = 'block';
+      document.getElementById(`pos-result-icon-${index}`).textContent = '✅';
+      document.getElementById(`pos-result-title-${index}`).textContent = provider.name + ' connecté !';
+      document.getElementById(`pos-result-desc-${index}`).innerHTML =
+        `<strong>${merchantName || 'Ton compte'}</strong> est maintenant lié.<br>` +
+        `<span style="color:#10B981;">Tes ventes seront synchronisées automatiquement.</span>`;
+
+      stepData.pos = { type: posType, name: provider.name, connection_status: 'connected' };
+    }
+
+    function showPosError(index, error) {
+      document.getElementById(`pos-selection-${index}`).style.display = 'none';
+      document.getElementById(`pos-result-${index}`).style.display = 'block';
+      document.getElementById(`pos-result-icon-${index}`).textContent = '❌';
+      document.getElementById(`pos-result-title-${index}`).textContent = 'Erreur de connexion';
+      document.getElementById(`pos-result-desc-${index}`).innerHTML =
+        `${error || 'Une erreur est survenue.'}<br>` +
+        `<a href="#" onclick="showPosSelection(${index}); return false;" style="color:#FF6B35;">Réessayer</a>`;
+    }
+
+    // Raccourci pour SumUp (garde la compatibilité)
+    function connectSumUp(index) {
+      connectPOS('sumup', index);
     }
 
     function skipPos(index) {
