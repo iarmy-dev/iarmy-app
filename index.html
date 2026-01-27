@@ -1282,13 +1282,70 @@
             <div id="compta-export-manual-content" style="display: none; padding: 0 14px 14px; border-top: 1px solid rgba(255,255,255,0.06);">
               <div style="display: flex; gap: 8px; margin: 12px 0 10px;">
                 <select id="compta-export-month" style="flex: 1; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;"></select>
-                <select id="compta-export-year" style="width: 90px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="updateComptaMonthOptions()"></select>
+                <select id="compta-export-year" style="width: 90px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="comptaUpdateMonthOptions()"></select>
                 <select id="compta-export-format-manual" style="width: 80px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;">
                   <option value="pdf">PDF</option>
                   <option value="xlsx">Excel</option>
                 </select>
               </div>
-              <button onclick="comptaExportDataManual()" style="width: 100%; padding: 10px 16px; background: linear-gradient(135deg, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0.1) 100%); border: 1px solid rgba(255,107,53,0.3); border-radius: 8px; color: #FF8B5E; font-size: 12px; font-weight: 600; cursor: pointer;">📥 Telecharger</button>
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <button onclick="comptaPreviewExport()" style="flex: 1; padding: 10px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 500; cursor: pointer;">👁 Previsualiser</button>
+                <button onclick="comptaExportDataManual()" style="flex: 1; padding: 10px 16px; background: linear-gradient(135deg, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0.1) 100%); border: 1px solid rgba(255,107,53,0.3); border-radius: 8px; color: #FF8B5E; font-size: 12px; font-weight: 600; cursor: pointer;">📥 Telecharger</button>
+              </div>
+              <button id="compta-export-year-btn" onclick="comptaExportFullYear()" disabled style="width: 100%; padding: 10px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 500; cursor: not-allowed; transition: all 0.2s;">
+                📅 Annee complete <span id="compta-export-year-status">(disponible en decembre)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Notifications -->
+        <div class="compta-section" id="compta-notif-section" style="margin-top: 24px;">
+          <div class="section-header">
+            <div class="section-title-compta">Notifications Telegram</div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px;">
+            <!-- Recap hebdo -->
+            <label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer;">
+              <div>
+                <div style="font-size: 13px; color: white;">📊 Recap hebdo</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.4);">Chaque lundi : total, meilleur jour, evolution</div>
+              </div>
+              <input type="checkbox" id="compta-notif-weekly-recap" onchange="comptaSaveNotificationSettings()" style="accent-color: #4ade80; width: 18px; height: 18px;">
+            </label>
+
+            <!-- Recap mensuel -->
+            <label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer;">
+              <div>
+                <div style="font-size: 13px; color: white;">📅 Recap mensuel</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.4);">Le 1er : bilan du mois + comparatif</div>
+              </div>
+              <input type="checkbox" id="compta-notif-monthly-recap" onchange="comptaSaveNotificationSettings()" style="accent-color: #4ade80; width: 18px; height: 18px;">
+            </label>
+
+            <!-- Records -->
+            <label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer;">
+              <div>
+                <div style="font-size: 13px; color: white;">🏆 Records</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.4);">Notification quand tu bats un record</div>
+              </div>
+              <input type="checkbox" id="compta-notif-records" onchange="comptaSaveNotificationSettings()" style="accent-color: #4ade80; width: 18px; height: 18px;">
+            </label>
+
+            <!-- Objectif mensuel -->
+            <label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; cursor: pointer;">
+              <div>
+                <div style="font-size: 13px; color: white;">🎯 Objectif mensuel</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.4);">Alerte quand tu atteins ton objectif</div>
+              </div>
+              <input type="checkbox" id="compta-notif-objective" onchange="comptaToggleObjectiveInput(); comptaSaveNotificationSettings()" style="accent-color: #4ade80; width: 18px; height: 18px;">
+            </label>
+            <div id="compta-objective-input-row" style="display: none; padding: 8px 0 4px; border-top: 1px solid rgba(255,255,255,0.04);">
+              <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                <input type="number" id="compta-monthly-objective" placeholder="10000" min="0" step="100" onchange="comptaSaveNotificationSettings()" style="width: 100px; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-size: 13px; text-align: right;">
+                <span style="color: rgba(255,255,255,0.5); font-size: 13px;">€</span>
+              </div>
             </div>
           </div>
         </div>

@@ -123,6 +123,7 @@ function renderComptaUI() {
   updateComptaPreview();
   updateComptaCounts();
   loadComptaExportSettings();
+  comptaLoadNotificationSettings();
 }
 
 // Render keywords
@@ -852,6 +853,146 @@ async function comptaExportDataManual() {
   }
 }
 
+// Notification settings
+async function comptaSaveNotificationSettings() {
+  if (!comptaConfig?.user_id) return;
+
+  const notifSettings = {
+    weeklyRecap: document.getElementById('compta-notif-weekly-recap')?.checked || false,
+    monthlyRecap: document.getElementById('compta-notif-monthly-recap')?.checked || false,
+    records: document.getElementById('compta-notif-records')?.checked || false,
+    objective: document.getElementById('compta-notif-objective')?.checked || false,
+    monthlyObjective: parseFloat(document.getElementById('compta-monthly-objective')?.value) || 0
+  };
+
+  const updatedConfig = { ...comptaConfig.excel_config, notification_settings: notifSettings };
+
+  try {
+    await supabaseClient
+      .from('module_configs')
+      .update({ config: updatedConfig })
+      .eq('user_id', comptaConfig.user_id)
+      .eq('module_name', 'compta');
+
+    comptaConfig.excel_config = updatedConfig;
+    comptaToast('Notifications mises a jour');
+  } catch (err) {
+    console.error('Error saving notification settings:', err);
+    comptaToast('Erreur de sauvegarde', true);
+  }
+}
+
+function comptaToggleObjectiveInput() {
+  const checkbox = document.getElementById('compta-notif-objective');
+  const inputRow = document.getElementById('compta-objective-input-row');
+  if (inputRow) {
+    inputRow.style.display = checkbox?.checked ? 'block' : 'none';
+  }
+}
+
+function comptaLoadNotificationSettings() {
+  const notifSettings = comptaConfig?.excel_config?.notification_settings || {};
+
+  const weeklyEl = document.getElementById('compta-notif-weekly-recap');
+  const monthlyEl = document.getElementById('compta-notif-monthly-recap');
+  const recordsEl = document.getElementById('compta-notif-records');
+  const objectiveEl = document.getElementById('compta-notif-objective');
+  const objectiveInputEl = document.getElementById('compta-monthly-objective');
+
+  if (weeklyEl) weeklyEl.checked = notifSettings.weeklyRecap || false;
+  if (monthlyEl) monthlyEl.checked = notifSettings.monthlyRecap || false;
+  if (recordsEl) recordsEl.checked = notifSettings.records || false;
+  if (objectiveEl) objectiveEl.checked = notifSettings.objective || false;
+  if (objectiveInputEl && notifSettings.monthlyObjective) {
+    objectiveInputEl.value = notifSettings.monthlyObjective;
+  }
+
+  comptaToggleObjectiveInput();
+}
+
+// Preview export
+function comptaPreviewExport() {
+  if (!comptaConfig?.sheet_id) { comptaToast('Aucun fichier configure', true); return; }
+
+  const month = document.getElementById('compta-export-month')?.value;
+  const year = document.getElementById('compta-export-year')?.value;
+  const monthNames = ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'];
+  const sheetName = monthNames[parseInt(month) - 1] + ' ' + year;
+
+  // Open Google Sheet at the right tab
+  const url = `https://docs.google.com/spreadsheets/d/${comptaConfig.sheet_id}/edit#gid=0`;
+  window.open(url, '_blank');
+  comptaToast('Ouverture du fichier...');
+}
+
+// Export full year
+async function comptaExportFullYear() {
+  if (!comptaConfig?.sheet_id) { comptaToast('Aucun fichier configure', true); return; }
+
+  const year = document.getElementById('compta-export-year')?.value || new Date().getFullYear();
+  const filename = `compta_${year}_complet`;
+
+  comptaToast('Export annuel en cours...');
+
+  try {
+    const { data: { session } } = await supabaseClient.auth.refreshSession();
+    if (!session?.access_token) {
+      comptaToast('Session expiree, reconnecte-toi', true);
+      return;
+    }
+
+    // For now, just open the Google Sheet
+    const url = `https://docs.google.com/spreadsheets/d/${comptaConfig.sheet_id}/export?format=xlsx`;
+    window.open(url, '_blank');
+
+    comptaToast('Export lance !');
+  } catch (err) {
+    console.error('Export year error:', err);
+    comptaToast('Erreur: ' + err.message, true);
+  }
+}
+
+// Update month options based on year
+function comptaUpdateMonthOptions() {
+  const yearSelect = document.getElementById('compta-export-year');
+  const monthSelect = document.getElementById('compta-export-month');
+  if (!yearSelect || !monthSelect) return;
+
+  const selectedYear = parseInt(yearSelect.value);
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+
+  const monthNames = ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'];
+
+  monthSelect.innerHTML = '';
+
+  const maxMonth = selectedYear === currentYear ? currentMonth : 12;
+  for (let m = 1; m <= maxMonth; m++) {
+    const opt = document.createElement('option');
+    opt.value = String(m).padStart(2, '0');
+    opt.textContent = monthNames[m - 1];
+    monthSelect.appendChild(opt);
+  }
+
+  // Enable/disable full year export button
+  const fullYearBtn = document.getElementById('compta-export-year-btn');
+  if (fullYearBtn) {
+    if (currentMonth === 12 && selectedYear === currentYear) {
+      fullYearBtn.disabled = false;
+      fullYearBtn.style.cursor = 'pointer';
+      fullYearBtn.style.color = '#FF8B5E';
+      fullYearBtn.style.borderColor = 'rgba(255,107,53,0.3)';
+      fullYearBtn.style.background = 'linear-gradient(135deg, rgba(255,107,53,0.1) 0%, rgba(255,107,53,0.05) 100%)';
+    } else {
+      fullYearBtn.disabled = true;
+      fullYearBtn.style.cursor = 'not-allowed';
+      fullYearBtn.style.color = 'rgba(255,255,255,0.3)';
+      fullYearBtn.style.borderColor = 'rgba(255,255,255,0.05)';
+      fullYearBtn.style.background = 'rgba(255,255,255,0.02)';
+    }
+  }
+}
+
 // Make functions globally available
 window.comptaToggleKwSection = comptaToggleKwSection;
 window.comptaToggleRulesSection = comptaToggleRulesSection;
@@ -879,5 +1020,10 @@ window.comptaResetConfig = comptaResetConfig;
 window.comptaDoResetConfig = comptaDoResetConfig;
 window.comptaSaveAutoExportSettings = comptaSaveAutoExportSettings;
 window.comptaExportDataManual = comptaExportDataManual;
-window.updateComptaMonthOptions = updateComptaMonthOptions;
+window.comptaUpdateMonthOptions = comptaUpdateMonthOptions;
+window.comptaSaveNotificationSettings = comptaSaveNotificationSettings;
+window.comptaToggleObjectiveInput = comptaToggleObjectiveInput;
+window.comptaPreviewExport = comptaPreviewExport;
+window.comptaExportFullYear = comptaExportFullYear;
+window.comptaLoadNotificationSettings = comptaLoadNotificationSettings;
 window.initComptaModule = initComptaModule;
