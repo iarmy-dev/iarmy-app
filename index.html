@@ -1573,11 +1573,14 @@
         logoLink.onclick = (e) => e.preventDefault();
       }
 
-      // Theme Telegram
+      // Theme Telegram - forcer notre design sombre
       if (tg) {
         tg.ready();
         tg.expand();
-        document.body.style.backgroundColor = tg.backgroundColor || '#030303';
+        // Forcer notre theme sombre au lieu du theme Telegram
+        document.body.style.backgroundColor = '#0f0f0f';
+        tg.setBackgroundColor('#0f0f0f');
+        tg.setHeaderColor('#0f0f0f');
         tg.BackButton.show();
         tg.BackButton.onClick(() => tg.close());
       }
