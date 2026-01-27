@@ -100,16 +100,18 @@
     .mini-paie-euro { position: absolute; font-size: 18px; font-weight: 800; color: white; opacity: 0; animation: paieEuroAppear 3.5s ease-in-out infinite; }
     @keyframes paieEuroAppear { 0%, 50% { opacity: 0; transform: scale(0.5); } 65% { opacity: 1; transform: scale(1.1); } 75%, 85% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(0.8); } }
 
-    /* Mini stock animation - bottles inventory */
-    .mini-stock { width: 32px; height: 28px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; position: relative; }
-    .mini-bottle { width: 10px; height: 22px; background: rgba(16,185,129,0.2); border: 1.5px solid #34D399; border-radius: 2px 2px 4px 4px; position: relative; overflow: hidden; }
-    .mini-bottle::before { content: ''; position: absolute; top: -3px; left: 2px; width: 4px; height: 3px; background: #34D399; border-radius: 1px 1px 0 0; }
-    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #34D399, #10B981); border-radius: 0 0 2px 2px; }
+    /* Mini stock animation - liquor bottles */
+    .mini-stock { width: 36px; height: 28px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; position: relative; }
+    .mini-bottle { position: relative; width: 12px; height: 24px; }
+    .mini-bottle-body { position: absolute; bottom: 0; width: 12px; height: 16px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-radius: 2px 2px 3px 3px; overflow: hidden; }
+    .mini-bottle-neck { position: absolute; bottom: 15px; left: 3px; width: 6px; height: 6px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-bottom: none; border-radius: 2px 2px 0 0; }
+    .mini-bottle-cap { position: absolute; bottom: 20px; left: 2px; width: 8px; height: 3px; background: #06B6D4; border-radius: 1px; }
+    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #22D3EE, #06B6D4); border-radius: 0 0 2px 2px; }
     .mini-bottle-1 .mini-bottle-fill { animation: bottleEmpty 3s ease-in-out infinite; }
     .mini-bottle-2 .mini-bottle-fill { animation: bottleFill 3s ease-in-out infinite; }
-    @keyframes bottleEmpty { 0%, 10% { height: 80%; } 45%, 55% { height: 20%; } 90%, 100% { height: 80%; } }
-    @keyframes bottleFill { 0%, 10% { height: 20%; } 45%, 55% { height: 80%; } 90%, 100% { height: 20%; } }
-    .mini-stock-count { position: absolute; top: -2px; right: -4px; width: 12px; height: 12px; background: #34D399; border-radius: 50%; font-size: 7px; font-weight: 700; color: #064e3b; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
+    @keyframes bottleEmpty { 0%, 10% { height: 75%; } 45%, 55% { height: 15%; } 90%, 100% { height: 75%; } }
+    @keyframes bottleFill { 0%, 10% { height: 15%; } 45%, 55% { height: 75%; } 90%, 100% { height: 15%; } }
+    .mini-stock-count { position: absolute; top: 0; right: -2px; width: 12px; height: 12px; background: #06B6D4; border-radius: 50%; font-size: 7px; font-weight: 700; color: #083344; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
     @keyframes countPop { 0%, 35% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 60%, 80% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
 
     /* Connections Grid */
@@ -511,10 +513,18 @@
 
     <div class="module-card" id="module-stock" onclick="goToStockModule()">
       <div class="module-left">
-        <div class="module-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(16,185,129,0.1));">
+        <div class="module-icon" style="background: linear-gradient(135deg, rgba(6,182,212,0.3), rgba(6,182,212,0.1));">
           <div class="mini-stock">
-            <div class="mini-bottle mini-bottle-1"><div class="mini-bottle-fill"></div></div>
-            <div class="mini-bottle mini-bottle-2"><div class="mini-bottle-fill"></div></div>
+            <div class="mini-bottle mini-bottle-1">
+              <div class="mini-bottle-cap"></div>
+              <div class="mini-bottle-neck"></div>
+              <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
+            </div>
+            <div class="mini-bottle mini-bottle-2">
+              <div class="mini-bottle-cap"></div>
+              <div class="mini-bottle-neck"></div>
+              <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
+            </div>
             <div class="mini-stock-count">2</div>
           </div>
         </div>
