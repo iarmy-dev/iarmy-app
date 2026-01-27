@@ -326,15 +326,14 @@
         telegramUserId = urlParams.get('tguid') || tg.initDataUnsafe?.user?.id;
         tg.ready();
         tg.expand();
-        tg.setBackgroundColor('#030303');
-        tg.setHeaderColor('#030303');
+        tg.setBackgroundColor('#0f0f0f');
+        tg.setHeaderColor('#0f0f0f');
         tg.BackButton.show();
         tg.BackButton.onClick(() => {
           window.location.href = '/?tg=1&tguid=' + telegramUserId;
         });
 
         document.getElementById('logo-link').href = '/?tg=1&tguid=' + telegramUserId;
-        document.querySelector('.btn-icon').href = '/?tg=1&tguid=' + telegramUserId;
       }
 
       // Charger les modules depuis Supabase
