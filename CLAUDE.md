@@ -1,5 +1,28 @@
 # iArmy App - Guide pour Claude
 
+## MES POUVOIRS (ce que je peux faire)
+
+**Dis-moi "lis CLAUDE.md" et je sais exactement quoi faire !**
+
+### Je peux :
+- **Supabase** : Créer tables, exécuter SQL, déployer edge functions (`supabase db push`, `supabase functions deploy`)
+- **Stripe** : Les Price IDs sont dans secrets.md - je peux les utiliser
+- **Git** : Push sur GitHub = déploiement auto (iarmy-app → GitHub Pages, iarmy-bot → Render)
+- **Créer des fichiers** : Pages HTML, JS, CSS, migrations SQL
+- **Lire les secrets** : `/Users/ludovik/Desktop/iarmy-bot/secrets.md`
+
+### Quand tu veux un nouveau soldat, dis juste :
+> "Crée le soldat [nom] qui fait [description]"
+
+Et je fais TOUT :
+1. Ajoute dans table `modules` (Supabase)
+2. Crée le dossier `/{soldat}/` avec setup et dashboard
+3. Ajoute la logique dans bot.js
+4. Crée le Stripe Price si payant
+5. Push et déploie
+
+---
+
 ## IMPORTANT - Lire en premier !
 
 **iArmy appelle ses modules des "SOLDATS"** (pas "modules").
