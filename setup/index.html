@@ -34,6 +34,11 @@
 
     .glass-card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: all 0.4s ease; }
 
+    /* Telegram mode */
+    body.telegram-mode nav { display: none !important; }
+    body.telegram-mode .sidebar { display: none !important; }
+    body.telegram-mode .main-content { margin-left: 0; padding: 20px; max-width: 100%; }
+
     .sidebar { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(20px); width: 280px; min-height: calc(100vh - 70px); padding: 24px; position: fixed; left: 0; top: 70px; z-index: 40; }
     .step-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
     .step-item:hover:not(.upcoming):not(.active) { background: rgba(255, 255, 255, 0.03); }
@@ -473,12 +478,29 @@
       // Check si Telegram Mini App (seulement si initData est présent = vraiment dans Telegram)
       const tg = window.Telegram?.WebApp;
       if (tg && tg.initData && tg.initData.length > 0) {
+        // Mode Telegram - cacher header et sidebar
+        document.body.classList.add('telegram-mode');
+        tg.ready();
+        tg.expand();
+        tg.setBackgroundColor('#0f0f0f');
+        tg.setHeaderColor('#0f0f0f');
+
+        // Bouton retour
+        const urlParams = new URLSearchParams(window.location.search);
+        const tguid = urlParams.get('tguid') || tg.initDataUnsafe?.user?.id;
+        tg.BackButton.offClick();
+        tg.BackButton.onClick(() => {
+          window.location.href = '/?tg=1&tguid=' + tguid;
+        });
+        tg.BackButton.show();
+
+        const setupUrl = `https://app.iarmy.fr/setup/?module=${currentModule}`;
         document.querySelector('.main-content').innerHTML = `
           <div class="glass-card" style="padding: 48px; text-align: center; margin-top: 40px;">
-            <div style="font-size: 48px; margin-bottom: 16px;">🌐</div>
-            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configuration sur le site</h2>
+            <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configuration requise</h2>
             <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">La configuration doit etre faite sur le site web.</p>
-            <a href="https://app.iarmy.fr/setup/?module=${currentModule}" class="btn-glow" style="display: inline-block; width: auto;">Ouvrir le site</a>
+            <button onclick="window.Telegram.WebApp.openLink('${setupUrl}')" class="btn-glow" style="display: inline-block; width: auto; cursor: pointer;">Ouvrir le site →</button>
           </div>
         `;
         return;
