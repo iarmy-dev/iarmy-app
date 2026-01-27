@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://byqfnpdcnifauhwgetcq.supabase.co https://api.stripe.com https://sheets.googleapis.com https://www.googleapis.com; frame-src https://js.stripe.com;">
   <title>Mon Compte - iArmy</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FF6B35'/><text x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'>i</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Crect x='35' y='18' width='30' height='12' rx='6' fill='white'/%3E%3Crect x='32' y='26' width='36' height='5' rx='2' fill='white'/%3E%3Ccircle cx='50' cy='42' r='10' fill='white'/%3E%3Crect x='44' y='52' width='12' height='28' rx='3' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/header.css">
   <meta name="theme-color" content="#FF6B35">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,25 +14,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #030303; color: white; min-height: 100vh; overflow-x: hidden; }
+    body { background: #0f0f0f; color: white; min-height: 100vh; overflow-x: hidden; }
 
-    .bg-gradient { background: linear-gradient(135deg, #030303 0%, #0a0508 25%, #050808 50%, #080805 75%, #030303 100%); background-size: 400% 400%; animation: gradientShift 20s ease infinite; }
-    @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    /* Dot grid pattern */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-    .orb { position: fixed; border-radius: 50%; filter: blur(100px); animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 0; }
-    .orb-1 { width: 500px; height: 500px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); top: -250px; right: -150px; opacity: 0.12; }
-    .orb-2 { width: 400px; height: 400px; background: linear-gradient(135deg, #6B35FF, #8B5EFF); bottom: -200px; left: -150px; opacity: 0.08; animation-delay: -7s; }
+    /* Colorful animated orbs */
+    .orb { position: fixed; border-radius: 50%; filter: blur(100px); animation: float 15s ease-in-out infinite; pointer-events: none; z-index: 1; }
+    .orb-1 { width: 500px; height: 500px; background: linear-gradient(135deg, #FF6B35, #FF3D00); top: -200px; right: -100px; opacity: 0.25; }
+    .orb-2 { width: 450px; height: 450px; background: linear-gradient(135deg, #06B6D4, #0891B2); bottom: -150px; left: -150px; opacity: 0.2; animation-delay: -5s; }
+    .orb-3 { width: 350px; height: 350px; background: linear-gradient(135deg, #A855F7, #7C3AED); top: 40%; left: 60%; opacity: 0.15; animation-delay: -10s; }
     @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
-
-    /* Nav */
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .nav-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .logo-i { width: 36px; height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
-    .nav-right { display: flex; align-items: center; gap: 8px; }
-    .btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; }
-    .btn-icon:hover { background: rgba(255,255,255,0.08); color: white; }
-    .btn-icon.danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
 
     /* Container */
     .container { max-width: 600px; margin: 0 auto; padding: 90px 20px 40px; position: relative; z-index: 10; opacity: 0; transition: opacity 0.3s ease; }
@@ -396,7 +396,13 @@
     }
   </style>
 </head>
-<body class="bg-gradient">
+<body>
+  <!-- Background -->
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
   <!-- Loading Screen -->
   <div class="loading-screen" id="loading-screen">
     <div class="loading-glow"></div>
@@ -416,13 +422,16 @@
     <div class="loading-text">Chargement</div>
   </div>
 
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-
   <nav>
     <div class="nav-inner">
       <a id="logo-link" href="https://iarmy.fr" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
-        <div class="logo-i">i</div>
+        <div class="logo-i">
+          <div class="logo-i-soldier">
+            <div class="logo-i-cap"></div>
+            <div class="logo-i-dot"></div>
+            <div class="logo-i-body"></div>
+          </div>
+        </div>
         <span style="font-weight: 600;">iArmy</span>
       </a>
       <div class="nav-right" id="nav-right">
