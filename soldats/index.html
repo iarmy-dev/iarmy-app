@@ -397,6 +397,20 @@
 
     async function loadUserModulesFromTelegram(userId) {
       try {
+        // Charger les module_configs (compta, etc.)
+        const { data: configs } = await supabaseClient
+          .from('module_configs')
+          .select('module_name, sheet_id')
+          .eq('user_id', userId);
+
+        if (configs) {
+          const configuredModules = configs.filter(c => c.sheet_id).map(c => c.module_name);
+          configuredModules.forEach(m => {
+            if (!userModules.includes(m)) userModules.push(m);
+          });
+        }
+
+        // Verifier stock
         const { count: stockCount } = await supabaseClient
           .from('stock_products')
           .select('id', { count: 'exact', head: true })
@@ -406,6 +420,7 @@
           userModules.push('stock');
         }
 
+        // Verifier paie
         const { count: paieCount } = await supabaseClient
           .from('employees')
           .select('id', { count: 'exact', head: true })
