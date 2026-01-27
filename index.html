@@ -759,19 +759,6 @@
       </div>
     </div>
 
-    <!-- Module Header Card -->
-    <div class="header-card" id="module-header-card" style="margin-bottom: 24px;">
-      <div id="module-icon-container" class="module-icon" style="width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-        <!-- Icon dynamically set -->
-      </div>
-      <div class="header-info" style="flex: 1;">
-        <div class="header-name">
-          <span id="module-card-name">Module</span>
-          <span class="badge" id="module-card-badge" style="display: none;">-</span>
-        </div>
-        <div id="module-card-status" style="font-size: 13px; color: rgba(255,255,255,0.4);">Chargement...</div>
-      </div>
-    </div>
 
     <!-- Module Quick Stats -->
     <div id="module-stats-section" style="display: none; margin-bottom: 24px;">
@@ -1196,12 +1183,6 @@
       document.getElementById('module-page-title').textContent = moduleConfig.name;
       document.getElementById('module-page-subtitle').textContent = 'Reglages du module';
 
-      // Update header card
-      document.getElementById('module-card-name').textContent = moduleConfig.name;
-      document.getElementById('module-icon-container').style.background = `linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.color}dd)`;
-      document.getElementById('module-icon-container').style.color = 'white';
-      document.getElementById('module-icon-container').innerHTML = moduleConfig.icon;
-
       // Load module-specific data and status
       await loadModuleSettingsData(moduleName);
     }
@@ -1209,30 +1190,6 @@
     // Load module-specific data
     async function loadModuleSettingsData(moduleName) {
       try {
-        // Get subscription status
-        const { data: sub } = await supabaseClient
-          .from('subscriptions')
-          .select('status, is_tester, expires_at')
-          .eq('user_id', currentUser.id)
-          .eq('module_name', moduleName)
-          .maybeSingle();
-
-        // Update badge
-        const badge = document.getElementById('module-card-badge');
-        if (sub) {
-          badge.style.display = 'inline-block';
-          if (sub.is_tester || sub.status === 'tester') {
-            badge.textContent = 'Testeur';
-            badge.className = 'badge tester';
-          } else if (sub.status === 'active') {
-            badge.textContent = 'Actif';
-            badge.className = 'badge active';
-          } else if (sub.status === 'trialing') {
-            badge.textContent = 'Essai';
-            badge.className = 'badge trial';
-          }
-        }
-
         // Module-specific loading
         switch (moduleName) {
           case 'compta':
@@ -1247,7 +1204,6 @@
         }
       } catch (err) {
         console.error('Error loading module data:', err);
-        document.getElementById('module-card-status').textContent = 'Erreur de chargement';
       }
     }
 
@@ -1282,17 +1238,8 @@
       document.getElementById('module-actions').style.display = 'none';
       document.getElementById('module-actions-grid').style.display = 'none';
 
-      // Update card status
-      document.getElementById('module-card-status').textContent = 'Chargement...';
-
       // Initialize compta module
-      const success = await window.initComptaModule(currentUser.id, supabaseClient, isTelegramMode, telegramUserId);
-
-      if (success) {
-        document.getElementById('module-card-status').textContent = 'Google Sheets connecte';
-      } else {
-        document.getElementById('module-card-status').textContent = 'Non configure';
-      }
+      await window.initComptaModule(currentUser.id, supabaseClient, isTelegramMode, telegramUserId);
     }
 
     // Get compta HTML template
@@ -1577,7 +1524,6 @@
         .eq('user_id', currentUser.id);
 
       if (productCount > 0) {
-        document.getElementById('module-card-status').textContent = productCount + ' produit' + (productCount > 1 ? 's' : '');
         document.getElementById('module-stats-section').style.display = 'block';
 
         document.getElementById('module-stat-1').textContent = productCount || 0;
@@ -1590,7 +1536,6 @@
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer le stock';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Produits et cocktails';
       } else {
-        document.getElementById('module-card-status').textContent = 'Non configure';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des produits';
       }
@@ -1604,7 +1549,6 @@
         .eq('user_id', currentUser.id);
 
       if (employeeCount > 0) {
-        document.getElementById('module-card-status').textContent = employeeCount + ' employe' + (employeeCount > 1 ? 's' : '');
         document.getElementById('module-stats-section').style.display = 'block';
 
         document.getElementById('module-stat-1').textContent = employeeCount || 0;
@@ -1617,7 +1561,6 @@
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer l\'equipe';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Employes et contrats';
       } else {
-        document.getElementById('module-card-status').textContent = 'Non configure';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des employes';
       }
