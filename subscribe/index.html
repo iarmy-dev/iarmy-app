@@ -40,64 +40,75 @@
 
     /* Loading */
     .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px; gap: 28px; }
-
     .loading-icon { position: relative; width: 72px; height: 72px; animation: iconFloat 3s ease-in-out infinite; }
     @keyframes iconFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-    /* Generic loading icon */
-    .loading-shape { width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+    /* Mini spreadsheet - Compta */
+    .icon-wrapper { width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
+    .mini-sheet { width: 48px; height: 48px; background: rgba(0,0,0,0.2); border-radius: 6px; overflow: hidden; }
+    .mini-sheet-row { display: flex; height: 12px; }
+    .mini-sheet-cell { flex: 1; background: rgba(255,255,255,0.15); margin: 1.5px; border-radius: 2px; }
+    .mini-sheet-cell.fill { animation: cellFill 2s ease-in-out infinite; }
+    .mini-sheet-cell.fill-1 { animation-delay: 0s; }
+    .mini-sheet-cell.fill-2 { animation-delay: 0.3s; }
+    .mini-sheet-cell.fill-3 { animation-delay: 0.6s; }
+    .mini-sheet-cell.fill-4 { animation-delay: 0.9s; }
+    .mini-sheet-cell.fill-5 { animation-delay: 1.2s; }
+    .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
+    @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.15); } 50%, 90% { background: var(--color-light, #4ade80); } 100% { background: rgba(255,255,255,0.15); } }
 
-    /* Spreadsheet icon (compta) */
-    .spreadsheet { width: 72px; height: 72px; border-radius: 18px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 4px; padding: 12px; }
-    .spreadsheet .cell { background: rgba(255,255,255,0.9); border-radius: 4px; animation: cellPop 1.5s ease-in-out infinite; }
-    .spreadsheet .cell:nth-child(1) { animation-delay: 0s; }
-    .spreadsheet .cell:nth-child(2) { animation-delay: 0.1s; }
-    .spreadsheet .cell:nth-child(3) { animation-delay: 0.2s; }
-    .spreadsheet .cell:nth-child(4) { animation-delay: 0.3s; }
-    .spreadsheet .cell:nth-child(5) { animation-delay: 0.4s; background: rgba(255,255,255,0.5); }
-    .spreadsheet .cell:nth-child(6) { animation-delay: 0.5s; }
-    .spreadsheet .cell:nth-child(7) { animation-delay: 0.6s; }
-    .spreadsheet .cell:nth-child(8) { animation-delay: 0.7s; background: rgba(255,255,255,0.5); }
-    .spreadsheet .cell:nth-child(9) { animation-delay: 0.8s; }
-    @keyframes cellPop { 0%,100% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } }
+    /* Mini stock - Bouteilles */
+    .mini-stock { width: 54px; height: 42px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; position: relative; }
+    .mini-bottle { position: relative; width: 18px; height: 36px; }
+    .mini-bottle-body { position: absolute; bottom: 0; width: 18px; height: 24px; background: rgba(168,85,247,0.15); border: 2px solid #c084fc; border-radius: 3px 3px 4px 4px; overflow: hidden; }
+    .mini-bottle-neck { position: absolute; bottom: 22px; left: 5px; width: 8px; height: 9px; background: rgba(168,85,247,0.15); border: 2px solid #c084fc; border-bottom: none; border-radius: 3px 3px 0 0; }
+    .mini-bottle-cap { position: absolute; bottom: 30px; left: 3px; width: 12px; height: 4px; background: #c084fc; border-radius: 2px; }
+    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #c084fc, #a855f7); border-radius: 0 0 2px 2px; }
+    .mini-bottle-1 .mini-bottle-fill { animation: bottleEmpty 3s ease-in-out infinite; }
+    .mini-bottle-2 .mini-bottle-fill { animation: bottleFill 3s ease-in-out infinite; }
+    @keyframes bottleEmpty { 0%, 10% { height: 75%; } 45%, 55% { height: 15%; } 90%, 100% { height: 75%; } }
+    @keyframes bottleFill { 0%, 10% { height: 15%; } 45%, 55% { height: 75%; } 90%, 100% { height: 15%; } }
+    .mini-stock-count { position: absolute; top: 0; right: -4px; width: 18px; height: 18px; background: #a855f7; border-radius: 50%; font-size: 10px; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
+    @keyframes countPop { 0%, 35% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 60%, 80% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
 
-    /* Bottle icon (stock) */
-    .bottle-container { width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
-    .bottle { position: relative; width: 26px; height: 48px; }
-    .bottle-neck { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 10px; height: 12px; background: rgba(255,255,255,0.9); border-radius: 2px 2px 0 0; }
-    .bottle-body { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 26px; height: 38px; background: rgba(255,255,255,0.3); border-radius: 4px 4px 6px 6px; overflow: hidden; border: 2px solid rgba(255,255,255,0.9); }
-    .bottle-liquid { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); animation: liquidFill 2s ease-in-out infinite; }
-    @keyframes liquidFill { 0% { height: 20%; } 50% { height: 80%; } 100% { height: 20%; } }
-    .bottle-shine { position: absolute; top: 4px; left: 3px; width: 4px; height: 12px; background: rgba(255,255,255,0.4); border-radius: 2px; }
+    /* Mini paie - People to Euro */
+    .mini-paie { width: 48px; height: 42px; display: flex; align-items: center; justify-content: center; position: relative; }
+    .mini-paie-people { display: flex; align-items: flex-end; gap: 2px; position: absolute; animation: paiePeopleToEuro 3.5s ease-in-out infinite; }
+    .mini-paie-person { display: flex; flex-direction: column; align-items: center; }
+    .mini-paie-head { width: 8px; height: 8px; border-radius: 50%; background: white; margin-bottom: 2px; }
+    .mini-paie-body { width: 10px; height: 11px; background: white; border-radius: 3px 3px 2px 2px; }
+    .mini-paie-person-1 { animation: paiePerson1 3.5s ease-in-out infinite; }
+    .mini-paie-person-2 { animation: paiePerson2 3.5s ease-in-out infinite; }
+    .mini-paie-person-3 { animation: paiePerson3 3.5s ease-in-out infinite; }
+    @keyframes paiePeopleToEuro { 0%, 50% { opacity: 1; } 60%, 90% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes paiePerson1 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(15px); } 100% { transform: translateX(0); } }
+    @keyframes paiePerson2 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(0); } 100% { transform: translateX(0); } }
+    @keyframes paiePerson3 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(-15px); } 100% { transform: translateX(0); } }
+    .mini-paie-euro { position: absolute; font-size: 26px; font-weight: 800; color: white; opacity: 0; animation: paieEuroAppear 3.5s ease-in-out infinite; }
+    @keyframes paieEuroAppear { 0%, 50% { opacity: 0; transform: scale(0.5); } 65% { opacity: 1; transform: scale(1.1); } 75%, 85% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(0.8); } }
 
-    /* Calendar icon (planning) */
-    .calendar { width: 72px; height: 72px; border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; }
-    .calendar-header { height: 18px; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; gap: 16px; }
-    .calendar-ring { width: 6px; height: 10px; border-radius: 2px; margin-top: -4px; }
-    .calendar-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 3px; padding: 6px; }
-    .calendar-day { background: rgba(255,255,255,0.2); border-radius: 3px; animation: dayPop 2s ease-in-out infinite; }
-    .calendar-day.active { background: rgba(255,255,255,0.9); }
-    .calendar-day:nth-child(1) { animation-delay: 0s; }
-    .calendar-day:nth-child(2) { animation-delay: 0.1s; }
-    .calendar-day:nth-child(3) { animation-delay: 0.2s; }
-    .calendar-day:nth-child(4) { animation-delay: 0.3s; }
-    .calendar-day:nth-child(5) { animation-delay: 0.4s; }
-    .calendar-day:nth-child(6) { animation-delay: 0.5s; }
-    .calendar-day:nth-child(7) { animation-delay: 0.6s; }
-    .calendar-day:nth-child(8) { animation-delay: 0.7s; }
-    .calendar-day:nth-child(9) { animation-delay: 0.8s; }
-    .calendar-day:nth-child(10) { animation-delay: 0.9s; }
-    .calendar-day:nth-child(11) { animation-delay: 1s; }
-    .calendar-day:nth-child(12) { animation-delay: 1.1s; }
+    /* Mini planning - Calendar */
+    .mini-planning { width: 48px; height: 48px; background: rgba(0,0,0,0.2); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+    .mini-planning-header { height: 12px; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .mini-planning-ring { width: 4px; height: 7px; background: var(--color, #3b82f6); border-radius: 1px; margin-top: -3px; }
+    .mini-planning-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 2px; padding: 4px; }
+    .mini-planning-day { background: rgba(255,255,255,0.2); border-radius: 2px; animation: dayPop 2s ease-in-out infinite; }
+    .mini-planning-day.active { background: rgba(255,255,255,0.9); }
+    .mini-planning-day:nth-child(3) { animation-delay: 0.2s; }
+    .mini-planning-day:nth-child(6) { animation-delay: 0.5s; }
+    .mini-planning-day:nth-child(9) { animation-delay: 0.8s; }
     @keyframes dayPop { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* Default icon */
+    .default-icon { width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
 
     .loading-steps { display: flex; flex-direction: column; gap: 10px; }
     .loading-step { display: flex; align-items: center; gap: 12px; font-size: 13px; color: rgba(255,255,255,0.4); transition: all 0.3s; }
-    .loading-step.active { color: var(--module-color-light); }
+    .loading-step.active { color: var(--color-light, #4ade80); }
     .loading-step.done { color: rgba(255,255,255,0.6); }
     .step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s; }
-    .loading-step.active .step-dot { background: var(--module-color-light); box-shadow: 0 0 12px var(--module-color-glow); animation: dotPulse 1s ease-in-out infinite; }
-    .loading-step.done .step-dot { background: var(--module-color); }
+    .loading-step.active .step-dot { background: var(--color-light, #4ade80); box-shadow: 0 0 12px var(--color-light, #4ade80); animation: dotPulse 1s ease-in-out infinite; }
+    .loading-step.done .step-dot { background: var(--color, #22c55e); }
     @keyframes dotPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
 
     /* Error */
@@ -114,7 +125,6 @@
     .success-subtitle { font-size: 14px; color: rgba(255,255,255,0.5); max-width: 280px; line-height: 1.5; }
     .success-closing { font-size: 12px; color: rgba(255,255,255,0.4); }
     .success-closing span { font-weight: 600; }
-
   </style>
 </head>
 <body style="background: #0f0f0f;">
@@ -158,154 +168,98 @@
   </div>
 
   <script>
+    // =====================
+    // CONFIG - NE PAS MODIFIER
+    // =====================
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
     const STRIPE_PK = 'pk_test_51SnhCpQnTQdmBOkyvcPgFDg8LQbPZzwAdBv9X1LeLhy8WKtlAorKQeqdiZKC2l994bjKJXxndPYal8G6izNilG15002j0OaFcP';
 
-    // Config des modules
-    const MODULES_CONFIG = {
-      compta: {
-        name: 'Compta',
-        icon: '📊',
-        color: '#22c55e',
-        colorLight: '#4ade80',
-        price: 39,
-        loadingIcon: 'spreadsheet'
-      },
-      stock: {
-        name: 'Stock',
-        icon: '📦',
-        color: '#a855f7',
-        colorLight: '#c084fc',
-        price: 19,
-        loadingIcon: 'bottle'
-      },
-      planning: {
-        name: 'Planning',
-        icon: '📅',
-        color: '#3b82f6',
-        colorLight: '#60a5fa',
-        price: 29,
-        loadingIcon: 'calendar'
-      },
-      paie: {
-        name: 'Paie',
-        icon: '💰',
-        color: '#f59e0b',
-        colorLight: '#fbbf24',
-        price: 39,
-        loadingIcon: 'default'
-      }
+    // Config modules
+    const MODULES = {
+      compta: { name: 'Compta', icon: '📊', color: '#22c55e', colorLight: '#4ade80', price: 39, loadingType: 'spreadsheet' },
+      stock: { name: 'Stock', icon: '📦', color: '#a855f7', colorLight: '#c084fc', price: 19, loadingType: 'bottle' },
+      planning: { name: 'Planning', icon: '📅', color: '#3b82f6', colorLight: '#60a5fa', price: 29, loadingType: 'calendar' },
+      paie: { name: 'Paie', icon: '💰', color: '#f59e0b', colorLight: '#fbbf24', price: 39, loadingType: 'paie' }
     };
 
     // Get module from URL
     const urlParams = new URLSearchParams(window.location.search);
     const moduleName = urlParams.get('module') || 'compta';
-    const moduleConfig = MODULES_CONFIG[moduleName] || MODULES_CONFIG.compta;
+    const mod = MODULES[moduleName] || MODULES.compta;
 
     let stripe = null;
     let elements = null;
     let hasTrial = true;
 
-    // Telegram setup
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      tg.setBackgroundColor('#0f0f0f');
-      tg.setHeaderColor('#0f0f0f');
+    // Apply theme
+    document.documentElement.style.setProperty('--color', mod.color);
+    document.documentElement.style.setProperty('--color-light', mod.colorLight);
+    document.getElementById('orb1').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+    document.getElementById('module-icon').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+    document.getElementById('module-icon').style.boxShadow = `0 8px 24px ${mod.color}50`;
+    document.getElementById('module-icon').textContent = mod.icon;
+    document.getElementById('module-name').textContent = mod.name;
+    document.title = `${mod.name} - Abonnement | iArmy`;
+    document.getElementById('success-checkmark').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+    document.getElementById('success-checkmark').style.boxShadow = `0 0 50px ${mod.color}60`;
+    document.querySelector('.success-closing span').style.color = mod.colorLight;
+    document.getElementById('success-subtitle').textContent = `Tu peux utiliser ${mod.name} des maintenant.`;
+    document.getElementById('btn-pay').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+    document.getElementById('btn-pay').style.boxShadow = `0 4px 15px ${mod.color}50`;
+
+    // Loading icon - vrais pictos animes
+    const loadingIcon = document.getElementById('loading-icon');
+    if (mod.loadingType === 'spreadsheet') {
+      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+        <div class="mini-sheet">
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-4"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-2"></div><div class="mini-sheet-cell"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-3"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-6"></div><div class="mini-sheet-cell"></div></div>
+        </div>
+      </div>`;
+    } else if (mod.loadingType === 'bottle') {
+      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+        <div class="mini-stock">
+          <div class="mini-bottle mini-bottle-1"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
+          <div class="mini-bottle mini-bottle-2"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
+          <div class="mini-stock-count">2</div>
+        </div>
+      </div>`;
+    } else if (mod.loadingType === 'calendar') {
+      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+        <div class="mini-planning">
+          <div class="mini-planning-header"><div class="mini-planning-ring"></div><div class="mini-planning-ring"></div></div>
+          <div class="mini-planning-grid">
+            <div class="mini-planning-day"></div><div class="mini-planning-day"></div><div class="mini-planning-day active"></div><div class="mini-planning-day"></div>
+            <div class="mini-planning-day"></div><div class="mini-planning-day active"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div>
+            <div class="mini-planning-day active"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div>
+          </div>
+        </div>
+      </div>`;
+    } else if (mod.loadingType === 'paie') {
+      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+        <div class="mini-paie">
+          <div class="mini-paie-people">
+            <div class="mini-paie-person mini-paie-person-1"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+            <div class="mini-paie-person mini-paie-person-2"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+            <div class="mini-paie-person mini-paie-person-3"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+          </div>
+          <div class="mini-paie-euro">€</div>
+        </div>
+      </div>`;
+    } else {
+      loadingIcon.innerHTML = `<div class="default-icon" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">${mod.icon}</div>`;
     }
 
-    // Apply module colors
-    function applyModuleTheme() {
-      document.documentElement.style.setProperty('--module-color', moduleConfig.color);
-      document.documentElement.style.setProperty('--module-color-light', moduleConfig.colorLight);
-      document.documentElement.style.setProperty('--module-color-glow', moduleConfig.colorLight + '80');
-
-      // Orb color
-      document.getElementById('orb1').style.background = `linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight})`;
-
-      // Module icon
-      const iconEl = document.getElementById('module-icon');
-      iconEl.style.background = `linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight})`;
-      iconEl.style.boxShadow = `0 8px 24px ${moduleConfig.color}50`;
-      iconEl.textContent = moduleConfig.icon;
-
-      // Module name
-      document.getElementById('module-name').textContent = moduleConfig.name;
-      document.title = `${moduleConfig.name} - Abonnement | iArmy`;
-
-      // Success checkmark
-      document.getElementById('success-checkmark').style.background = `linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight})`;
-      document.getElementById('success-checkmark').style.boxShadow = `0 0 50px ${moduleConfig.color}60`;
-      document.querySelector('.success-closing span').style.color = moduleConfig.colorLight;
-
-      // Success subtitle
-      document.getElementById('success-subtitle').textContent = `Tu peux utiliser ${moduleConfig.name} des maintenant.`;
-
-      // Button
-      const btn = document.getElementById('btn-pay');
-      btn.style.background = `linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight})`;
-      btn.style.boxShadow = `0 4px 15px ${moduleConfig.color}50`;
-
-      // Loading icon
-      const loadingIcon = document.getElementById('loading-icon');
-      if (moduleConfig.loadingIcon === 'spreadsheet') {
-        loadingIcon.innerHTML = `
-          <div class="spreadsheet" style="background: linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight}); box-shadow: 0 0 40px ${moduleConfig.color}50;">
-            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
-            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
-            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
-          </div>`;
-      } else if (moduleConfig.loadingIcon === 'bottle') {
-        loadingIcon.innerHTML = `
-          <div class="bottle-container" style="background: linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight}); box-shadow: 0 0 40px ${moduleConfig.color}50;">
-            <div class="bottle">
-              <div class="bottle-neck"></div>
-              <div class="bottle-body">
-                <div class="bottle-liquid"></div>
-                <div class="bottle-shine"></div>
-              </div>
-            </div>
-          </div>`;
-      } else if (moduleConfig.loadingIcon === 'calendar') {
-        loadingIcon.innerHTML = `
-          <div class="calendar" style="background: linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight}); box-shadow: 0 0 40px ${moduleConfig.color}50;">
-            <div class="calendar-header">
-              <div class="calendar-ring" style="background: ${moduleConfig.color}"></div>
-              <div class="calendar-ring" style="background: ${moduleConfig.color}"></div>
-            </div>
-            <div class="calendar-grid">
-              <div class="calendar-day"></div><div class="calendar-day"></div><div class="calendar-day active"></div><div class="calendar-day"></div>
-              <div class="calendar-day"></div><div class="calendar-day active"></div><div class="calendar-day"></div><div class="calendar-day"></div>
-              <div class="calendar-day active"></div><div class="calendar-day"></div><div class="calendar-day"></div><div class="calendar-day"></div>
-            </div>
-          </div>`;
-      } else {
-        // Default icon
-        loadingIcon.innerHTML = `
-          <div class="loading-shape" style="background: linear-gradient(135deg, ${moduleConfig.color}, ${moduleConfig.colorLight}); box-shadow: 0 0 40px ${moduleConfig.color}50;">
-            ${moduleConfig.icon}
-          </div>`;
-      }
-    }
-
-    // Check if returning from successful payment
-    const isSuccess = urlParams.get('redirect_status') === 'succeeded' ||
-                      urlParams.get('setup_intent') ||
-                      urlParams.get('payment_intent');
-
-    // Init theme
-    applyModuleTheme();
-
-    if (isSuccess) {
-      showSuccessScreen();
-    }
+    // Check success
+    const isSuccess = urlParams.get('redirect_status') === 'succeeded' || urlParams.get('setup_intent') || urlParams.get('payment_intent');
+    if (isSuccess) showSuccessScreen();
 
     function showSuccessScreen() {
       document.getElementById('payment-loading').style.display = 'none';
       document.getElementById('success-screen').classList.add('show');
-
       let count = 3;
       const countdownEl = document.getElementById('countdown');
       const interval = setInterval(() => {
@@ -313,8 +267,8 @@
         if (countdownEl) countdownEl.textContent = count;
         if (count <= 0) {
           clearInterval(interval);
-          if (tg?.close) {
-            tg.close();
+          if (window.Telegram?.WebApp?.close) {
+            window.Telegram.WebApp.close();
           } else {
             window.location.href = `/?soldat=${moduleName}`;
           }
@@ -342,6 +296,9 @@
       }
     }
 
+    // =====================
+    // INIT - CODE IDENTIQUE AUX ANCIENNES PAGES
+    // =====================
     async function init() {
       try {
         if (!window.supabase) { showError('Supabase non charge'); return; }
@@ -349,6 +306,7 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const tg = window.Telegram?.WebApp;
         const initData = tg?.initData || sessionStorage.getItem('tg_init_data');
         const { data: { session } } = await supabase.auth.getSession();
 
@@ -388,7 +346,7 @@
         hasTrial = data.hasTrial !== false;
 
         const btn = document.getElementById('btn-pay');
-        btn.textContent = hasTrial ? 'Demarrer l\'essai gratuit' : `S'abonner - ${moduleConfig.price}€/mois`;
+        btn.textContent = hasTrial ? 'Demarrer l\'essai gratuit' : `S'abonner - ${mod.price}€/mois`;
 
         updateStep(3);
 
@@ -399,7 +357,7 @@
           appearance: {
             theme: 'night',
             variables: {
-              colorPrimary: moduleConfig.color,
+              colorPrimary: mod.color,
               colorBackground: '#1a1a1a',
               colorText: '#ffffff',
               colorDanger: '#f87171',
@@ -408,7 +366,7 @@
             },
             rules: {
               '.Input': { backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)' },
-              '.Input:focus': { border: '1px solid ' + moduleConfig.color, boxShadow: '0 0 0 1px ' + moduleConfig.color },
+              '.Input:focus': { border: '1px solid ' + mod.color, boxShadow: '0 0 0 1px ' + mod.color },
               '.Label': { color: 'rgba(255,255,255,0.7)' }
             }
           }
@@ -448,24 +406,18 @@
       try {
         const returnUrl = window.location.origin + '/subscribe/?module=' + moduleName;
         const result = hasTrial
-          ? await stripe.confirmSetup({
-              elements,
-              confirmParams: { return_url: returnUrl }
-            })
-          : await stripe.confirmPayment({
-              elements,
-              confirmParams: { return_url: returnUrl }
-            });
+          ? await stripe.confirmSetup({ elements, confirmParams: { return_url: returnUrl } })
+          : await stripe.confirmPayment({ elements, confirmParams: { return_url: returnUrl } });
 
         if (result.error) {
           showError(result.error.message);
           btn.disabled = false;
-          btn.textContent = hasTrial ? 'Demarrer l\'essai gratuit' : `S'abonner - ${moduleConfig.price}€/mois`;
+          btn.textContent = hasTrial ? 'Demarrer l\'essai gratuit' : `S'abonner - ${mod.price}€/mois`;
         }
       } catch (err) {
         showError('Erreur: ' + err.message);
         btn.disabled = false;
-        btn.textContent = hasTrial ? 'Demarrer l\'essai gratuit' : `S'abonner - ${moduleConfig.price}€/mois`;
+        btn.textContent = hasTrial ? 'Demarrer l\'essai gratuit' : `S'abonner - ${mod.price}€/mois`;
       }
     }
 

@@ -3,12 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Redirection...</title>
-  <script>
-    // Preserve URL params and redirect to unified subscribe page
-    const params = new URLSearchParams(window.location.search);
-    params.set('module', 'stock');
-    window.location.replace('/subscribe/?' + params.toString());
-  </script>
+  <script>window.location.replace('/subscribe/?module=stock' + window.location.search.replace('?', '&'));</script>
 </head>
-<body style="background: #0f0f0f;"></body>
+<body style="background:#0f0f0f;"></body>
 </html>
