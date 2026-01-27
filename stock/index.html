@@ -194,33 +194,16 @@
         .eq('module_name', 'stock')
         .maybeSingle();
 
-      const hasAccess = sub?.status === 'active' || sub?.is_tester === true;
+      // Settings accessibles même sans abonnement actif
+      // (le bot Telegram gère le blocage si pas d'abonnement)
 
-      // Si pas d'acces mais a des produits = essai termine
       const { count: productCount } = await supabase
         .from('stock_products')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', currentUser.id);
 
-      if (!hasAccess && productCount > 0) {
-        // Afficher message essai termine
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('products-list').innerHTML = `
-          <div class="glass p-8 text-center">
-            <div class="text-4xl mb-4">⏰</div>
-            <h3 class="text-lg font-semibold mb-2">Essai termine</h3>
-            <p class="text-white/40 text-sm mb-6">Ton essai gratuit est termine. Passe a l'abonnement pour continuer.</p>
-            <a href="/stock/subscribe/" class="btn-primary inline-block">S'abonner - 29€/mois</a>
-          </div>
-        `;
-        document.getElementById('stat-products').textContent = productCount;
-        document.getElementById('stat-cocktails').textContent = '-';
-        document.getElementById('stat-margin').textContent = '-';
-        return;
-      }
-
-      // Si pas d'acces et pas de produits = redirect vers setup
-      if (!hasAccess && productCount === 0) {
+      // Si pas de produits = redirect vers setup
+      if (productCount === 0) {
         window.location.href = '/stock/setup/';
         return;
       }

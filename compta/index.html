@@ -1094,17 +1094,8 @@
         </div>
       `;
 
-      // Verifier l'abonnement
-      const hasAccess = authData.subscription &&
-        (authData.subscription.isTester ||
-         authData.subscription.status === 'active' ||
-         authData.subscription.status === 'trialing');
-
-      if (!hasAccess) {
-        console.log('[TG] No access:', authData.subscription);
-        showNoAccessScreen();
-        return;
-      }
+      // Settings accessibles même sans abonnement actif
+      // (le bot Telegram gère le blocage si pas d'abonnement)
 
       // Verifier la config
       if (!authData.moduleConfig || !authData.moduleConfig.sheetId) {
@@ -1260,13 +1251,8 @@
         </div>
       `;
 
-      // Vérifier l'abonnement au module
-      const hasAccess = await checkModuleAccess(user.id, 'compta');
-      if (!hasAccess) {
-        showNoAccessScreen();
-        return;
-      }
-
+      // Settings accessibles même sans abonnement actif
+      // (le bot Telegram gère le blocage si pas d'abonnement)
       await loadConfig(session.user.id);
       hideComptaLoading();
     }
