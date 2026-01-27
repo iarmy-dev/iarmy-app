@@ -46,14 +46,11 @@ async function initComptaModule(userId, supabaseClient, isTelegramMode, telegram
       const container = document.getElementById('module-content');
       if (container) {
         const setupUrl = 'https://app.iarmy.fr/setup/?module=compta';
-        // DEBUG: Afficher pourquoi ça ne marche pas
-        const debugInfo = `passedConfig: ${JSON.stringify(passedConfig)}, moduleConfig: ${JSON.stringify(moduleConfig)}`;
         container.innerHTML = `
           <div style="text-align: center; padding: 60px 20px;">
             <div style="font-size: 48px; margin-bottom: 20px;">⚙️</div>
             <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configure Compta</h2>
             <p style="color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 24px;">La configuration se fait sur le site web.</p>
-            <p style="color: #f87171; font-size: 10px; margin-bottom: 12px; word-break: break-all;">DEBUG: ${debugInfo}</p>
             <button onclick="window.Telegram.WebApp.openLink('${setupUrl}')" style="display: inline-block; padding: 12px 24px; background: #22c55e; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Configurer Compta →</button>
           </div>
         `;
