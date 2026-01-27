@@ -991,6 +991,7 @@
     // Cache des donnees pour affichage instantane
     function saveUICache() {
       const cache = {
+        // UI elements
         userName: document.getElementById('user-name')?.textContent,
         userEmail: document.getElementById('user-email')?.textContent,
         avatarInitials: document.getElementById('avatar-initials')?.textContent,
@@ -1009,7 +1010,11 @@
         sheetsConnected: document.getElementById('conn-sheets')?.classList.contains('connected'),
         sheetsStatus: document.getElementById('sheets-status')?.innerHTML,
         telegramConnected: document.getElementById('conn-telegram')?.classList.contains('connected'),
-        telegramStatus: document.getElementById('telegram-status')?.innerHTML
+        telegramStatus: document.getElementById('telegram-status')?.innerHTML,
+        // JavaScript variables
+        moduleConfig: moduleConfig,
+        stockProductCount: stockProductCount,
+        paieEmployeeCount: paieEmployeeCount
       };
       sessionStorage.setItem('compte_cache', JSON.stringify(cache));
     }
@@ -1060,6 +1065,11 @@
           document.getElementById('telegram-status').innerHTML = cache.telegramStatus;
           document.getElementById('telegram-status').classList.add('ok');
         }
+
+        // JavaScript variables
+        if (cache.moduleConfig) moduleConfig = cache.moduleConfig;
+        if (cache.stockProductCount !== undefined) stockProductCount = cache.stockProductCount;
+        if (cache.paieEmployeeCount !== undefined) paieEmployeeCount = cache.paieEmployeeCount;
 
         return true;
       } catch (e) {
