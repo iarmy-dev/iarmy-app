@@ -30,17 +30,28 @@
     .alert-card { border-left: 3px solid; padding-left: 16px; }
     .alert-warning { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
     .alert-danger { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+    /* Nav */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .nav-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .logo-i { width: 36px; height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+    .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; }
+    .btn-icon:hover { background: rgba(255,255,255,0.08); color: white; }
+    .btn-icon.danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
   </style>
 </head>
 <body>
   <!-- Header -->
-  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
-    <div class="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-400 rounded-xl flex items-center justify-center font-bold text-lg">i</div>
-        <span class="font-semibold">Stock</span>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
+        <div class="logo-i">i</div>
+        <span style="font-weight: 600;">Stock</span>
       </a>
-      <a href="/stock/setup/" class="btn-primary text-sm py-2 px-4">+ Ajouter</a>
+      <div class="nav-right">
+        <a href="/stock/setup/" class="btn-primary text-sm py-2 px-4" style="padding: 8px 16px; font-size: 13px; border-radius: 10px;">+ Ajouter</a>
+      </div>
     </div>
   </nav>
 

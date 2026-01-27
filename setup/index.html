@@ -21,17 +21,17 @@
     .orb-2 { width: 300px; height: 300px; bottom: -150px; left: -100px; animation-delay: -7s; }
     @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
 
-    .glass { background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .nav-inner { margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .glass-card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: all 0.4s ease; }
-
+    /* Nav */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .nav-inner { max-width: 100%; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
     .logo-i { width: 36px; height: 36px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
     .logo-i:hover { transform: scale(1.15) rotate(-12deg); box-shadow: 0 8px 30px rgba(255,107,53,0.5); }
-
     .nav-right { display: flex; align-items: center; gap: 8px; }
     .btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; }
     .btn-icon:hover { background: rgba(255,255,255,0.08); color: white; }
     .btn-icon.danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+    .glass-card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: all 0.4s ease; }
 
     .sidebar { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(20px); width: 280px; min-height: calc(100vh - 70px); padding: 24px; position: fixed; left: 0; top: 70px; z-index: 40; }
     .step-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
@@ -267,7 +267,7 @@
   <div class="toast" id="toast"></div>
 
   <!-- Header -->
-  <nav class="glass fixed top-0 left-0 right-0 z-50">
+  <nav>
     <div class="nav-inner">
       <a href="https://iarmy.fr" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
         <div class="logo-i">i</div>
