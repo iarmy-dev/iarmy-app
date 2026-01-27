@@ -86,40 +86,53 @@
     async function handleCallback() {
       try {
         console.log('[CALLBACK] 🔐 Traitement du callback OAuth...');
-        console.log('[CALLBACK] Hash present:', !!window.location.hash);
+        console.log('[CALLBACK] Hash:', window.location.hash.substring(0, 50) + '...');
 
-        // Attendre que le SDK traite le hash
-        await new Promise(r => setTimeout(r, 500));
+        // Parser le hash manuellement
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
 
-        // Recuperer la session
-        const { data: { session }, error } = await tempClient.auth.getSession();
+        console.log('[CALLBACK] Tokens:', { hasAccess: !!accessToken, hasRefresh: !!refreshToken });
 
-        console.log('[CALLBACK] Session result:', { hasSession: !!session, error });
-
-        if (error) {
-          console.error('[CALLBACK] ❌ Erreur:', error);
-          showError('Erreur: ' + error.message);
-          return;
-        }
-
-        if (!session) {
-          // Reessayer apres un delai
-          console.log('[CALLBACK] ⏳ Pas de session, retry...');
-          await new Promise(r => setTimeout(r, 1000));
-
-          const { data: { session: retrySession }, error: retryError } = await tempClient.auth.getSession();
-
-          if (retryError || !retrySession) {
-            console.error('[CALLBACK] ❌ Toujours pas de session');
-            showError('Connexion echouee. Reessayez.');
+        if (!accessToken) {
+          // Pas de token dans le hash, verifier session existante
+          const { data: { session } } = await tempClient.auth.getSession();
+          if (session) {
+            await finishCallback(session);
             return;
           }
-
-          await finishCallback(retrySession);
+          showError('Aucun token trouve.');
           return;
         }
 
-        await finishCallback(session);
+        // Ecouter le changement d'auth
+        let handled = false;
+        const { data: { subscription } } = tempClient.auth.onAuthStateChange(async (event, session) => {
+          console.log('[CALLBACK] Auth event:', event, !!session);
+          if (!handled && session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+            handled = true;
+            subscription.unsubscribe();
+            await finishCallback(session);
+          }
+        });
+
+        // Forcer le refresh de la session pour que le SDK traite le hash
+        await tempClient.auth.getSession();
+
+        // Timeout si rien ne se passe
+        setTimeout(async () => {
+          if (!handled) {
+            subscription.unsubscribe();
+            // Derniere tentative
+            const { data: { session } } = await tempClient.auth.getSession();
+            if (session) {
+              await finishCallback(session);
+            } else {
+              showError('Connexion echouee. Reessayez.');
+            }
+          }
+        }, 3000);
 
       } catch (err) {
         console.error('[CALLBACK] ❌ Erreur:', err);
