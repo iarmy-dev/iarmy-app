@@ -59,17 +59,83 @@
     .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
     .stats-empty { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 24px; text-align: center; color: rgba(255,255,255,0.3); font-size: 13px; margin-bottom: 24px; }
 
-    /* Module Card */
-    .module-card { background: linear-gradient(135deg, rgba(255,107,53,0.08) 0%, rgba(255,107,53,0.02) 100%); border: 1px solid rgba(255,107,53,0.2); border-radius: 20px; padding: 20px; margin-bottom: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: space-between; }
-    .module-card:hover { transform: translateY(-2px); border-color: rgba(255,107,53,0.4); box-shadow: 0 8px 32px rgba(255,107,53,0.15); }
-    .module-left { display: flex; align-items: center; gap: 14px; }
-    .module-icon { width: 48px; height: 48px; background: linear-gradient(135deg, rgba(13,122,63,0.3), rgba(13,122,63,0.1)); border-radius: 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .module-name { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
-    .module-status { font-size: 12px; color: rgba(255,255,255,0.4); }
-    .module-arrow { color: rgba(255,255,255,0.3); transition: transform 0.2s; }
-    .module-card:hover .module-arrow { transform: translateX(4px); color: #FF6B35; }
-    .module-card.inactive { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); }
-    .module-card.inactive:hover { border-color: rgba(255,255,255,0.1); box-shadow: none; transform: none; }
+    /* Modules Grid - style home */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      .modules-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 400px) {
+      .modules-grid { grid-template-columns: 1fr; }
+    }
+
+    .module-card {
+      border-radius: 20px;
+      padding: 20px 16px;
+      aspect-ratio: 1;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid transparent;
+      position: relative;
+    }
+    .module-card:hover { transform: translateY(-2px); }
+
+    /* Compta - Green */
+    .module-card.compta {
+      background: linear-gradient(145deg, rgba(34,197,94,0.25), rgba(22,163,74,0.15));
+      border-color: rgba(34,197,94,0.4);
+    }
+    .module-card.compta:hover {
+      border-color: rgba(34,197,94,0.6);
+      box-shadow: 0 0 30px rgba(34,197,94,0.2);
+    }
+
+    /* Stock - Cyan */
+    .module-card.stock {
+      background: linear-gradient(145deg, rgba(6,182,212,0.25), rgba(8,145,178,0.15));
+      border-color: rgba(6,182,212,0.4);
+    }
+    .module-card.stock:hover {
+      border-color: rgba(6,182,212,0.6);
+      box-shadow: 0 0 30px rgba(6,182,212,0.2);
+    }
+
+    /* Paie - Gold */
+    .module-card.paie {
+      background: linear-gradient(145deg, rgba(245,158,11,0.25), rgba(217,119,6,0.15));
+      border-color: rgba(245,158,11,0.4);
+    }
+    .module-card.paie:hover {
+      border-color: rgba(245,158,11,0.6);
+      box-shadow: 0 0 30px rgba(245,158,11,0.2);
+    }
+
+    /* Module inactive */
+    .module-card.inactive {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.08);
+      opacity: 0.6;
+    }
+    .module-card.inactive:hover {
+      opacity: 0.8;
+      transform: none;
+    }
+
+    .module-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .module-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .module-status { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .module-badge { position: absolute; top: 10px; right: 10px; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; }
+    .module-badge.active { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .module-badge.setup { background: rgba(255,107,53,0.2); color: #FF8B5E; }
 
     /* Mini spreadsheet animation */
     .mini-sheet { width: 32px; height: 32px; background: #1a472a; border-radius: 4px; overflow: hidden; }
@@ -327,14 +393,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 36px;
-      color: white;
       position: relative;
       overflow: hidden;
       box-shadow: 0 0 40px rgba(255,107,53,0.4);
       animation: logoFloat 3s ease-in-out infinite;
     }
+    /* Soldat dans le loading */
+    .loading-logo .logo-i-soldier { transform: scale(1.8); }
+    .loading-logo .logo-i-cap { animation: none; }
     @keyframes logoFloat {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
@@ -417,7 +483,13 @@
     <div class="loading-logo-wrapper">
       <div class="loading-ring-outer"></div>
       <div class="loading-ring"></div>
-      <div class="loading-logo">i</div>
+      <div class="loading-logo">
+        <div class="logo-i-soldier">
+          <div class="logo-i-cap"></div>
+          <div class="logo-i-dot"></div>
+          <div class="logo-i-body"></div>
+        </div>
+      </div>
     </div>
     <div class="loading-text">Chargement</div>
   </div>
@@ -491,39 +563,23 @@
     </div>
 
     <!-- Modules -->
-    <div class="section-title">Mes modules</div>
-    <div class="module-card" id="module-compta" onclick="goToModule()">
-      <div class="module-left">
-        <div class="module-icon">
-          <div class="mini-sheet">
-            <div class="mini-sheet-row">
-              <div class="mini-sheet-cell fill fill-1"></div>
-              <div class="mini-sheet-cell fill fill-2"></div>
-            </div>
-            <div class="mini-sheet-row">
-              <div class="mini-sheet-cell fill fill-3"></div>
-              <div class="mini-sheet-cell fill fill-4"></div>
-            </div>
-            <div class="mini-sheet-row">
-              <div class="mini-sheet-cell fill fill-5"></div>
-              <div class="mini-sheet-cell fill fill-6"></div>
-            </div>
-          </div>
+    <div class="section-title">Mes soldats</div>
+    <div class="modules-grid">
+      <!-- Compta -->
+      <div class="module-card compta" id="module-compta" onclick="goToModule()">
+        <span class="module-badge active" id="compta-badge" style="display:none;">Actif</span>
+        <div class="module-icon" style="background: linear-gradient(180deg, #22c55e, #16a34a);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>
         </div>
-        <div>
-          <div class="module-name">Compta</div>
-          <div class="module-status" id="module-status">Chargement...</div>
-        </div>
+        <div class="module-name">Compta</div>
+        <div class="module-status" id="module-status">Chargement...</div>
       </div>
-      <div class="module-arrow">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-    </div>
 
-    <div class="module-card" id="module-stock" onclick="goToStockModule()">
-      <div class="module-left">
-        <div class="module-icon" style="background: linear-gradient(135deg, rgba(6,182,212,0.3), rgba(6,182,212,0.1));">
-          <div class="mini-stock">
+      <!-- Stock -->
+      <div class="module-card stock" id="module-stock" onclick="goToStockModule()">
+        <span class="module-badge active" id="stock-badge" style="display:none;">Actif</span>
+        <div class="module-icon" style="background: linear-gradient(180deg, #22D3EE, #06B6D4);">
+          <div class="mini-stock" style="transform: scale(0.8);">
             <div class="mini-bottle mini-bottle-1">
               <div class="mini-bottle-cap"></div>
               <div class="mini-bottle-neck"></div>
@@ -534,47 +590,25 @@
               <div class="mini-bottle-neck"></div>
               <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
             </div>
-            <div class="mini-stock-count">2</div>
           </div>
         </div>
-        <div>
-          <div class="module-name">Stock</div>
-          <div class="module-status" id="stock-status">Chargement...</div>
-        </div>
+        <div class="module-name">Stock</div>
+        <div class="module-status" id="stock-status">Chargement...</div>
       </div>
-      <div class="module-arrow">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-    </div>
 
-    <div class="module-card" id="module-paie" onclick="goToPaieModule()">
-      <div class="module-left">
-        <div class="module-icon" style="background: linear-gradient(135deg, rgba(251,191,36,0.3), rgba(245,158,11,0.1));">
-          <div class="mini-paie">
-            <div class="mini-paie-people">
-              <div class="mini-paie-person mini-paie-person-1">
-                <div class="mini-paie-head"></div>
-                <div class="mini-paie-body"></div>
-              </div>
-              <div class="mini-paie-person mini-paie-person-2">
-                <div class="mini-paie-head"></div>
-                <div class="mini-paie-body"></div>
-              </div>
-              <div class="mini-paie-person mini-paie-person-3">
-                <div class="mini-paie-head"></div>
-                <div class="mini-paie-body"></div>
-              </div>
-            </div>
-            <div class="mini-paie-euro">€</div>
-          </div>
+      <!-- Paie -->
+      <div class="module-card paie" id="module-paie" onclick="goToPaieModule()">
+        <span class="module-badge active" id="paie-badge" style="display:none;">Actif</span>
+        <div class="module-icon" style="background: linear-gradient(180deg, #fbbf24, #f59e0b);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="9" cy="7" r="3" fill="white"/>
+            <circle cx="17" cy="7" r="2.5" fill="rgba(255,255,255,0.7)"/>
+            <path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M15 13c2.2 0 4 1.8 4 4v2" stroke="rgba(255,255,255,0.7)" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
         </div>
-        <div>
-          <div class="module-name">Paie</div>
-          <div class="module-status" id="paie-status">Chargement...</div>
-        </div>
-      </div>
-      <div class="module-arrow">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <div class="module-name">Paie</div>
+        <div class="module-status" id="paie-status">Chargement...</div>
       </div>
     </div>
 
