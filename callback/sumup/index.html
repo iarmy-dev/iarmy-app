@@ -210,15 +210,23 @@
     function showError(message) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error').style.display = 'block';
-      document.getElementById('error-message').textContent = message;
+      document.getElementById('error-message').innerHTML = message +
+        '<br><br><code style="font-size:10px;color:#888;word-break:break-all;">' + message + '</code>';
 
-      // If in popup, add close button
-      if (window.opener) {
-        const btn = document.querySelector('#error .btn');
-        btn.textContent = 'Fermer';
-        btn.href = '#';
-        btn.onclick = () => window.close();
-      }
+      // DON'T auto-close on error - let user see the message
+      const btn = document.querySelector('#error .btn');
+      btn.textContent = 'Fermer';
+      btn.href = '#';
+      btn.onclick = () => {
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'POS_OAUTH_ERROR',
+            posType: 'sumup',
+            error: message
+          }, window.location.origin);
+        }
+        window.close();
+      };
     }
 
     // Run on page load
