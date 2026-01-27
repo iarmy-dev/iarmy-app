@@ -267,7 +267,13 @@
     #menu-drop-area-0.dragover .upload-zone, [id^="menu-drop-area-"].dragover .upload-zone { border-color: #10B981; background: rgba(16,185,129,0.1); }
   </style>
 </head>
-<body>
+<body style="background: #0f0f0f;">
+  <!-- Loading initial - disparait apres init -->
+  <div id="initial-loading" style="position: fixed; inset: 0; background: #0f0f0f; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #FF6B35; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <p style="color: rgba(255,255,255,0.5); margin-top: 16px; font-family: Inter, sans-serif;">Chargement...</p>
+  </div>
+
   <!-- Background -->
   <div class="bg-grid"></div>
   <div class="orb orb-1" id="orb1"></div>
@@ -496,14 +502,16 @@
         tg.BackButton.show();
 
         const setupUrl = `https://app.iarmy.fr/setup/?module=${currentModule}`;
+        const moduleName = moduleConfig?.name || currentModule;
         document.querySelector('.main-content').innerHTML = `
           <div class="glass-card" style="padding: 48px; text-align: center; margin-top: 40px;">
             <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
-            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configuration requise</h2>
-            <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">La configuration doit etre faite sur le site web.</p>
-            <button onclick="window.Telegram.WebApp.openLink('${setupUrl}')" class="btn-glow" style="display: inline-block; width: auto; cursor: pointer;">Ouvrir le site →</button>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configure ${moduleName}</h2>
+            <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">La configuration se fait sur le site web.</p>
+            <button onclick="window.Telegram.WebApp.openLink('${setupUrl}')" class="btn-glow" style="display: inline-block; width: auto; cursor: pointer;">Configurer ${moduleName} →</button>
           </div>
         `;
+        hideInitialLoading();
         return;
       }
 
@@ -550,6 +558,16 @@
       generateStepsNav();
       generateStepsContent();
       goToStep(0);
+      hideInitialLoading();
+    }
+
+    function hideInitialLoading() {
+      const loader = document.getElementById('initial-loading');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => loader.remove(), 300);
+      }
     }
 
     // ============================================

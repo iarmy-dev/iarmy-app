@@ -31,19 +31,20 @@ async function initComptaModule(userId, supabaseClient, isTelegramMode, telegram
     if (isTelegramMode) {
       const container = document.getElementById('module-content');
       if (container) {
+        const setupUrl = 'https://app.iarmy.fr/setup/?module=compta';
         container.innerHTML = `
           <div style="text-align: center; padding: 60px 20px;">
             <div style="font-size: 48px; margin-bottom: 20px;">⚙️</div>
-            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configuration requise</h2>
-            <p style="color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 24px;">Configure Compta sur le site web d'abord.</p>
-            <a href="https://app.iarmy.fr/compta/setup/" target="_blank" style="display: inline-block; padding: 12px 24px; background: #22c55e; border-radius: 8px; color: white; font-weight: 600; text-decoration: none;">Configurer sur le site →</a>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configure Compta</h2>
+            <p style="color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 24px;">La configuration se fait sur le site web.</p>
+            <button onclick="window.Telegram.WebApp.openLink('${setupUrl}')" style="display: inline-block; padding: 12px 24px; background: #22c55e; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Configurer Compta →</button>
           </div>
         `;
       }
       return false;
     }
     // Redirect to setup
-    window.location.href = '/compta/setup/';
+    window.location.href = '/setup/?module=compta';
     return false;
   }
 
