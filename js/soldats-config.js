@@ -1,6 +1,13 @@
 // Configuration centralisee de tous les soldats (modules) iArmy
 // Ajouter un soldat ici = il apparait automatiquement dans le repertoire
 
+// Categories disponibles
+const SOLDAT_CATEGORIES = [
+  { id: 'all', name: 'Tous', icon: '⚡' },
+  { id: 'restaurant', name: 'Restaurant', icon: '🍽️' },
+  { id: 'bar', name: 'Bar', icon: '🍸' }
+];
+
 const SOLDATS_CONFIG = [
   {
     id: 'compta',
@@ -11,6 +18,7 @@ const SOLDATS_CONFIG = [
     colorLight: 'rgba(34,197,94,0.15)',
     price: '9.99',
     priceUnit: '€/mois',
+    categories: ['restaurant', 'bar'], // disponible pour les deux
     features: [
       'Saisie vocale ou texte via Telegram',
       'Synchronisation Google Sheets automatique',
@@ -31,6 +39,7 @@ const SOLDATS_CONFIG = [
     colorLight: 'rgba(6,182,212,0.15)',
     price: '9.99',
     priceUnit: '€/mois',
+    categories: ['restaurant', 'bar'],
     features: [
       'Inventaire en temps reel',
       'Alertes stock bas',
@@ -51,6 +60,7 @@ const SOLDATS_CONFIG = [
     colorLight: 'rgba(245,158,11,0.15)',
     price: '14.99',
     priceUnit: '€/mois',
+    categories: ['restaurant', 'bar'],
     features: [
       'Calcul automatique des salaires',
       'Generation fiches de paie PDF',
@@ -71,6 +81,7 @@ const SOLDATS_CONFIG = [
     colorLight: 'rgba(139,92,246,0.15)',
     price: '9.99',
     priceUnit: '€/mois',
+    categories: ['restaurant', 'bar'],
     features: [
       'Planning hebdomadaire drag & drop',
       'Notifications aux employes',
@@ -91,6 +102,7 @@ const SOLDATS_CONFIG = [
     colorLight: 'rgba(236,72,153,0.15)',
     price: '19.99',
     priceUnit: '€/mois',
+    categories: ['restaurant'], // uniquement restaurant
     features: [
       'Widget de reservation pour ton site',
       'Confirmation automatique par SMS',
@@ -111,6 +123,7 @@ const SOLDATS_CONFIG = [
     colorLight: 'rgba(234,179,8,0.15)',
     price: '14.99',
     priceUnit: '€/mois',
+    categories: ['restaurant', 'bar'],
     features: [
       'Carte de fidelite digitale',
       'Points et recompenses',
