@@ -7,14 +7,14 @@ nav {
   left: 0 !important;
   right: 0 !important;
   z-index: 50 !important;
-  background: rgba(3,3,3,0.8) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
 }
 
 .nav-inner {
-  max-width: 600px !important;
+  max-width: 768px !important;
   margin: 0 auto !important;
   padding: 16px 20px !important;
   display: flex !important;
