@@ -2054,15 +2054,10 @@
     function goToModule() {
       // Unified module settings view with ?soldat=compta
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
-      // Check variable first, then cache if variable not loaded yet
-      let hasConfig = moduleConfig?.sheet_id || moduleConfig?.sheetId;
-      if (!hasConfig) {
-        try {
-          const cache = JSON.parse(sessionStorage.getItem('compte_cache') || '{}');
-          hasConfig = cache.moduleConfig?.sheet_id || cache.moduleConfig?.sheetId;
-        } catch (e) {}
-      }
-      if (hasConfig) {
+      // If the card is visible, user has config - go to settings
+      const comptaCard = document.getElementById('module-compta');
+      const isConfigured = comptaCard && comptaCard.style.display === 'flex';
+      if (isConfigured) {
         window.location.href = '/?soldat=compta' + tgParams;
       } else {
         window.location.href = '/compta/setup/' + (tgParams ? '?' + tgParams.substring(1) : '');
