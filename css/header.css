@@ -23,12 +23,12 @@ nav {
 }
 
 .logo-i {
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  min-height: 36px !important;
+  width: 32px !important;
+  height: 75px !important;
+  min-width: 32px !important;
+  min-height: 75px !important;
   background: linear-gradient(135deg, #FF6B35, #FF8B5E) !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
