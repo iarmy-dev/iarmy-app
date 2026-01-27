@@ -43,11 +43,11 @@
     .loading-icon { position: relative; width: 72px; height: 72px; animation: iconFloat 3s ease-in-out infinite; }
     @keyframes iconFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-    /* Mini spreadsheet - Compta */
+    /* Mini spreadsheet - Compta (identique au site) */
     .icon-wrapper { width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
-    .mini-sheet { width: 48px; height: 48px; background: rgba(0,0,0,0.2); border-radius: 6px; overflow: hidden; }
+    .mini-sheet { width: 48px; height: 48px; background: rgba(0,0,0,0.2); border-radius: 6px; overflow: hidden; padding: 6px; }
     .mini-sheet-row { display: flex; height: 12px; }
-    .mini-sheet-cell { flex: 1; background: rgba(255,255,255,0.15); margin: 1.5px; border-radius: 2px; }
+    .mini-sheet-cell { flex: 1; background: rgba(255,255,255,0.1); margin: 1.5px; border-radius: 2px; }
     .mini-sheet-cell.fill { animation: cellFill 2s ease-in-out infinite; }
     .mini-sheet-cell.fill-1 { animation-delay: 0s; }
     .mini-sheet-cell.fill-2 { animation-delay: 0.3s; }
@@ -55,20 +55,20 @@
     .mini-sheet-cell.fill-4 { animation-delay: 0.9s; }
     .mini-sheet-cell.fill-5 { animation-delay: 1.2s; }
     .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
-    @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.15); } 50%, 90% { background: var(--color-light, #4ade80); } 100% { background: rgba(255,255,255,0.15); } }
+    @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.1); } 50%, 90% { background: #4ade80; } 100% { background: rgba(255,255,255,0.1); } }
 
-    /* Mini stock - Bouteilles */
+    /* Mini stock - Bouteilles (identique au site - cyan) */
     .mini-stock { width: 54px; height: 42px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; position: relative; }
     .mini-bottle { position: relative; width: 18px; height: 36px; }
-    .mini-bottle-body { position: absolute; bottom: 0; width: 18px; height: 24px; background: rgba(168,85,247,0.15); border: 2px solid #c084fc; border-radius: 3px 3px 4px 4px; overflow: hidden; }
-    .mini-bottle-neck { position: absolute; bottom: 22px; left: 5px; width: 8px; height: 9px; background: rgba(168,85,247,0.15); border: 2px solid #c084fc; border-bottom: none; border-radius: 3px 3px 0 0; }
-    .mini-bottle-cap { position: absolute; bottom: 30px; left: 3px; width: 12px; height: 4px; background: #c084fc; border-radius: 2px; }
-    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #c084fc, #a855f7); border-radius: 0 0 2px 2px; }
+    .mini-bottle-body { position: absolute; bottom: 0; width: 18px; height: 24px; background: rgba(6,182,212,0.15); border: 2px solid #06B6D4; border-radius: 3px 3px 4px 4px; overflow: hidden; }
+    .mini-bottle-neck { position: absolute; bottom: 22px; left: 5px; width: 8px; height: 9px; background: rgba(6,182,212,0.15); border: 2px solid #06B6D4; border-bottom: none; border-radius: 3px 3px 0 0; }
+    .mini-bottle-cap { position: absolute; bottom: 30px; left: 3px; width: 12px; height: 4px; background: #06B6D4; border-radius: 2px; }
+    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #22D3EE, #06B6D4); border-radius: 0 0 2px 2px; }
     .mini-bottle-1 .mini-bottle-fill { animation: bottleEmpty 3s ease-in-out infinite; }
     .mini-bottle-2 .mini-bottle-fill { animation: bottleFill 3s ease-in-out infinite; }
     @keyframes bottleEmpty { 0%, 10% { height: 75%; } 45%, 55% { height: 15%; } 90%, 100% { height: 75%; } }
     @keyframes bottleFill { 0%, 10% { height: 15%; } 45%, 55% { height: 75%; } 90%, 100% { height: 15%; } }
-    .mini-stock-count { position: absolute; top: 0; right: -4px; width: 18px; height: 18px; background: #a855f7; border-radius: 50%; font-size: 10px; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
+    .mini-stock-count { position: absolute; top: 0; right: -4px; width: 18px; height: 18px; background: #06B6D4; border-radius: 50%; font-size: 10px; font-weight: 700; color: #083344; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
     @keyframes countPop { 0%, 35% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 60%, 80% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
 
     /* Mini paie - People to Euro */
@@ -175,11 +175,11 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
     const STRIPE_PK = 'pk_test_51SnhCpQnTQdmBOkyvcPgFDg8LQbPZzwAdBv9X1LeLhy8WKtlAorKQeqdiZKC2l994bjKJXxndPYal8G6izNilG15002j0OaFcP';
 
-    // Config modules
+    // Config modules (couleurs identiques au site)
     const MODULES = {
       compta: { name: 'Compta', icon: '📊', color: '#22c55e', colorLight: '#4ade80', price: 39, loadingType: 'spreadsheet' },
-      stock: { name: 'Stock', icon: '📦', color: '#a855f7', colorLight: '#c084fc', price: 19, loadingType: 'bottle' },
-      planning: { name: 'Planning', icon: '📅', color: '#3b82f6', colorLight: '#60a5fa', price: 29, loadingType: 'calendar' },
+      stock: { name: 'Stock', icon: '📦', color: '#06B6D4', colorLight: '#22D3EE', price: 19, loadingType: 'bottle' },
+      planning: { name: 'Planning', icon: '📅', color: '#8b5cf6', colorLight: '#a78bfa', price: 29, loadingType: 'calendar' },
       paie: { name: 'Paie', icon: '💰', color: '#f59e0b', colorLight: '#fbbf24', price: 39, loadingType: 'paie' }
     };
 
@@ -196,10 +196,30 @@
     document.documentElement.style.setProperty('--color', mod.color);
     document.documentElement.style.setProperty('--color-light', mod.colorLight);
     document.getElementById('orb1').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
-    document.getElementById('module-icon').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
-    document.getElementById('module-icon').style.boxShadow = `0 8px 24px ${mod.color}50`;
-    document.getElementById('module-icon').textContent = mod.icon;
     document.getElementById('module-name').textContent = mod.name;
+
+    // Header icon - mini picto anime (identique au site)
+    const moduleIcon = document.getElementById('module-icon');
+    if (mod.loadingType === 'spreadsheet') {
+      moduleIcon.style.background = `linear-gradient(180deg, ${mod.color}, #16a34a)`;
+      moduleIcon.innerHTML = `<div class="mini-sheet" style="width:32px;height:32px;padding:4px;">
+        <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell fill fill-2"></div></div>
+        <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-3"></div><div class="mini-sheet-cell fill fill-4"></div></div>
+        <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell fill fill-6"></div></div>
+      </div>`;
+    } else if (mod.loadingType === 'bottle') {
+      moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
+      moduleIcon.innerHTML = `<div class="mini-stock" style="transform:scale(0.7);"><div class="mini-bottle mini-bottle-1"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div><div class="mini-bottle mini-bottle-2"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div><div class="mini-stock-count">12</div></div>`;
+    } else if (mod.loadingType === 'paie') {
+      moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
+      moduleIcon.innerHTML = `<div class="mini-paie" style="transform:scale(0.8);"><div class="mini-paie-people"><div class="mini-paie-person mini-paie-person-1"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div><div class="mini-paie-person mini-paie-person-2"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div><div class="mini-paie-person mini-paie-person-3"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div></div><div class="mini-paie-euro">€</div></div>`;
+    } else if (mod.loadingType === 'calendar') {
+      moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
+      moduleIcon.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+    } else {
+      moduleIcon.style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+      moduleIcon.textContent = mod.icon;
+    }
     document.title = `${mod.name} - Abonnement | iArmy`;
     document.getElementById('success-checkmark').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
     document.getElementById('success-checkmark').style.boxShadow = `0 0 50px ${mod.color}60`;
@@ -208,23 +228,22 @@
     document.getElementById('btn-pay').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
     document.getElementById('btn-pay').style.boxShadow = `0 4px 15px ${mod.color}50`;
 
-    // Loading icon - vrais pictos animes
+    // Loading icon - vrais pictos animes (identiques au site)
     const loadingIcon = document.getElementById('loading-icon');
     if (mod.loadingType === 'spreadsheet') {
-      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(180deg, ${mod.color}, #16a34a); box-shadow: 0 0 40px ${mod.color}50;">
         <div class="mini-sheet">
-          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-4"></div></div>
-          <div class="mini-sheet-row"><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-2"></div><div class="mini-sheet-cell"></div></div>
-          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-3"></div></div>
-          <div class="mini-sheet-row"><div class="mini-sheet-cell"></div><div class="mini-sheet-cell fill fill-6"></div><div class="mini-sheet-cell"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell fill fill-2"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-3"></div><div class="mini-sheet-cell fill fill-4"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell fill fill-6"></div></div>
         </div>
       </div>`;
     } else if (mod.loadingType === 'bottle') {
-      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(180deg, ${mod.colorLight}, ${mod.color}); box-shadow: 0 0 40px ${mod.color}50;">
         <div class="mini-stock">
           <div class="mini-bottle mini-bottle-1"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
           <div class="mini-bottle mini-bottle-2"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
-          <div class="mini-stock-count">2</div>
+          <div class="mini-stock-count">12</div>
         </div>
       </div>`;
     } else if (mod.loadingType === 'calendar') {
