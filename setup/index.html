@@ -224,18 +224,18 @@
     .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast.error { background: rgba(239, 68, 68, 0.85); }
 
-    .mobile-steps { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(15,15,15,0.98); backdrop-filter: blur(20px); padding: 12px 20px; z-index: 45; }
+    .mobile-steps { display: none; position: fixed; top: 70px; left: 0; right: 0; background: transparent; padding: 16px 20px 12px; z-index: 45; }
     @media (max-width: 768px) {
       .mobile-steps { display: block; }
       .sidebar { display: none; }
-      .main-content { margin-left: 0; padding: 20px; padding-top: 90px; max-width: 100%; }
+      .main-content { margin-left: 0; padding: 20px; padding-top: 70px; max-width: 100%; }
     }
     .mobile-steps-track { display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .mobile-step { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); transition: all 0.3s ease; }
-    .mobile-step.active { width: 24px; border-radius: 4px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); }
+    .mobile-step { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s ease; }
+    .mobile-step.active { width: 28px; border-radius: 4px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); box-shadow: 0 0 12px rgba(255,107,53,0.4); }
     .mobile-step.completed { background: #22c55e; }
     .mobile-step-line { display: none; }
-    .mobile-step-label { text-align: center; margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 500; }
+    .mobile-step-label { text-align: center; margin-top: 6px; font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 500; }
 
     /* POS Connection Styles */
     .pos-container { max-width: 100%; }
@@ -530,19 +530,19 @@
 
       isTester = sub?.is_tester === true;
 
-      // Check si setup deja complete (telegram connecte)
-      const { data: telegramLink } = await supabaseClient
-        .from('telegram_links')
-        .select('telegram_user_id')
+      // Check si module deja configure (sheet_id existe)
+      const { data: moduleConfigData } = await supabaseClient
+        .from('module_configs')
+        .select('sheet_id')
         .eq('user_id', currentUser.id)
+        .eq('module_name', currentModule)
         .maybeSingle();
 
-      const setupCompleted = !!telegramLink?.telegram_user_id;
+      const isConfigured = !!moduleConfigData?.sheet_id;
 
-      // Si abonne ET setup complete -> dashboard
-      // Les testeurs passent par le setup (mais skip le paiement)
-      if ((sub?.status === 'active' || sub?.status === 'trialing') && setupCompleted) {
-        window.location.href = `/${currentModule}/`;
+      // Si deja configure -> settings (page compte avec ?soldat=module)
+      if (isConfigured) {
+        window.location.href = `/?soldat=${currentModule}`;
         return;
       }
 
