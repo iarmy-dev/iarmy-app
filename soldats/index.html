@@ -142,59 +142,61 @@
     /* Card header */
     .soldat-header { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 20px; position: relative; z-index: 2; }
 
-    /* Animated Soldat Icon */
+    /* Soldat Icon Container */
     .soldat-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 18px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       position: relative;
-      overflow: hidden;
-    }
-    .soldat-icon::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, var(--icon-color) 0%, var(--icon-color-dark) 100%);
-      opacity: 0.15;
-    }
-    .soldat-icon svg {
-      width: 32px;
-      height: 32px;
-      position: relative;
-      z-index: 1;
+      background: rgba(0,0,0,0.2);
     }
 
-    /* Icon animations */
-    .soldat-card:hover .icon-chart .chart-bar {
-      animation: chartGrow 0.6s ease-out forwards;
-    }
-    .soldat-card:hover .icon-box .box-lid {
-      animation: boxOpen 0.5s ease-out forwards;
-    }
-    .soldat-card:hover .icon-money .coin {
-      animation: coinBounce 0.6s ease-out;
-    }
+    /* ===== COMPTA - Mini spreadsheet animation ===== */
+    .mini-sheet { width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
+    .mini-sheet-row { display: flex; height: 8px; }
+    .mini-sheet-cell { flex: 1; background: rgba(255,255,255,0.1); margin: 1px; border-radius: 1px; }
+    .mini-sheet-cell.fill { animation: cellFill 2s ease-in-out infinite; }
+    .mini-sheet-cell.fill-1 { animation-delay: 0s; }
+    .mini-sheet-cell.fill-2 { animation-delay: 0.3s; }
+    .mini-sheet-cell.fill-3 { animation-delay: 0.6s; }
+    .mini-sheet-cell.fill-4 { animation-delay: 0.9s; }
+    .mini-sheet-cell.fill-5 { animation-delay: 1.2s; }
+    .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
+    @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.1); } 50%, 90% { background: #4ade80; } 100% { background: rgba(255,255,255,0.1); } }
 
-    @keyframes chartGrow {
-      0% { transform: scaleY(0.3); }
-      50% { transform: scaleY(1.1); }
-      100% { transform: scaleY(1); }
-    }
-    @keyframes boxOpen {
-      0% { transform: translateY(0) rotate(0); }
-      50% { transform: translateY(-4px) rotate(-10deg); }
-      100% { transform: translateY(-2px) rotate(-5deg); }
-    }
-    @keyframes coinBounce {
-      0%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-6px); }
-      50% { transform: translateY(0); }
-      70% { transform: translateY(-3px); }
-    }
+    /* ===== STOCK - Mini liquor bottles animation ===== */
+    .mini-stock { width: 36px; height: 28px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; position: relative; }
+    .mini-bottle { position: relative; width: 12px; height: 24px; }
+    .mini-bottle-body { position: absolute; bottom: 0; width: 12px; height: 16px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-radius: 2px 2px 3px 3px; overflow: hidden; }
+    .mini-bottle-neck { position: absolute; bottom: 15px; left: 3px; width: 6px; height: 6px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-bottom: none; border-radius: 2px 2px 0 0; }
+    .mini-bottle-cap { position: absolute; bottom: 20px; left: 2px; width: 8px; height: 3px; background: #06B6D4; border-radius: 1px; }
+    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #22D3EE, #06B6D4); border-radius: 0 0 2px 2px; }
+    .mini-bottle-1 .mini-bottle-fill { animation: bottleEmpty 3s ease-in-out infinite; }
+    .mini-bottle-2 .mini-bottle-fill { animation: bottleFill 3s ease-in-out infinite; }
+    @keyframes bottleEmpty { 0%, 10% { height: 75%; } 45%, 55% { height: 15%; } 90%, 100% { height: 75%; } }
+    @keyframes bottleFill { 0%, 10% { height: 15%; } 45%, 55% { height: 75%; } 90%, 100% { height: 15%; } }
+    .mini-stock-count { position: absolute; top: 0; right: -2px; width: 12px; height: 12px; background: #06B6D4; border-radius: 50%; font-size: 7px; font-weight: 700; color: #083344; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
+    @keyframes countPop { 0%, 35% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 60%, 80% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
+
+    /* ===== PAIE - Mini team to euro animation ===== */
+    .mini-paie { width: 32px; height: 28px; display: flex; align-items: center; justify-content: center; position: relative; }
+    .mini-paie-people { display: flex; align-items: flex-end; gap: 1px; position: absolute; animation: paiePeopleToEuro 3.5s ease-in-out infinite; }
+    .mini-paie-person { display: flex; flex-direction: column; align-items: center; }
+    .mini-paie-head { width: 5px; height: 5px; border-radius: 50%; background: white; margin-bottom: 1px; }
+    .mini-paie-body { width: 7px; height: 7px; background: white; border-radius: 2px 2px 1px 1px; }
+    .mini-paie-person-1 { animation: paiePerson1 3.5s ease-in-out infinite; }
+    .mini-paie-person-2 { animation: paiePerson2 3.5s ease-in-out infinite; }
+    .mini-paie-person-3 { animation: paiePerson3 3.5s ease-in-out infinite; }
+    @keyframes paiePeopleToEuro { 0%, 50% { opacity: 1; } 60%, 90% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes paiePerson1 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(10px); } 100% { transform: translateX(0); } }
+    @keyframes paiePerson2 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(0); } 100% { transform: translateX(0); } }
+    @keyframes paiePerson3 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(-10px); } 100% { transform: translateX(0); } }
+    .mini-paie-euro { position: absolute; font-size: 18px; font-weight: 800; color: white; opacity: 0; animation: paieEuroAppear 3.5s ease-in-out infinite; }
+    @keyframes paieEuroAppear { 0%, 50% { opacity: 0; transform: scale(0.5); } 65% { opacity: 1; transform: scale(1.1); } 75%, 85% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(0.8); } }
 
     .soldat-info { flex: 1; min-width: 0; position: relative; z-index: 2; }
     .soldat-name {
@@ -472,28 +474,64 @@
       auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
     });
 
-    // SVG Icons for each module
-    const SOLDAT_ICONS = {
+    // Animated icons for each module (same as /compte)
+    const MODULE_ICONS = {
       compta: `
-        <svg viewBox="0 0 32 32" fill="none" class="icon-chart">
-          <rect class="chart-bar" x="4" y="18" width="6" height="10" rx="2" fill="#22c55e" style="transform-origin: bottom;"/>
-          <rect class="chart-bar" x="13" y="12" width="6" height="16" rx="2" fill="#4ade80" style="transform-origin: bottom; animation-delay: 0.1s;"/>
-          <rect class="chart-bar" x="22" y="6" width="6" height="22" rx="2" fill="#86efac" style="transform-origin: bottom; animation-delay: 0.2s;"/>
-        </svg>
+        <div class="mini-sheet">
+          <div class="mini-sheet-row">
+            <div class="mini-sheet-cell fill fill-1"></div>
+            <div class="mini-sheet-cell fill fill-2"></div>
+            <div class="mini-sheet-cell"></div>
+          </div>
+          <div class="mini-sheet-row">
+            <div class="mini-sheet-cell"></div>
+            <div class="mini-sheet-cell fill fill-3"></div>
+            <div class="mini-sheet-cell fill fill-4"></div>
+          </div>
+          <div class="mini-sheet-row">
+            <div class="mini-sheet-cell fill fill-5"></div>
+            <div class="mini-sheet-cell"></div>
+            <div class="mini-sheet-cell fill fill-6"></div>
+          </div>
+        </div>
       `,
       stock: `
-        <svg viewBox="0 0 32 32" fill="none" class="icon-box">
-          <path class="box-lid" d="M4 12L16 6L28 12L16 18L4 12Z" fill="#06b6d4" style="transform-origin: center bottom;"/>
-          <path d="M4 12V22L16 28V18L4 12Z" fill="#0891b2"/>
-          <path d="M28 12V22L16 28V18L28 12Z" fill="#22d3ee"/>
-        </svg>
+        <div class="mini-stock">
+          <div class="mini-bottle mini-bottle-1">
+            <div class="mini-bottle-cap"></div>
+            <div class="mini-bottle-neck"></div>
+            <div class="mini-bottle-body">
+              <div class="mini-bottle-fill"></div>
+            </div>
+          </div>
+          <div class="mini-bottle mini-bottle-2">
+            <div class="mini-bottle-cap"></div>
+            <div class="mini-bottle-neck"></div>
+            <div class="mini-bottle-body">
+              <div class="mini-bottle-fill"></div>
+            </div>
+          </div>
+          <div class="mini-stock-count">!</div>
+        </div>
       `,
       paie: `
-        <svg viewBox="0 0 32 32" fill="none" class="icon-money">
-          <circle class="coin" cx="16" cy="16" r="12" fill="#f59e0b"/>
-          <circle cx="16" cy="16" r="9" fill="#fbbf24"/>
-          <text x="16" y="21" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">€</text>
-        </svg>
+        <div class="mini-paie">
+          <div class="mini-paie-people">
+            <div class="mini-paie-person mini-paie-person-1">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
+            </div>
+            <div class="mini-paie-person mini-paie-person-2">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
+            </div>
+            <div class="mini-paie-person mini-paie-person-3">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
+            </div>
+          </div>
+          <div class="mini-paie-euro">€</div>
+        </div>
       `
     };
 
@@ -597,7 +635,7 @@
         const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
 
         const badge = isInstalled ? '<span class="badge installed">Installe</span>' : '';
-        const icon = SOLDAT_ICONS[soldat.id] || `<span style="font-size: 28px;">${soldat.icon}</span>`;
+        const icon = MODULE_ICONS[soldat.id] || `<span style="font-size: 28px;">${soldat.icon}</span>`;
 
         // Category tags
         const categoryIcons = { restaurant: '🍽️', bar: '🍸' };
