@@ -873,7 +873,14 @@
               <div class="pos-name">Zelty</div>
               <div class="pos-check">✓</div>
             </button>
-            <button class="pos-btn" onclick="selectPos('square', ${index})" data-name="square">
+            <button class="pos-btn pos-btn-oauth" onclick="connectPOS('zettle', ${index})" data-name="zettle izettle paypal">
+              <span class="pos-badge" style="background:#10B981;">Connecter</span>
+              <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/zettle.com" alt="Zettle" onerror="this.parentElement.innerHTML='<span class=pos-icon>💳</span>'"></div>
+              <div class="pos-name">Zettle</div>
+              <div class="pos-check">✓</div>
+            </button>
+            <button class="pos-btn pos-btn-oauth" onclick="connectPOS('square', ${index})" data-name="square">
+              <span class="pos-badge" style="background:#10B981;">Connecter</span>
               <div class="pos-logo-wrap"><img class="pos-logo" src="https://logo.clearbit.com/squareup.com" alt="Square" onerror="this.parentElement.innerHTML='<span class=pos-icon>⬜</span>'"></div>
               <div class="pos-name">Square</div>
               <div class="pos-check">✓</div>
@@ -2271,6 +2278,14 @@
         clientId: 'sq0idp-HlyGaDsGLEtmYK7Q66QQhw',
         redirectUri: 'https://app.iarmy.fr/callback/square/',
         scopes: 'MERCHANT_PROFILE_READ ORDERS_READ ITEMS_READ PAYMENTS_READ'
+      },
+      zettle: {
+        name: 'Zettle',
+        hasOAuth: true,
+        authUrl: 'https://oauth.zettle.com/authorize',
+        clientId: '5e0f22d6-af28-467d-bf42-985f10fd73a5',
+        redirectUri: 'https://app.iarmy.fr/callback/zettle/',
+        scopes: 'READ:PURCHASE READ:PRODUCT'
       }
     };
 
