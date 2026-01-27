@@ -1478,7 +1478,7 @@
         // Charger TOUS les modules de l'utilisateur depuis Supabase
         const { data: userModules, error } = await supabaseClient
           .from('subscriptions')
-          .select('module_name, status, is_tester, trial_end, current_period_end, stripe_subscription_id')
+          .select('*')
           .eq('user_id', currentUser.id);
 
         if (error) throw error;
