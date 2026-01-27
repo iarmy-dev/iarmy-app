@@ -621,7 +621,7 @@
     <div class="section-title">Mes soldats</div>
     <div class="modules-grid">
       <!-- Compta -->
-      <div class="module-card compta" id="module-compta" onclick="goToModule()">
+      <div class="module-card compta" id="module-compta" onclick="goToModule()" style="display: none;">
         <span class="module-badge active" id="compta-badge" style="display:none;">Actif</span>
         <div class="module-icon" style="background: linear-gradient(180deg, #22c55e, #16a34a);">
           <div class="mini-sheet">
@@ -644,7 +644,7 @@
       </div>
 
       <!-- Stock -->
-      <div class="module-card stock" id="module-stock" onclick="goToStockModule()">
+      <div class="module-card stock" id="module-stock" onclick="goToStockModule()" style="display: none;">
         <span class="module-badge active" id="stock-badge" style="display:none;">Actif</span>
         <div class="module-icon" style="background: linear-gradient(180deg, #22D3EE, #06B6D4);">
           <div class="mini-stock" style="transform: scale(0.8);">
@@ -666,7 +666,7 @@
       </div>
 
       <!-- Paie -->
-      <div class="module-card paie" id="module-paie" onclick="goToPaieModule()">
+      <div class="module-card paie" id="module-paie" onclick="goToPaieModule()" style="display: none;">
         <span class="module-badge active" id="paie-badge" style="display:none;">Actif</span>
         <div class="module-icon" style="background: linear-gradient(180deg, #fbbf24, #f59e0b);">
           <div class="mini-paie">
@@ -1831,16 +1831,14 @@
           }
         }
 
-        // Module config
+        // Module config - only show modules user has
         moduleConfig = authData.moduleConfig;
         if (moduleConfig?.sheetId) {
+          document.getElementById('module-compta').style.display = 'flex';
           document.getElementById('module-status').textContent = 'Actif';
           document.getElementById('conn-sheets').classList.add('connected');
           document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
           document.getElementById('sheets-status').classList.add('ok');
-        } else {
-          document.getElementById('module-status').textContent = 'Installer';
-          document.getElementById('module-compta').classList.add('inactive');
         }
 
         // Stock module - load products count
@@ -1851,10 +1849,8 @@
 
         stockProductCount = prodCount || 0;
         if (stockProductCount > 0) {
+          document.getElementById('module-stock').style.display = 'flex';
           document.getElementById('stock-status').textContent = stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '');
-        } else {
-          document.getElementById('stock-status').textContent = 'Configurer';
-          document.getElementById('module-stock').classList.add('inactive');
         }
 
         // Paie employees
@@ -1865,10 +1861,8 @@
 
         paieEmployeeCount = paieEmpCount || 0;
         if (paieEmployeeCount > 0) {
+          document.getElementById('module-paie').style.display = 'flex';
           document.getElementById('paie-status').textContent = paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '');
-        } else {
-          document.getElementById('paie-status').textContent = 'Configurer';
-          document.getElementById('module-paie').classList.add('inactive');
         }
 
         // Telegram est forcement connecte
@@ -2057,15 +2051,13 @@
             statusText += ' · ' + formatRelativeTime(config.last_entry_at);
           }
           const settingsIcon = '<svg style="display:inline;vertical-align:middle;margin-left:6px;opacity:0.4" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+          document.getElementById('module-compta').style.display = 'flex';
           document.getElementById('module-status').innerHTML = statusText + settingsIcon;
           document.getElementById('conn-sheets').classList.add('connected');
           document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
           document.getElementById('sheets-status').classList.add('ok');
           document.getElementById('conn-sheets').style.cursor = 'pointer';
           document.getElementById('conn-sheets').onclick = () => window.open('https://docs.google.com/spreadsheets/d/' + config.sheet_id + '/edit', '_blank');
-        } else {
-          document.getElementById('module-status').textContent = 'Installer';
-          document.getElementById('module-compta').classList.add('inactive');
         }
 
         // Telegram
@@ -2088,10 +2080,8 @@
 
         stockProductCount = stockCount || 0;
         if (stockProductCount > 0) {
+          document.getElementById('module-stock').style.display = 'flex';
           document.getElementById('stock-status').textContent = stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '');
-        } else {
-          document.getElementById('stock-status').textContent = 'Configurer';
-          document.getElementById('module-stock').classList.add('inactive');
         }
 
         // Paie employees
@@ -2102,20 +2092,13 @@
 
         paieEmployeeCount = paieCount || 0;
         if (paieEmployeeCount > 0) {
+          document.getElementById('module-paie').style.display = 'flex';
           document.getElementById('paie-status').textContent = paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '');
-        } else {
-          document.getElementById('paie-status').textContent = 'Configurer';
-          document.getElementById('module-paie').classList.add('inactive');
         }
 
       } catch (err) {
         console.log('No config');
-        document.getElementById('module-status').textContent = 'Installer';
-        document.getElementById('module-compta').classList.add('inactive');
-        document.getElementById('stock-status').textContent = 'Configurer';
-        document.getElementById('module-stock').classList.add('inactive');
-        document.getElementById('paie-status').textContent = 'Configurer';
-        document.getElementById('module-paie').classList.add('inactive');
+        // Modules stay hidden if no config
       }
     }
 
