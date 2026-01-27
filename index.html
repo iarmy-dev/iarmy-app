@@ -2054,9 +2054,9 @@
     function goToModule() {
       // Unified module settings view with ?soldat=compta
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
-      // If the card is visible, user has config - go to settings
-      const comptaCard = document.getElementById('module-compta');
-      const isConfigured = comptaCard && comptaCard.style.display === 'flex';
+      // Check if configured via moduleConfig (set during init) or card visibility
+      const isConfigured = moduleConfig?.sheetId ||
+        (document.getElementById('module-compta')?.style.display === 'flex');
       if (isConfigured) {
         window.location.href = '/?soldat=compta' + tgParams;
       } else {
