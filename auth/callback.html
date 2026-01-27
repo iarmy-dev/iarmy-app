@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://byqfnpdcnifauhwgetcq.supabase.co;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://byqfnpdcnifauhwgetcq.supabase.co;">
   <title>Connexion en cours... - iArmy</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FF6B35'/><text x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'>i</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -21,7 +21,7 @@
     .dot:nth-child(2) { animation-delay: 0.2s; }
     .dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
-    .error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px 24px; color: #ef4444; margin-top: 24px; display: none; }
+    .error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px 24px; color: #ef4444; margin-top: 24px; display: none; max-width: 400px; }
     .error.show { display: block; }
     .btn { background: linear-gradient(135deg, #FF6B35, #FF8B5E); padding: 12px 24px; border-radius: 12px; font-weight: 600; border: none; color: white; cursor: pointer; margin-top: 16px; text-decoration: none; display: inline-block; }
   </style>
@@ -40,31 +40,14 @@
   </div>
 
   <script>
-    console.log('[CALLBACK] 🚀 OAuth callback init');
+    console.log('[CALLBACK] OAuth callback init');
 
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODY1MTIsImV4cCI6MjA4MzQ2MjUxMn0.1W2OaRb0sApMvrG_28AoV2zUFAzrptzpwbR1c65tOPo';
 
-    // Etape 1: Client avec localStorage pour parser le hash automatiquement
-    const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        storage: localStorage,
-        storageKey: 'sb-temp-auth',
-        detectSessionInUrl: true,
-        flowType: 'implicit'
-      }
-    });
-
-    // Fonction pour sauvegarder en cookie (partage cross-domain)
-    function saveSessionToCookie(session) {
-      const value = JSON.stringify(session);
-      document.cookie = `sb-auth-token=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Lax; Secure`;
-      console.log('[CALLBACK] 🍪 Session sauvegardee en cookie');
-    }
-
     function showError(message) {
       document.getElementById('title').textContent = 'Erreur de connexion';
-      document.getElementById('subtitle').textContent = message;
+      document.getElementById('subtitle').textContent = '';
       document.getElementById('dots').style.display = 'none';
       const errorDiv = document.getElementById('error');
       errorDiv.textContent = message;
@@ -83,113 +66,148 @@
       document.getElementById('subtitle').textContent = 'Redirection...';
     }
 
+    // Decoder un JWT (partie payload seulement)
+    function decodeJWT(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        console.error('[CALLBACK] Erreur decode JWT:', e);
+        return null;
+      }
+    }
+
+    // Sauvegarder la session en cookie
+    function saveSessionToCookie(sessionData) {
+      const value = JSON.stringify(sessionData);
+      document.cookie = `sb-auth-token=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Lax; Secure`;
+      console.log('[CALLBACK] Session sauvegardee en cookie');
+    }
+
     async function handleCallback() {
       try {
-        console.log('[CALLBACK] 🔐 Traitement du callback OAuth...');
-        console.log('[CALLBACK] Hash:', window.location.hash.substring(0, 50) + '...');
+        console.log('[CALLBACK] Traitement du callback...');
 
-        // Parser le hash manuellement
+        // Parser le hash
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
+        const expiresIn = parseInt(hashParams.get('expires_in') || '3600');
+        const expiresAt = parseInt(hashParams.get('expires_at') || String(Math.floor(Date.now() / 1000) + expiresIn));
+        const providerToken = hashParams.get('provider_token');
 
-        console.log('[CALLBACK] Tokens:', { hasAccess: !!accessToken, hasRefresh: !!refreshToken });
+        console.log('[CALLBACK] Tokens extraits:', {
+          hasAccess: !!accessToken,
+          hasRefresh: !!refreshToken,
+          expiresAt
+        });
 
         if (!accessToken) {
-          // Pas de token dans le hash, verifier session existante
-          const { data: { session } } = await tempClient.auth.getSession();
-          if (session) {
-            await finishCallback(session);
-            return;
-          }
-          showError('Aucun token trouve.');
+          showError('Aucun token trouve dans l\'URL');
           return;
         }
 
-        // Ecouter le changement d'auth
-        let handled = false;
-        const { data: { subscription } } = tempClient.auth.onAuthStateChange(async (event, session) => {
-          console.log('[CALLBACK] Auth event:', event, !!session);
-          if (!handled && session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-            handled = true;
-            subscription.unsubscribe();
-            await finishCallback(session);
-          }
-        });
+        // Decoder le JWT pour obtenir les infos user
+        const payload = decodeJWT(accessToken);
+        if (!payload) {
+          showError('Token invalide');
+          return;
+        }
 
-        // Forcer le refresh de la session pour que le SDK traite le hash
-        await tempClient.auth.getSession();
+        console.log('[CALLBACK] JWT decode:', payload.email);
 
-        // Timeout si rien ne se passe
-        setTimeout(async () => {
-          if (!handled) {
-            subscription.unsubscribe();
-            // Derniere tentative
-            const { data: { session } } = await tempClient.auth.getSession();
-            if (session) {
-              await finishCallback(session);
-            } else {
-              showError('Connexion echouee. Reessayez.');
-            }
-          }
-        }, 3000);
+        // Construire l'objet user
+        const user = {
+          id: payload.sub,
+          aud: payload.aud,
+          role: payload.role,
+          email: payload.email,
+          email_confirmed_at: new Date().toISOString(),
+          phone: payload.phone || '',
+          app_metadata: payload.app_metadata || {},
+          user_metadata: payload.user_metadata || {},
+          identities: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        // Construire l'objet session (format Supabase)
+        const session = {
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_in: expiresIn,
+          expires_at: expiresAt,
+          token_type: 'bearer',
+          user: user,
+          provider_token: providerToken
+        };
+
+        // Sauvegarder en cookie
+        saveSessionToCookie(session);
+
+        // Nettoyer l'URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Afficher succes
+        const firstName = user.user_metadata?.full_name?.split(' ')[0] ||
+                         user.user_metadata?.name?.split(' ')[0] ||
+                         user.email?.split('@')[0] || 'toi';
+        showSuccess(firstName);
+
+        // Creer profil si necessaire
+        await createProfileIfNeeded(user, accessToken);
+
+        // Redirection
+        const redirectUrl = sessionStorage.getItem('auth_redirect');
+        sessionStorage.removeItem('auth_redirect');
+
+        setTimeout(() => {
+          window.location.href = redirectUrl || '/';
+        }, 800);
 
       } catch (err) {
-        console.error('[CALLBACK] ❌ Erreur:', err);
+        console.error('[CALLBACK] Erreur:', err);
         showError('Erreur: ' + err.message);
       }
     }
 
-    async function finishCallback(session) {
-      const user = session.user;
-      console.log('[CALLBACK] ✅ Session OK:', user.email);
-
-      // Sauvegarder en cookie pour partage cross-domain
-      saveSessionToCookie(session);
-
-      // Nettoyer localStorage temporaire
-      localStorage.removeItem('sb-temp-auth');
-
-      // Nettoyer l'URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-
-      const firstName = user.user_metadata?.full_name?.split(' ')[0] ||
-                       user.user_metadata?.name?.split(' ')[0] ||
-                       user.email?.split('@')[0] || 'toi';
-
-      showSuccess(firstName);
-
-      // Creer profil si necessaire
-      await createProfileIfNeeded(user);
-
-      // Redirection
-      const redirectUrl = sessionStorage.getItem('auth_redirect');
-      sessionStorage.removeItem('auth_redirect');
-
-      setTimeout(() => {
-        window.location.href = redirectUrl || '/';
-      }, 500);
-    }
-
-    async function createProfileIfNeeded(user) {
+    async function createProfileIfNeeded(user, accessToken) {
       try {
-        const { error } = await tempClient
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .single();
+        // Verifier si profil existe
+        const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=id`, {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
 
-        if (error && error.code === 'PGRST116') {
-          console.log('[CALLBACK] 📝 Creation du profil...');
-          await tempClient.from('profiles').insert({
-            id: user.id,
-            email: user.email,
-            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
-            plan: 'free'
+        const existing = await checkRes.json();
+
+        if (!existing || existing.length === 0) {
+          console.log('[CALLBACK] Creation du profil...');
+          await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              id: user.id,
+              email: user.email,
+              name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
+              plan: 'free'
+            })
           });
+          console.log('[CALLBACK] Profil cree');
         }
       } catch (e) {
-        console.log('[CALLBACK] Profil existant ou erreur ignoree');
+        console.log('[CALLBACK] Profil existant ou erreur ignoree:', e.message);
       }
     }
 
