@@ -27,9 +27,32 @@
     .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; }
     .tag-orange { background: rgba(255,107,53,0.15); color: #FF8B5E; }
     .tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+    .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
     .alert-card { border-left: 3px solid; padding-left: 16px; }
     .alert-warning { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
     .alert-danger { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; margin-bottom: 16px; }
+    .tab { flex: 1; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; transition: all 0.2s; color: rgba(255,255,255,0.5); }
+    .tab.active { background: rgba(255,107,53,0.2); color: #FF8B5E; }
+    .tab:hover:not(.active) { background: rgba(255,255,255,0.05); color: white; }
+    /* Modal */
+    .modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal.show { display: flex; }
+    .modal-content { background: #141414; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
+    .modal-body { padding: 20px; }
+    .modal-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 12px; }
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .input-group input, .input-group select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 14px; color: white; font-size: 14px; }
+    .input-group input:focus, .input-group select:focus { outline: none; border-color: rgba(255,107,53,0.5); }
+    .ingredient-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+    .ingredient-row select { flex: 1; }
+    .ingredient-row input { width: 80px; }
+    .ingredient-row .remove-btn { width: 32px; height: 32px; background: rgba(239,68,68,0.1); border: none; border-radius: 8px; color: #ef4444; cursor: pointer; }
+    .add-ingredient-btn { width: 100%; padding: 12px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s; }
+    .add-ingredient-btn:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white; }
     /* Nav */
     nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(3,3,3,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
     .nav-inner { max-width: 600px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
@@ -78,14 +101,27 @@
       <div id="alerts-list" class="space-y-3"></div>
     </div>
 
-    <!-- Products -->
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-sm font-semibold text-white/50 uppercase tracking-wide">Mon stock</h2>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="products" onclick="switchTab('products')">Produits</div>
+      <div class="tab" data-tab="cocktails" onclick="switchTab('cocktails')">Cocktails</div>
     </div>
 
-    <div id="products-list">
-      <div class="glass p-8 text-center text-white/40" id="loading">
-        Chargement...
+    <!-- Products Tab -->
+    <div id="products-tab">
+      <div id="products-list">
+        <div class="glass p-8 text-center text-white/40" id="loading">
+          Chargement...
+        </div>
+      </div>
+    </div>
+
+    <!-- Cocktails Tab -->
+    <div id="cocktails-tab" class="hidden">
+      <div id="cocktails-list"></div>
+      <div id="cocktails-empty" class="glass p-8 text-center hidden">
+        <p class="text-white/40 mb-4">Aucun cocktail configure</p>
+        <button onclick="openAddCocktailModal()" class="btn-primary">+ Ajouter un cocktail</button>
       </div>
     </div>
 
@@ -171,6 +207,98 @@
       </div>
     </div>
 
+    <!-- Product Edit Modal -->
+    <div id="product-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="font-semibold text-lg">Modifier le produit</h3>
+          <button onclick="closeProductModal()" class="text-white/40 hover:text-white text-2xl">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="product-id">
+          <div class="input-group">
+            <label>Nom du produit</label>
+            <input type="text" id="product-name" placeholder="Ex: Rhum Havana 3 ans">
+          </div>
+          <div class="input-group">
+            <label>Type</label>
+            <select id="product-type">
+              <option value="spirit">Spiritueux</option>
+              <option value="liqueur">Liqueur</option>
+              <option value="wine">Vin</option>
+              <option value="beer">Biere</option>
+              <option value="soft">Soft</option>
+              <option value="other">Autre</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="input-group">
+              <label>Volume (cl)</label>
+              <input type="number" id="product-volume" placeholder="70">
+            </div>
+            <div class="input-group">
+              <label>Prix d'achat (euro)</label>
+              <input type="number" step="0.01" id="product-price" placeholder="15.50">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Stock actuel (bouteilles)</label>
+            <input type="number" step="0.1" id="product-stock" placeholder="5">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="closeProductModal()" class="btn-secondary flex-1">Annuler</button>
+          <button onclick="saveProduct()" class="btn-primary flex-1">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cocktail/Recipe Edit Modal -->
+    <div id="recipe-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="font-semibold text-lg" id="recipe-modal-title">Modifier la recette</h3>
+          <button onclick="closeRecipeModal()" class="text-white/40 hover:text-white text-2xl">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="cocktail-id">
+          <div class="input-group">
+            <label>Nom du cocktail</label>
+            <input type="text" id="cocktail-name" placeholder="Ex: Mojito">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="input-group">
+              <label>Prix de vente (euro)</label>
+              <input type="number" step="0.5" id="cocktail-price" placeholder="11" oninput="updateCostCalculation()">
+            </div>
+            <div class="input-group">
+              <label>Categorie</label>
+              <input type="text" id="cocktail-category" placeholder="Classique">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Ingredients (recette)</label>
+            <div id="ingredients-list"></div>
+            <button type="button" onclick="addIngredientRow()" class="add-ingredient-btn mt-2">+ Ajouter un ingredient</button>
+          </div>
+          <div class="glass p-3 mt-4" style="background: rgba(34,197,94,0.05); border-color: rgba(34,197,94,0.2);">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-white/60">Cout de revient:</span>
+              <span class="font-semibold text-green-400" id="calculated-cost">0.00 euro</span>
+            </div>
+            <div class="flex justify-between items-center mt-1">
+              <span class="text-sm text-white/60">Marge:</span>
+              <span class="font-semibold text-blue-400" id="calculated-margin">-</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="closeRecipeModal()" class="btn-secondary flex-1">Annuler</button>
+          <button onclick="saveRecipe()" class="btn-primary flex-1">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="mt-8 grid grid-cols-2 gap-3">
       <button onclick="openTelegram()" class="btn-secondary flex items-center justify-center gap-2 text-sm">
@@ -212,6 +340,9 @@
     });
 
     let currentUser = null;
+    let allProducts = [];
+    let allCocktails = [];
+    let allRecipes = [];
 
     const tg = window.Telegram?.WebApp;
     if (tg) {
@@ -292,7 +423,18 @@
       const { data: cocktails } = await supabase
         .from('stock_cocktails')
         .select('*')
+        .eq('user_id', currentUser.id)
+        .order('name');
+
+      // Load recipes
+      const { data: recipes } = await supabase
+        .from('stock_recipes')
+        .select('*')
         .eq('user_id', currentUser.id);
+
+      allProducts = products || [];
+      allCocktails = cocktails || [];
+      allRecipes = recipes || [];
 
       document.getElementById('loading').classList.add('hidden');
 
@@ -304,15 +446,27 @@
         return;
       }
 
+      // Calculate average margin from cocktails with recipes
+      let totalMargin = 0;
+      let cocktailsWithCost = 0;
+      for (const c of allCocktails) {
+        const cost = calculateCocktailCost(c.id);
+        if (cost > 0 && c.price > 0) {
+          totalMargin += ((c.price - cost) / c.price) * 100;
+          cocktailsWithCost++;
+        }
+      }
+      const avgMargin = cocktailsWithCost > 0 ? Math.round(totalMargin / cocktailsWithCost) : '-';
+
       // Update stats
       document.getElementById('stat-products').textContent = products.length;
       document.getElementById('stat-cocktails').textContent = cocktails?.length || 0;
-      document.getElementById('stat-margin').textContent = '72%'; // TODO: calculate real average
+      document.getElementById('stat-margin').textContent = avgMargin !== '-' ? avgMargin + '%' : '-';
 
       // Check for alerts
       const alerts = [];
       for (const p of products) {
-        if (p.stock_current !== undefined && p.stock_current < 2) {
+        if (p.stock_current !== undefined && p.stock_current !== null && p.stock_current < 2) {
           alerts.push({
             type: p.stock_current < 1 ? 'danger' : 'warning',
             message: `${p.name}: ${p.stock_current} bouteille${p.stock_current !== 1 ? 's' : ''} restante${p.stock_current !== 1 ? 's' : ''}`
@@ -334,34 +488,295 @@
         `).join('');
       }
 
-      // Render products
+      renderProducts();
+      renderCocktails();
+    }
+
+    function renderProducts() {
       const icons = { spirit: '🥃', liqueur: '🍾', wine: '🍷', beer: '🍺', soft: '🥤', other: '📦' };
       const container = document.getElementById('products-list');
-      container.innerHTML = products.map(p => {
-        const stockStatus = p.stock_current === undefined ? 'unknown' :
-          p.stock_current < 1 ? 'critical' :
-          p.stock_current < 2 ? 'low' : 'ok';
-        const statusClass = stockStatus === 'critical' ? 'tag-red' :
-          stockStatus === 'low' ? 'tag-orange' : 'tag-green';
-
+      container.innerHTML = allProducts.map(p => {
+        const hasPrice = p.purchase_price !== null && p.purchase_price !== undefined;
         return `
-          <div class="product-card glass p-4 mb-3 flex items-center gap-4">
+          <div class="product-card glass p-4 mb-3 flex items-center gap-4" onclick="openProductModal('${p.id}')">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center text-xl">
               ${icons[p.type] || '📦'}
             </div>
             <div class="flex-1 min-w-0">
               <div class="font-medium truncate">${p.name}</div>
-              <div class="text-sm text-white/40">${p.volume_cl}cl • ${p.purchase_price ? p.purchase_price + '€' : 'Prix non defini'}</div>
+              <div class="text-sm text-white/40">${p.volume_cl || 70}cl ${hasPrice ? '• ' + p.purchase_price + '€' : ''}</div>
             </div>
             <div class="text-right">
-              ${p.stock_current !== undefined ? `
+              ${!hasPrice ? '<span class="tag tag-orange">Prix manquant</span>' :
+                p.stock_current !== undefined && p.stock_current !== null ? `
                 <div class="text-lg font-semibold">${p.stock_current}</div>
                 <div class="text-xs text-white/30">bout.</div>
-              ` : '<span class="tag tag-orange">Non compte</span>'}
+              ` : '<span class="tag tag-blue">Non compte</span>'}
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    function renderCocktails() {
+      const container = document.getElementById('cocktails-list');
+      const emptyState = document.getElementById('cocktails-empty');
+
+      if (allCocktails.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      container.innerHTML = allCocktails.map(c => {
+        const cost = calculateCocktailCost(c.id);
+        const margin = cost > 0 && c.price > 0 ? Math.round(((c.price - cost) / c.price) * 100) : null;
+        const recipeCount = allRecipes.filter(r => r.cocktail_id === c.id).length;
+
+        let marginClass = 'tag-blue';
+        if (margin !== null) {
+          marginClass = margin >= 70 ? 'tag-green' : margin >= 50 ? 'tag-orange' : 'tag-red';
+        }
+
+        return `
+          <div class="product-card glass p-4 mb-3 flex items-center gap-4" onclick="openRecipeModal('${c.id}')">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center text-xl">
+              🍹
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">${c.name}</div>
+              <div class="text-sm text-white/40">
+                ${c.price}€ ${recipeCount > 0 ? '• ' + recipeCount + ' ingredients' : ''}
+                ${cost > 0 ? '• Cout: ' + cost.toFixed(2) + '€' : ''}
+              </div>
+            </div>
+            <div class="text-right">
+              ${margin !== null ? `
+                <span class="tag ${marginClass}">${margin}%</span>
+              ` : `<span class="tag tag-orange">Pas de recette</span>`}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Add button to create new cocktail
+      container.innerHTML += `
+        <button onclick="openRecipeModal()" class="w-full glass p-4 text-center text-white/40 hover:text-white hover:border-orange-500/30 transition-all">
+          + Ajouter un cocktail
+        </button>
+      `;
+    }
+
+    function calculateCocktailCost(cocktailId) {
+      const cocktailRecipes = allRecipes.filter(r => r.cocktail_id === cocktailId);
+      let totalCost = 0;
+
+      for (const recipe of cocktailRecipes) {
+        const product = allProducts.find(p => p.id === recipe.product_id);
+        if (product && product.purchase_price && product.volume_cl) {
+          // Cost = (purchase_price / volume_cl) * quantity_cl
+          const costPerCl = product.purchase_price / product.volume_cl;
+          totalCost += costPerCl * recipe.quantity_cl;
+        }
+      }
+
+      return totalCost;
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+      document.getElementById('products-tab').classList.toggle('hidden', tabName !== 'products');
+      document.getElementById('cocktails-tab').classList.toggle('hidden', tabName !== 'cocktails');
+    }
+
+    // Product Modal
+    function openProductModal(productId = null) {
+      const modal = document.getElementById('product-modal');
+      const product = productId ? allProducts.find(p => p.id === productId) : null;
+
+      document.getElementById('product-id').value = productId || '';
+      document.getElementById('product-name').value = product?.name || '';
+      document.getElementById('product-type').value = product?.type || 'spirit';
+      document.getElementById('product-volume').value = product?.volume_cl || 70;
+      document.getElementById('product-price').value = product?.purchase_price || '';
+      document.getElementById('product-stock').value = product?.stock_current ?? '';
+
+      modal.classList.add('show');
+    }
+
+    function closeProductModal() {
+      document.getElementById('product-modal').classList.remove('show');
+    }
+
+    async function saveProduct() {
+      const id = document.getElementById('product-id').value;
+      const data = {
+        user_id: currentUser.id,
+        name: document.getElementById('product-name').value.trim(),
+        type: document.getElementById('product-type').value,
+        volume_cl: parseInt(document.getElementById('product-volume').value) || 70,
+        purchase_price: parseFloat(document.getElementById('product-price').value) || null,
+        stock_current: document.getElementById('product-stock').value ? parseFloat(document.getElementById('product-stock').value) : null
+      };
+
+      if (!data.name) {
+        alert('Le nom est requis');
+        return;
+      }
+
+      let error;
+      if (id) {
+        ({ error } = await supabase.from('stock_products').update(data).eq('id', id));
+      } else {
+        ({ error } = await supabase.from('stock_products').insert(data));
+      }
+
+      if (error) {
+        alert('Erreur: ' + error.message);
+        return;
+      }
+
+      closeProductModal();
+      loadData();
+    }
+
+    // Recipe Modal
+    function openRecipeModal(cocktailId = null) {
+      const modal = document.getElementById('recipe-modal');
+      const cocktail = cocktailId ? allCocktails.find(c => c.id === cocktailId) : null;
+      const recipes = cocktailId ? allRecipes.filter(r => r.cocktail_id === cocktailId) : [];
+
+      document.getElementById('recipe-modal-title').textContent = cocktail ? 'Modifier la recette' : 'Nouveau cocktail';
+      document.getElementById('cocktail-id').value = cocktailId || '';
+      document.getElementById('cocktail-name').value = cocktail?.name || '';
+      document.getElementById('cocktail-price').value = cocktail?.price || '';
+      document.getElementById('cocktail-category').value = cocktail?.category || '';
+
+      // Render ingredients
+      const ingredientsList = document.getElementById('ingredients-list');
+      ingredientsList.innerHTML = '';
+
+      if (recipes.length > 0) {
+        recipes.forEach(r => addIngredientRow(r.product_id, r.quantity_cl));
+      } else {
+        addIngredientRow();
+      }
+
+      updateCostCalculation();
+      modal.classList.add('show');
+    }
+
+    function closeRecipeModal() {
+      document.getElementById('recipe-modal').classList.remove('show');
+    }
+
+    function addIngredientRow(productId = '', quantity = '') {
+      const container = document.getElementById('ingredients-list');
+      const row = document.createElement('div');
+      row.className = 'ingredient-row';
+      row.innerHTML = `
+        <select class="ingredient-product" onchange="updateCostCalculation()">
+          <option value="">Choisir un produit</option>
+          ${allProducts.map(p => `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name}</option>`).join('')}
+        </select>
+        <input type="number" step="0.5" class="ingredient-qty" placeholder="cl" value="${quantity}" onchange="updateCostCalculation()">
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove(); updateCostCalculation();">&times;</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function updateCostCalculation() {
+      const rows = document.querySelectorAll('.ingredient-row');
+      let totalCost = 0;
+
+      rows.forEach(row => {
+        const productId = row.querySelector('.ingredient-product').value;
+        const qty = parseFloat(row.querySelector('.ingredient-qty').value) || 0;
+        const product = allProducts.find(p => p.id === productId);
+
+        if (product && product.purchase_price && product.volume_cl && qty > 0) {
+          totalCost += (product.purchase_price / product.volume_cl) * qty;
+        }
+      });
+
+      const price = parseFloat(document.getElementById('cocktail-price').value) || 0;
+      const margin = price > 0 && totalCost > 0 ? Math.round(((price - totalCost) / price) * 100) : null;
+
+      document.getElementById('calculated-cost').textContent = totalCost.toFixed(2) + ' euro';
+      document.getElementById('calculated-margin').textContent = margin !== null ? margin + '%' : '-';
+    }
+
+    async function saveRecipe() {
+      const cocktailId = document.getElementById('cocktail-id').value;
+      const cocktailData = {
+        user_id: currentUser.id,
+        name: document.getElementById('cocktail-name').value.trim(),
+        price: parseFloat(document.getElementById('cocktail-price').value) || 0,
+        category: document.getElementById('cocktail-category').value.trim() || null
+      };
+
+      if (!cocktailData.name) {
+        alert('Le nom est requis');
+        return;
+      }
+
+      let savedCocktailId = cocktailId;
+      let error;
+
+      // Save or update cocktail
+      if (cocktailId) {
+        ({ error } = await supabase.from('stock_cocktails').update(cocktailData).eq('id', cocktailId));
+      } else {
+        const { data, error: insertError } = await supabase.from('stock_cocktails').insert(cocktailData).select().single();
+        error = insertError;
+        if (data) savedCocktailId = data.id;
+      }
+
+      if (error) {
+        alert('Erreur cocktail: ' + error.message);
+        return;
+      }
+
+      // Delete old recipes
+      if (cocktailId) {
+        await supabase.from('stock_recipes').delete().eq('cocktail_id', cocktailId);
+      }
+
+      // Save new recipes
+      const rows = document.querySelectorAll('.ingredient-row');
+      const recipesToSave = [];
+
+      rows.forEach(row => {
+        const productId = row.querySelector('.ingredient-product').value;
+        const qty = parseFloat(row.querySelector('.ingredient-qty').value) || 0;
+        if (productId && qty > 0) {
+          recipesToSave.push({
+            user_id: currentUser.id,
+            cocktail_id: savedCocktailId,
+            product_id: productId,
+            quantity_cl: qty
+          });
+        }
+      });
+
+      if (recipesToSave.length > 0) {
+        const { error: recipeError } = await supabase.from('stock_recipes').insert(recipesToSave);
+        if (recipeError) {
+          alert('Erreur recette: ' + recipeError.message);
+          return;
+        }
+      }
+
+      closeRecipeModal();
+      loadData();
+    }
+
+    function openAddCocktailModal() {
+      openRecipeModal();
     }
 
     function openTelegram() {
