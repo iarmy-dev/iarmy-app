@@ -1121,34 +1121,223 @@
       }
     }
 
-    // Compta settings
+    // Compta settings - Full module with all features
     async function loadComptaSettings() {
-      const { data: config } = await supabaseClient
-        .from('module_configs')
-        .select('sheet_id, keywords')
-        .eq('user_id', currentUser.id)
-        .eq('module_name', 'compta')
-        .maybeSingle();
+      // Load CSS
+      if (!document.getElementById('compta-css')) {
+        const link = document.createElement('link');
+        link.id = 'compta-css';
+        link.rel = 'stylesheet';
+        link.href = '/css/compta.css';
+        document.head.appendChild(link);
+      }
 
-      if (config?.sheet_id) {
+      // Load JS
+      if (!document.getElementById('compta-js')) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.id = 'compta-js';
+          script.src = '/js/compta.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      // Inject HTML template
+      document.getElementById('module-content').innerHTML = getComptaTemplate();
+
+      // Hide the simplified stats/actions, show full compta UI
+      document.getElementById('module-stats-section').style.display = 'none';
+      document.getElementById('module-actions').style.display = 'none';
+      document.getElementById('module-actions-grid').style.display = 'none';
+
+      // Update card status
+      document.getElementById('module-card-status').textContent = 'Chargement...';
+
+      // Initialize compta module
+      const success = await window.initComptaModule(currentUser.id, supabaseClient, isTelegramMode, telegramUserId);
+
+      if (success) {
         document.getElementById('module-card-status').textContent = 'Google Sheets connecte';
-        document.getElementById('module-stats-section').style.display = 'block';
-
-        const keywordCount = config.keywords ? Object.keys(config.keywords).length : 0;
-        document.getElementById('module-stat-1').textContent = keywordCount;
-        document.getElementById('module-stat-1-label').textContent = 'Mots-cles';
-        document.getElementById('module-stat-2').textContent = '✓';
-        document.getElementById('module-stat-2-label').textContent = 'Sheets';
-        document.getElementById('module-stat-3').textContent = '-';
-        document.getElementById('module-stat-3-label').textContent = 'Ce mois';
-
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Parametres';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Mots-cles et regles';
       } else {
         document.getElementById('module-card-status').textContent = 'Non configure';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Connecter Google Sheets';
       }
+    }
+
+    // Get compta HTML template
+    function getComptaTemplate() {
+      return `
+        <!-- Preview -->
+        <div class="preview-card">
+          <div class="preview-row">
+            <div class="preview-box">
+              <div class="preview-label"><span class="preview-label-icon">💬</span> Telegram</div>
+              <div id="compta-preview-tg"><span class="empty-state">Tape un message...</span></div>
+              <a href="https://t.me/IArmyBOT" target="_blank" class="preview-link-btn">Ouvrir le bot →</a>
+            </div>
+            <div class="preview-box">
+              <div class="preview-label"><span class="preview-label-icon">📊</span> Google Sheets</div>
+              <div id="compta-preview-sheet"><span class="empty-state">Preview Excel...</span></div>
+              <button onclick="comptaOpenGoogleSheet()" class="preview-link-btn">Ouvrir le fichier →</button>
+            </div>
+          </div>
+          <div class="preview-rules" id="compta-preview-rules" style="display: none;"></div>
+        </div>
+
+        <!-- Keywords -->
+        <div class="section-accordion" id="compta-kw-section">
+          <div class="section-accordion-header" onclick="comptaToggleKwSection()">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 16px;">📝</span>
+              <div>
+                <div style="font-size: 14px; font-weight: 600;">Mots-cles</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5);" id="compta-kw-summary">Configure tes colonnes</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="section-count" id="compta-kw-count">0</span>
+              <span id="compta-kw-arrow" class="section-arrow">▼</span>
+            </div>
+          </div>
+          <div class="section-accordion-content" id="compta-kw-content">
+            <div class="kw-grid" id="compta-kw-grid"></div>
+            <button class="btn-accordion-close" onclick="comptaToggleKwSection()">✓ Fermer</button>
+          </div>
+        </div>
+
+        <!-- Rules -->
+        <div class="section-accordion" id="compta-rules-section">
+          <div class="section-accordion-header" onclick="comptaToggleRulesSection()">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 16px;">⚙️</span>
+              <div>
+                <div style="font-size: 14px; font-weight: 600;">Regles<span class="section-badge" style="margin-left: 8px;">optionnel</span></div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5);" id="compta-rules-summary">Calculs automatiques</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="section-count" id="compta-rules-count">0</span>
+              <span id="compta-rules-arrow" class="section-arrow">▼</span>
+            </div>
+          </div>
+          <div class="section-accordion-content" id="compta-rules-content">
+            <div id="compta-rules-list"></div>
+            <button class="btn-add-rule" onclick="comptaAddRule()" title="Ajouter une regle">+</button>
+            <button class="btn-accordion-close" onclick="comptaToggleRulesSection()">✓ Fermer</button>
+          </div>
+        </div>
+
+        <!-- Exports Section -->
+        <div class="export-section" style="margin-top: 28px;">
+          <div class="section-header">
+            <div class="section-title-compta">Exports</div>
+          </div>
+
+          <!-- Auto export -->
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden; margin-bottom: 12px;">
+            <div onclick="comptaToggleAutoExportAccordion()" style="padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div>
+                  <div style="font-size: 13px; font-weight: 600; color: white;">📧 Envoi automatique</div>
+                  <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;">Envoie le PDF a ta comptable chaque mois</div>
+                </div>
+              </div>
+              <span id="compta-auto-export-arrow" style="color: rgba(255,255,255,0.4); transition: transform 0.2s;">▼</span>
+            </div>
+            <div id="compta-auto-export-content" style="display: none; padding: 0 14px 14px; border-top: 1px solid rgba(255,255,255,0.06);">
+              <div style="margin-top: 12px;">
+                <input type="email" id="compta-export-email" placeholder="Email de ta comptable" style="width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 13px;" onchange="comptaSaveAutoExportSettings()">
+              </div>
+              <div style="display: flex; gap: 8px; margin: 10px 0;">
+                <select id="compta-auto-export-day" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="comptaSaveAutoExportSettings()">
+                  <option value="1">1er du mois</option>
+                  <option value="5">5 du mois</option>
+                </select>
+                <select id="compta-auto-export-format" style="width: 80px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="comptaSaveAutoExportSettings()">
+                  <option value="pdf">PDF</option>
+                  <option value="xlsx">Excel</option>
+                </select>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                <div style="font-size: 13px; color: white;">Activer l'envoi automatique</div>
+                <label style="position: relative; width: 44px; height: 24px;">
+                  <input type="checkbox" id="compta-auto-export-toggle" onchange="comptaSaveAutoExportSettings()" style="opacity: 0; width: 0; height: 0;">
+                  <span style="position: absolute; cursor: pointer; inset: 0; background: rgba(255,255,255,0.1); border-radius: 12px; transition: 0.3s;"></span>
+                  <span id="compta-toggle-dot" style="position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s;"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual export -->
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden;">
+            <div onclick="comptaToggleExportManual()" style="padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: white;">📥 Telechargement</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;">Telecharge les donnees d'un mois</div>
+              </div>
+              <span id="compta-export-manual-arrow" style="color: rgba(255,255,255,0.4); transition: transform 0.2s;">▼</span>
+            </div>
+            <div id="compta-export-manual-content" style="display: none; padding: 0 14px 14px; border-top: 1px solid rgba(255,255,255,0.06);">
+              <div style="display: flex; gap: 8px; margin: 12px 0 10px;">
+                <select id="compta-export-month" style="flex: 1; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;"></select>
+                <select id="compta-export-year" style="width: 90px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;" onchange="updateComptaMonthOptions()"></select>
+                <select id="compta-export-format-manual" style="width: 80px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: white; font-size: 12px;">
+                  <option value="pdf">PDF</option>
+                  <option value="xlsx">Excel</option>
+                </select>
+              </div>
+              <button onclick="comptaExportDataManual()" style="width: 100%; padding: 10px 16px; background: linear-gradient(135deg, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0.1) 100%); border: 1px solid rgba(255,107,53,0.3); border-radius: 8px; color: #FF8B5E; font-size: 12px; font-weight: 600; cursor: pointer;">📥 Telecharger</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="compta-footer-links">
+          <button class="compta-footer-link" onclick="comptaResetConfig()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            Reconfigurer
+          </button>
+          <a href="mailto:support@iarmy.fr" class="compta-footer-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Support
+          </a>
+        </div>
+
+        <!-- Toast -->
+        <div class="compta-toast" id="compta-toast"></div>
+
+        <!-- Delete keyword modal -->
+        <div class="delete-modal-overlay" id="compta-delete-kw-modal">
+          <div class="delete-modal">
+            <div class="delete-modal-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            <div class="delete-modal-title">Supprimer ce mot-cle ?</div>
+            <div class="delete-modal-text">Le mot-cle <span class="delete-modal-name" id="compta-delete-kw-name"></span> sera supprime de ta config.</div>
+            <div class="delete-modal-btns">
+              <button class="delete-modal-btn cancel" onclick="comptaCloseDeleteModal()">Annuler</button>
+              <button class="delete-modal-btn confirm" onclick="comptaConfirmDeleteKw()">Supprimer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete rule modal -->
+        <div class="delete-modal-overlay" id="compta-delete-rule-modal">
+          <div class="delete-modal">
+            <div class="delete-modal-icon" style="background: rgba(139,92,246,0.15); color: #A78BFA;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            <div class="delete-modal-title">Supprimer cette regle ?</div>
+            <div class="delete-modal-text">Cette regle de calcul sera supprimee.</div>
+            <div class="delete-modal-btns">
+              <button class="delete-modal-btn cancel" onclick="comptaCloseDeleteRuleModal()">Annuler</button>
+              <button class="delete-modal-btn confirm" style="background: linear-gradient(135deg, #8B5CF6, #A78BFA);" onclick="comptaConfirmDeleteRule()">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     // Stock settings
