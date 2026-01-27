@@ -974,6 +974,9 @@
       // Marquer que la page compte est chargee (pour skip loading lors navigation modules)
       sessionStorage.setItem('compte_loaded', 'true');
 
+      // Sauvegarder les donnees en cache pour affichage instantane
+      saveUICache();
+
       // Afficher le bon container selon le mode
       if (currentModuleView) {
         document.getElementById('account-dashboard').style.display = 'none';
@@ -985,9 +988,90 @@
       }
     }
 
-    // Si on navigue entre modules, afficher le contenu immediatement
+    // Cache des donnees pour affichage instantane
+    function saveUICache() {
+      const cache = {
+        userName: document.getElementById('user-name')?.textContent,
+        userEmail: document.getElementById('user-email')?.textContent,
+        avatarInitials: document.getElementById('avatar-initials')?.textContent,
+        avatarImg: document.getElementById('avatar')?.querySelector('img')?.src,
+        userBadge: {
+          display: document.getElementById('user-badge')?.style.display,
+          text: document.getElementById('user-badge')?.textContent,
+          className: document.getElementById('user-badge')?.className
+        },
+        moduleStatus: document.getElementById('module-status')?.innerHTML,
+        moduleComptaInactive: document.getElementById('module-compta')?.classList.contains('inactive'),
+        stockStatus: document.getElementById('stock-status')?.textContent,
+        moduleStockInactive: document.getElementById('module-stock')?.classList.contains('inactive'),
+        paieStatus: document.getElementById('paie-status')?.textContent,
+        modulePaieInactive: document.getElementById('module-paie')?.classList.contains('inactive'),
+        sheetsConnected: document.getElementById('conn-sheets')?.classList.contains('connected'),
+        sheetsStatus: document.getElementById('sheets-status')?.innerHTML,
+        telegramConnected: document.getElementById('conn-telegram')?.classList.contains('connected'),
+        telegramStatus: document.getElementById('telegram-status')?.innerHTML
+      };
+      sessionStorage.setItem('compte_cache', JSON.stringify(cache));
+    }
+
+    function restoreUICache() {
+      const cacheStr = sessionStorage.getItem('compte_cache');
+      if (!cacheStr) return false;
+
+      try {
+        const cache = JSON.parse(cacheStr);
+
+        // User info
+        if (cache.userName) document.getElementById('user-name').textContent = cache.userName;
+        if (cache.userEmail) document.getElementById('user-email').textContent = cache.userEmail;
+        if (cache.avatarInitials) document.getElementById('avatar-initials').textContent = cache.avatarInitials;
+        if (cache.avatarImg) {
+          const img = document.createElement('img');
+          img.src = cache.avatarImg;
+          img.alt = '';
+          document.getElementById('avatar').innerHTML = '';
+          document.getElementById('avatar').appendChild(img);
+        }
+
+        // Badge
+        if (cache.userBadge?.display) {
+          const badge = document.getElementById('user-badge');
+          badge.style.display = cache.userBadge.display;
+          badge.textContent = cache.userBadge.text;
+          badge.className = cache.userBadge.className;
+        }
+
+        // Modules
+        if (cache.moduleStatus) document.getElementById('module-status').innerHTML = cache.moduleStatus;
+        if (cache.moduleComptaInactive) document.getElementById('module-compta').classList.add('inactive');
+        if (cache.stockStatus) document.getElementById('stock-status').textContent = cache.stockStatus;
+        if (cache.moduleStockInactive) document.getElementById('module-stock').classList.add('inactive');
+        if (cache.paieStatus) document.getElementById('paie-status').textContent = cache.paieStatus;
+        if (cache.modulePaieInactive) document.getElementById('module-paie').classList.add('inactive');
+
+        // Connections
+        if (cache.sheetsConnected) {
+          document.getElementById('conn-sheets').classList.add('connected');
+          document.getElementById('sheets-status').innerHTML = cache.sheetsStatus;
+          document.getElementById('sheets-status').classList.add('ok');
+        }
+        if (cache.telegramConnected) {
+          document.getElementById('conn-telegram').classList.add('connected');
+          document.getElementById('telegram-status').innerHTML = cache.telegramStatus;
+          document.getElementById('telegram-status').classList.add('ok');
+        }
+
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Si on navigue entre modules, afficher le contenu avec les donnees cachees
     if (skipLoading) {
       document.getElementById('loading-screen')?.classList.add('hidden');
+      restoreUICache(); // Restaurer les donnees immediatement
+
       // Afficher le contenu sans transition
       const urlParams = new URLSearchParams(window.location.search);
       const soldatParam = urlParams.get('soldat');
