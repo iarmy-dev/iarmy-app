@@ -169,112 +169,156 @@
 
   <script>
     // =====================
-    // CONFIG - NE PAS MODIFIER
+    // CONFIG
     // =====================
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
     const STRIPE_PK = 'pk_test_51SnhCpQnTQdmBOkyvcPgFDg8LQbPZzwAdBv9X1LeLhy8WKtlAorKQeqdiZKC2l994bjKJXxndPYal8G6izNilG15002j0OaFcP';
 
-    // Config modules (couleurs identiques au site)
-    const MODULES = {
-      compta: { name: 'Compta', icon: '📊', color: '#22c55e', colorLight: '#4ade80', price: 39, loadingType: 'spreadsheet' },
-      stock: { name: 'Stock', icon: '📦', color: '#06B6D4', colorLight: '#22D3EE', price: 19, loadingType: 'bottle' },
-      planning: { name: 'Planning', icon: '📅', color: '#8b5cf6', colorLight: '#a78bfa', price: 29, loadingType: 'calendar' },
-      paie: { name: 'Paie', icon: '💰', color: '#f59e0b', colorLight: '#fbbf24', price: 39, loadingType: 'paie' }
+    // Icon templates par icon_type (meme que sur le site)
+    const ICON_TYPE_MAP = {
+      telegram_sheets: 'spreadsheet',
+      bottles_count: 'bottle',
+      people_pdf: 'paie',
+      calendar: 'calendar',
+      reservation: 'calendar',
+      star: 'default'
     };
 
     // Get module from URL
     const urlParams = new URLSearchParams(window.location.search);
     const moduleName = urlParams.get('module') || 'compta';
-    const mod = MODULES[moduleName] || MODULES.compta;
 
     let stripe = null;
     let elements = null;
     let hasTrial = true;
+    let mod = null;
 
-    // Apply theme
-    document.documentElement.style.setProperty('--color', mod.color);
-    document.documentElement.style.setProperty('--color-light', mod.colorLight);
-    document.getElementById('orb1').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
-    document.getElementById('module-name').textContent = mod.name;
-
-    // Header icon - mini picto anime (identique au site)
-    const moduleIcon = document.getElementById('module-icon');
-    if (mod.loadingType === 'spreadsheet') {
-      moduleIcon.style.background = `linear-gradient(180deg, ${mod.color}, #16a34a)`;
-      moduleIcon.innerHTML = `<div class="mini-sheet" style="width:32px;height:32px;padding:4px;">
-        <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell fill fill-2"></div></div>
-        <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-3"></div><div class="mini-sheet-cell fill fill-4"></div></div>
-        <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell fill fill-6"></div></div>
-      </div>`;
-    } else if (mod.loadingType === 'bottle') {
-      moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
-      moduleIcon.innerHTML = `<div class="mini-stock" style="transform:scale(0.7);"><div class="mini-bottle mini-bottle-1"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div><div class="mini-bottle mini-bottle-2"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div><div class="mini-stock-count">12</div></div>`;
-    } else if (mod.loadingType === 'paie') {
-      moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
-      moduleIcon.innerHTML = `<div class="mini-paie" style="transform:scale(0.8);"><div class="mini-paie-people"><div class="mini-paie-person mini-paie-person-1"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div><div class="mini-paie-person mini-paie-person-2"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div><div class="mini-paie-person mini-paie-person-3"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div></div><div class="mini-paie-euro">€</div></div>`;
-    } else if (mod.loadingType === 'calendar') {
-      moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
-      moduleIcon.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
-    } else {
-      moduleIcon.style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
-      moduleIcon.textContent = mod.icon;
+    // Lighten color helper
+    function lightenColor(hex, amount = 30) {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const R = Math.min(255, (num >> 16) + amount);
+      const G = Math.min(255, ((num >> 8) & 0x00FF) + amount);
+      const B = Math.min(255, (num & 0x0000FF) + amount);
+      return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
     }
-    document.title = `${mod.name} - Abonnement | iArmy`;
-    document.getElementById('success-checkmark').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
-    document.getElementById('success-checkmark').style.boxShadow = `0 0 50px ${mod.color}60`;
-    document.querySelector('.success-closing span').style.color = mod.colorLight;
-    document.getElementById('success-subtitle').textContent = `Tu peux utiliser ${mod.name} des maintenant.`;
-    document.getElementById('btn-pay').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
-    document.getElementById('btn-pay').style.boxShadow = `0 4px 15px ${mod.color}50`;
 
-    // Loading icon - vrais pictos animes (identiques au site)
-    const loadingIcon = document.getElementById('loading-icon');
-    if (mod.loadingType === 'spreadsheet') {
-      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(180deg, ${mod.color}, #16a34a); box-shadow: 0 0 40px ${mod.color}50;">
-        <div class="mini-sheet">
-          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell fill fill-2"></div></div>
-          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-3"></div><div class="mini-sheet-cell fill fill-4"></div></div>
-          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell fill fill-6"></div></div>
-        </div>
-      </div>`;
-    } else if (mod.loadingType === 'bottle') {
-      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(180deg, ${mod.colorLight}, ${mod.color}); box-shadow: 0 0 40px ${mod.color}50;">
-        <div class="mini-stock">
-          <div class="mini-bottle mini-bottle-1"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
-          <div class="mini-bottle mini-bottle-2"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
-          <div class="mini-stock-count">12</div>
-        </div>
-      </div>`;
-    } else if (mod.loadingType === 'calendar') {
-      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
-        <div class="mini-planning">
-          <div class="mini-planning-header"><div class="mini-planning-ring"></div><div class="mini-planning-ring"></div></div>
-          <div class="mini-planning-grid">
-            <div class="mini-planning-day"></div><div class="mini-planning-day"></div><div class="mini-planning-day active"></div><div class="mini-planning-day"></div>
-            <div class="mini-planning-day"></div><div class="mini-planning-day active"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div>
-            <div class="mini-planning-day active"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div>
+    // Load module from Supabase
+    async function loadModuleConfig() {
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data, error } = await supabase
+        .from('modules')
+        .select('*')
+        .eq('slug', moduleName)
+        .single();
+
+      if (error || !data) {
+        // Fallback si module non trouve
+        return {
+          name: moduleName.charAt(0).toUpperCase() + moduleName.slice(1),
+          color: '#FF6B35',
+          colorLight: '#FF8B5E',
+          price: 19,
+          loadingType: 'default',
+          icon: '📦'
+        };
+      }
+
+      return {
+        name: data.name,
+        color: data.color,
+        colorLight: lightenColor(data.color),
+        price: parseFloat(data.price) || 19,
+        loadingType: ICON_TYPE_MAP[data.icon_type] || 'default',
+        icon: '📦'
+      };
+    }
+
+    // Apply theme based on module data
+    function applyTheme() {
+      document.documentElement.style.setProperty('--color', mod.color);
+      document.documentElement.style.setProperty('--color-light', mod.colorLight);
+      document.getElementById('orb1').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+      document.getElementById('module-name').textContent = mod.name;
+
+      // Header icon
+      const moduleIcon = document.getElementById('module-icon');
+      if (mod.loadingType === 'spreadsheet') {
+        moduleIcon.style.background = `linear-gradient(180deg, ${mod.color}, ${mod.colorLight})`;
+        moduleIcon.innerHTML = `<div class="mini-sheet" style="width:32px;height:32px;padding:4px;">
+          <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell fill fill-2"></div></div>
+          <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-3"></div><div class="mini-sheet-cell fill fill-4"></div></div>
+          <div class="mini-sheet-row" style="height:8px;"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell fill fill-6"></div></div>
+        </div>`;
+      } else if (mod.loadingType === 'bottle') {
+        moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
+        moduleIcon.innerHTML = `<div class="mini-stock" style="transform:scale(0.7);"><div class="mini-bottle mini-bottle-1"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div><div class="mini-bottle mini-bottle-2"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div><div class="mini-stock-count">12</div></div>`;
+      } else if (mod.loadingType === 'paie') {
+        moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
+        moduleIcon.innerHTML = `<div class="mini-paie" style="transform:scale(0.8);"><div class="mini-paie-people"><div class="mini-paie-person mini-paie-person-1"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div><div class="mini-paie-person mini-paie-person-2"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div><div class="mini-paie-person mini-paie-person-3"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div></div><div class="mini-paie-euro">€</div></div>`;
+      } else if (mod.loadingType === 'calendar') {
+        moduleIcon.style.background = `linear-gradient(180deg, ${mod.colorLight}, ${mod.color})`;
+        moduleIcon.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+      } else {
+        moduleIcon.style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+        moduleIcon.textContent = mod.icon;
+      }
+
+      document.title = `${mod.name} - Abonnement | iArmy`;
+      document.getElementById('success-checkmark').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+      document.getElementById('success-checkmark').style.boxShadow = `0 0 50px ${mod.color}60`;
+      document.querySelector('.success-closing span').style.color = mod.colorLight;
+      document.getElementById('success-subtitle').textContent = `Tu peux utiliser ${mod.name} des maintenant.`;
+      document.getElementById('btn-pay').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
+      document.getElementById('btn-pay').style.boxShadow = `0 4px 15px ${mod.color}50`;
+
+      // Loading icon
+      const loadingIcon = document.getElementById('loading-icon');
+      if (mod.loadingType === 'spreadsheet') {
+        loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(180deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+          <div class="mini-sheet">
+            <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell fill fill-2"></div></div>
+            <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-3"></div><div class="mini-sheet-cell fill fill-4"></div></div>
+            <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell fill fill-6"></div></div>
           </div>
-        </div>
-      </div>`;
-    } else if (mod.loadingType === 'paie') {
-      loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
-        <div class="mini-paie">
-          <div class="mini-paie-people">
-            <div class="mini-paie-person mini-paie-person-1"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
-            <div class="mini-paie-person mini-paie-person-2"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
-            <div class="mini-paie-person mini-paie-person-3"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+        </div>`;
+      } else if (mod.loadingType === 'bottle') {
+        loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(180deg, ${mod.colorLight}, ${mod.color}); box-shadow: 0 0 40px ${mod.color}50;">
+          <div class="mini-stock">
+            <div class="mini-bottle mini-bottle-1"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
+            <div class="mini-bottle mini-bottle-2"><div class="mini-bottle-cap"></div><div class="mini-bottle-neck"></div><div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div></div>
+            <div class="mini-stock-count">12</div>
           </div>
-          <div class="mini-paie-euro">€</div>
-        </div>
-      </div>`;
-    } else {
-      loadingIcon.innerHTML = `<div class="default-icon" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">${mod.icon}</div>`;
+        </div>`;
+      } else if (mod.loadingType === 'calendar') {
+        loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+          <div class="mini-planning">
+            <div class="mini-planning-header"><div class="mini-planning-ring"></div><div class="mini-planning-ring"></div></div>
+            <div class="mini-planning-grid">
+              <div class="mini-planning-day"></div><div class="mini-planning-day"></div><div class="mini-planning-day active"></div><div class="mini-planning-day"></div>
+              <div class="mini-planning-day"></div><div class="mini-planning-day active"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div>
+              <div class="mini-planning-day active"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div><div class="mini-planning-day"></div>
+            </div>
+          </div>
+        </div>`;
+      } else if (mod.loadingType === 'paie') {
+        loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
+          <div class="mini-paie">
+            <div class="mini-paie-people">
+              <div class="mini-paie-person mini-paie-person-1"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+              <div class="mini-paie-person mini-paie-person-2"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+              <div class="mini-paie-person mini-paie-person-3"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+            </div>
+            <div class="mini-paie-euro">€</div>
+          </div>
+        </div>`;
+      } else {
+        loadingIcon.innerHTML = `<div class="default-icon" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">${mod.icon}</div>`;
+      }
     }
 
     // Check success
     const isSuccess = urlParams.get('redirect_status') === 'succeeded' || urlParams.get('setup_intent') || urlParams.get('payment_intent');
-    if (isSuccess) showSuccessScreen();
 
     function showSuccessScreen() {
       document.getElementById('payment-loading').style.display = 'none';
@@ -316,12 +360,22 @@
     }
 
     // =====================
-    // INIT - CODE IDENTIQUE AUX ANCIENNES PAGES
+    // INIT
     // =====================
     async function init() {
       try {
         if (!window.supabase) { showError('Supabase non charge'); return; }
         if (typeof Stripe === 'undefined') { showError('Stripe non charge'); return; }
+
+        // Charger config module depuis Supabase
+        mod = await loadModuleConfig();
+        applyTheme();
+
+        // Si succes, afficher ecran succes
+        if (isSuccess) {
+          showSuccessScreen();
+          return;
+        }
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -440,9 +494,8 @@
       }
     }
 
-    if (!isSuccess) {
-      init();
-    }
+    // Toujours initialiser (charge module config, puis decide si afficher succes ou form)
+    init();
   </script>
 </body>
 </html>

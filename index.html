@@ -94,36 +94,6 @@
     }
     .module-card:hover { transform: translateY(-2px); }
 
-    /* Compta - Green */
-    .module-card.compta {
-      background: linear-gradient(145deg, rgba(34,197,94,0.25), rgba(22,163,74,0.15));
-      border-color: rgba(34,197,94,0.4);
-    }
-    .module-card.compta:hover {
-      border-color: rgba(34,197,94,0.6);
-      box-shadow: 0 0 30px rgba(34,197,94,0.2);
-    }
-
-    /* Stock - Cyan */
-    .module-card.stock {
-      background: linear-gradient(145deg, rgba(6,182,212,0.25), rgba(8,145,178,0.15));
-      border-color: rgba(6,182,212,0.4);
-    }
-    .module-card.stock:hover {
-      border-color: rgba(6,182,212,0.6);
-      box-shadow: 0 0 30px rgba(6,182,212,0.2);
-    }
-
-    /* Paie - Gold */
-    .module-card.paie {
-      background: linear-gradient(145deg, rgba(245,158,11,0.25), rgba(217,119,6,0.15));
-      border-color: rgba(245,158,11,0.4);
-    }
-    .module-card.paie:hover {
-      border-color: rgba(245,158,11,0.6);
-      box-shadow: 0 0 30px rgba(245,158,11,0.2);
-    }
-
     /* Module inactive */
     .module-card.inactive {
       background: rgba(255,255,255,0.03);
@@ -1247,9 +1217,14 @@
           : MINI_ICON_TEMPLATES.custom(mod.color);
 
         const card = document.createElement('div');
-        card.className = `module-card ${mod.slug}`;
+        card.className = 'module-card';
         card.id = `module-${mod.slug}`;
         card.setAttribute('data-module', mod.slug);
+        // Appliquer styles dynamiques basés sur la couleur du module
+        card.style.background = `linear-gradient(145deg, ${mod.color}40, ${mod.color}25)`;
+        card.style.borderColor = `${mod.color}66`;
+        card.onmouseenter = () => { card.style.borderColor = `${mod.color}99`; card.style.boxShadow = `0 0 30px ${mod.color}33`; };
+        card.onmouseleave = () => { card.style.borderColor = `${mod.color}66`; card.style.boxShadow = 'none'; };
         card.onclick = () => goToModuleDynamic(mod.slug);
         card.innerHTML = `
           <span class="module-badge active" style="display:${status.active ? 'block' : 'none'};">Actif</span>
