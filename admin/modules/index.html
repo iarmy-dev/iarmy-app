@@ -419,19 +419,29 @@
     }
 
     async function checkAuth() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
+      console.log('[ADMIN] Verification auth...');
+      document.getElementById('auth-loading').style.display = 'block';
+
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+      console.log('[ADMIN] Session:', session ? session.user.email : 'aucune', 'Error:', error);
 
       if (session && ADMIN_EMAILS.includes(session.user.email)) {
+        console.log('[ADMIN] Admin verifie:', session.user.email);
         showMainContent();
         return true;
       } else if (session) {
         // Logged in but not admin
-        document.getElementById('auth-error').textContent = 'Acces refuse. Email non autorise.';
+        console.log('[ADMIN] Email non autorise:', session.user.email);
+        document.getElementById('auth-error').textContent = 'Acces refuse. Email non autorise: ' + session.user.email;
         document.getElementById('auth-error').style.display = 'block';
         document.getElementById('auth-loading').style.display = 'none';
         await supabaseClient.auth.signOut();
         return false;
       }
+
+      console.log('[ADMIN] Pas de session');
+      document.getElementById('auth-loading').style.display = 'none';
       return false;
     }
 
@@ -449,10 +459,12 @@
     }
 
     // Check auth on page load
+    console.log('[ADMIN] Page chargee, verification auth initiale...');
     checkAuth();
 
     // Listen for auth state changes (after Google redirect)
     supabaseClient.auth.onAuthStateChange((event, session) => {
+      console.log('[ADMIN] Auth state change:', event, session?.user?.email);
       if (event === 'SIGNED_IN' && session) {
         checkAuth();
       }

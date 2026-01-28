@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- CSP removed for compatibility -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://byqfnpdcnifauhwgetcq.supabase.co;">
   <title>Connexion en cours... - iArmy</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,104 +27,59 @@
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
 
+    // Initialiser Supabase - il va automatiquement detecter les tokens dans le hash
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     function showError(message) {
       document.getElementById('error-container').style.display = 'block';
       const errorDiv = document.getElementById('error');
       errorDiv.innerHTML = message + '<br><a href="/" class="btn">Retour</a>';
     }
 
-    // Decoder un JWT (partie payload seulement)
-    function decodeJWT(token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-        ).join(''));
-        return JSON.parse(jsonPayload);
-      } catch (e) {
-        console.error('[CALLBACK] Erreur decode JWT:', e);
-        return null;
-      }
-    }
-
-    // Sauvegarder la session en cookie
-    function saveSessionToCookie(sessionData) {
-      const value = JSON.stringify(sessionData);
-      document.cookie = `sb-auth-token=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Lax; Secure`;
-      console.log('[CALLBACK] Session sauvegardee en cookie');
-    }
-
     async function handleCallback() {
       try {
         console.log('[CALLBACK] Traitement du callback...');
+        console.log('[CALLBACK] Hash:', window.location.hash ? 'present' : 'absent');
 
-        // Parser le hash
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const expiresIn = parseInt(hashParams.get('expires_in') || '3600');
-        const expiresAt = parseInt(hashParams.get('expires_at') || String(Math.floor(Date.now() / 1000) + expiresIn));
-        const providerToken = hashParams.get('provider_token');
+        // Supabase detecte automatiquement les tokens dans le hash URL
+        // et etablit la session dans localStorage
+        const { data, error } = await supabaseClient.auth.getSession();
 
-        console.log('[CALLBACK] Tokens extraits:', {
-          hasAccess: !!accessToken,
-          hasRefresh: !!refreshToken,
-          expiresAt
-        });
-
-        if (!accessToken) {
-          showError('Aucun token trouve dans l\'URL');
+        if (error) {
+          console.error('[CALLBACK] Erreur getSession:', error);
+          showError('Erreur: ' + error.message);
           return;
         }
 
-        // Decoder le JWT pour obtenir les infos user
-        const payload = decodeJWT(accessToken);
-        if (!payload) {
-          showError('Token invalide');
-          return;
+        if (!data.session) {
+          // Peut-etre que le hash n'a pas encore ete traite, attendre un peu
+          console.log('[CALLBACK] Pas de session, attente...');
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          const { data: data2, error: error2 } = await supabaseClient.auth.getSession();
+
+          if (error2 || !data2.session) {
+            console.error('[CALLBACK] Toujours pas de session');
+            showError('Aucune session trouvee. Reessayez.');
+            return;
+          }
+
+          data.session = data2.session;
         }
 
-        console.log('[CALLBACK] JWT decode:', payload.email);
+        const session = data.session;
+        console.log('[CALLBACK] Session etablie:', session.user.email);
 
-        // Construire l'objet user
-        const user = {
-          id: payload.sub,
-          aud: payload.aud,
-          role: payload.role,
-          email: payload.email,
-          email_confirmed_at: new Date().toISOString(),
-          phone: payload.phone || '',
-          app_metadata: payload.app_metadata || {},
-          user_metadata: payload.user_metadata || {},
-          identities: [],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-
-        // Construire l'objet session (format Supabase)
-        const session = {
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          expires_in: expiresIn,
-          expires_at: expiresAt,
-          token_type: 'bearer',
-          user: user,
-          provider_token: providerToken
-        };
-
-        // Sauvegarder en cookie
-        saveSessionToCookie(session);
-
-        // Nettoyer l'URL
+        // Nettoyer l'URL (enlever le hash)
         window.history.replaceState({}, document.title, window.location.pathname);
 
         // Creer profil si necessaire
-        await createProfileIfNeeded(user, accessToken);
+        await createProfileIfNeeded(session.user, session.access_token);
 
-        // Redirection immediate
+        // Redirection vers la page d'origine ou accueil
         const redirectUrl = sessionStorage.getItem('auth_redirect');
         sessionStorage.removeItem('auth_redirect');
+        console.log('[CALLBACK] Redirection vers:', redirectUrl || '/');
         window.location.href = redirectUrl || '/';
 
       } catch (err) {
@@ -136,33 +91,33 @@
     async function createProfileIfNeeded(user, accessToken) {
       try {
         // Verifier si profil existe
-        const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=id`, {
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
+        const { data: existing, error } = await supabaseClient
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single();
 
-        const existing = await checkRes.json();
+        if (error && error.code !== 'PGRST116') {
+          // PGRST116 = not found, c'est OK
+          console.log('[CALLBACK] Erreur check profil:', error.message);
+        }
 
-        if (!existing || existing.length === 0) {
+        if (!existing) {
           console.log('[CALLBACK] Creation du profil...');
-          await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
-            method: 'POST',
-            headers: {
-              'apikey': SUPABASE_ANON_KEY,
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=minimal'
-            },
-            body: JSON.stringify({
+          const { error: insertError } = await supabaseClient
+            .from('profiles')
+            .insert({
               id: user.id,
               email: user.email,
               name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
               plan: 'free'
-            })
-          });
-          console.log('[CALLBACK] Profil cree');
+            });
+
+          if (insertError) {
+            console.log('[CALLBACK] Erreur creation profil:', insertError.message);
+          } else {
+            console.log('[CALLBACK] Profil cree');
+          }
         }
       } catch (e) {
         console.log('[CALLBACK] Profil existant ou erreur ignoree:', e.message);
