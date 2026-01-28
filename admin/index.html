@@ -321,6 +321,23 @@
     .modal-body { padding: 24px; }
     .modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 12px; justify-content: flex-end; }
 
+    /* Tester Modal */
+    #tester-modal { display: flex; }
+    .modal-content { background: #0f0f0f; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; max-width: 450px; width: 100%; }
+    .modal-content .modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
+    .modal-content .modal-header h3 { font-size: 18px; font-weight: 600; margin: 0; }
+    .modal-content .modal-body { padding: 20px 24px; }
+    .tester-modules-list { display: flex; flex-direction: column; gap: 12px; }
+    .tester-module-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; }
+    .tester-module-info { display: flex; align-items: center; gap: 12px; }
+    .tester-module-color { width: 12px; height: 12px; border-radius: 4px; }
+    .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: rgba(255,255,255,0.1); border-radius: 24px; transition: 0.2s; }
+    .toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+    .toggle-switch input:checked + .toggle-slider { background: #22c55e; }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
     /* Toast */
     /* Notification Bell */
     .notif-bell { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); transition: all 0.2s; position: relative; }
@@ -1546,13 +1563,12 @@
     function renderUsersRows(list) {
       if (!list.length) return '<tr><td colspan="4" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Aucun utilisateur</td></tr>';
       return list.map(u => {
-        const isTester = u.subscriptions?.some(s => s.is_tester);
-        const badges = (u.subscriptions || []).map(s => `<span class="user-badge ${s.is_tester ? 'tester' : s.status}">${s.module_name}</span>`).join('') || '-';
+        const badges = (u.subscriptions || []).map(s => `<span class="user-badge ${s.is_tester ? 'tester' : s.status}">${s.module_name}${s.is_tester ? ' 🧪' : ''}</span>`).join('') || '-';
         return `<tr>
           <td><div class="user-cell"><img src="${u.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.full_name || 'U')}&background=FF6B35&color=fff`}" class="user-avatar"><div><div class="user-name">${u.full_name || 'Utilisateur'}</div><div class="user-email">${u.email || ''}</div></div></div></td>
           <td><div class="user-badges">${badges}</div></td>
           <td>${u.telegram ? '✅' : '—'}</td>
-          <td><button class="btn btn-sm btn-secondary" onclick="toggleTester('${u.user_id}', ${!isTester})">${isTester ? 'Retirer' : '+ Testeur'}</button></td>
+          <td><button class="btn btn-sm btn-secondary" onclick="openTesterModal('${u.user_id}', '${u.full_name || u.email || 'Utilisateur'}')">Gerer Testeur</button></td>
         </tr>`;
       }).join('');
     }
@@ -1563,16 +1579,80 @@
       document.getElementById('users-tbody').innerHTML = renderUsersRows(filtered);
     }
 
-    async function toggleTester(userId, setTester) {
-      const { data: existing } = await supabaseClient.from('subscriptions').select('id').eq('user_id', userId).eq('module_name', 'compta').maybeSingle();
+    let testerModalUserId = null;
+
+    function openTesterModal(userId, userName) {
+      testerModalUserId = userId;
+      const user = users.find(u => u.user_id === userId);
+      const userSubs = user?.subscriptions || [];
+
+      const modalHtml = `
+        <div class="modal-overlay" id="tester-modal" onclick="if(event.target===this)closeTesterModal()">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Gerer les acces testeur</h3>
+              <button class="modal-close" onclick="closeTesterModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p style="color:rgba(255,255,255,0.6);margin-bottom:16px;">Utilisateur: <strong>${userName}</strong></p>
+              <div class="tester-modules-list">
+                ${modules.map(m => {
+                  const sub = userSubs.find(s => s.module_name === m.name || s.module_slug === m.slug);
+                  const isTester = sub?.is_tester || false;
+                  return `
+                    <div class="tester-module-item">
+                      <div class="tester-module-info">
+                        <div class="tester-module-color" style="background:${m.color};"></div>
+                        <span>${m.name}</span>
+                      </div>
+                      <label class="toggle-switch">
+                        <input type="checkbox" ${isTester ? 'checked' : ''} onchange="toggleModuleTester('${userId}', '${m.slug}', '${m.name}', this.checked)">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    function closeTesterModal() {
+      document.getElementById('tester-modal')?.remove();
+      testerModalUserId = null;
+    }
+
+    async function toggleModuleTester(userId, moduleSlug, moduleName, setTester) {
+      const { data: existing } = await supabaseClient
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .or(`module_name.eq.${moduleName},module_slug.eq.${moduleSlug}`)
+        .maybeSingle();
+
       if (existing) {
-        await supabaseClient.from('subscriptions').update({ is_tester: setTester, status: setTester ? 'tester' : 'trialing' }).eq('user_id', userId).eq('module_name', 'compta');
-      } else {
-        await supabaseClient.from('subscriptions').insert({ user_id: userId, module_name: 'compta', is_tester: setTester, status: setTester ? 'tester' : 'trialing' });
+        await supabaseClient
+          .from('subscriptions')
+          .update({ is_tester: setTester, status: setTester ? 'tester' : 'canceled' })
+          .eq('id', existing.id);
+      } else if (setTester) {
+        await supabaseClient
+          .from('subscriptions')
+          .insert({
+            user_id: userId,
+            module_name: moduleName,
+            module_slug: moduleSlug,
+            is_tester: true,
+            status: 'tester'
+          });
       }
-      showToast(setTester ? 'Testeur ajoute' : 'Testeur retire');
+
+      showToast(setTester ? `Testeur ${moduleName} ajoute` : `Testeur ${moduleName} retire`);
       await loadUsers();
-      renderUsersTab();
     }
 
     function renderTelegramTab() {
