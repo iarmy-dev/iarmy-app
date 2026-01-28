@@ -2054,7 +2054,7 @@
             'Authorization': 'Bearer ' + session.access_token
           },
           body: JSON.stringify({
-            module: currentModule,
+            moduleName: currentModule,
             successUrl: window.location.origin + `/setup/?module=${currentModule}&success=1`,
             cancelUrl: window.location.origin + `/setup/?module=${currentModule}&canceled=1`
           })
@@ -2686,7 +2686,7 @@
             'Authorization': 'Bearer ' + session.access_token
           },
           body: JSON.stringify({
-            module: currentModule,
+            moduleName: currentModule,
             successUrl: window.location.origin + `/setup/?module=${currentModule}&success=1`,
             cancelUrl: window.location.origin + `/setup/?module=${currentModule}&canceled=1`
           })
