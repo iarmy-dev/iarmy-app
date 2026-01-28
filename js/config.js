@@ -6,7 +6,7 @@
 const IARMY_CONFIG = {
   // Supabase
   SUPABASE_URL: 'https://byqfnpdcnifauhwgetcq.supabase.co',
-  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL5CSx3az8',
+  SUPABASE_ANON_KEY: 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT',
 
   // Stripe
   STRIPE_PK: 'pk_test_51SnhCpQnTQdmBOkyvcPgFDg8LQbPZzwAdBv9X1LeLhy8WKtlAorKQeqdiZKC2l994bjKJXxndPYal8G6izNilG15002j0OaFcP',
