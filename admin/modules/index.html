@@ -354,7 +354,7 @@
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let modules = [];
     let currentTags = [];
@@ -399,7 +399,7 @@
         // Stocker l'URL de retour pour après l'auth
         sessionStorage.setItem('auth_redirect', window.location.href);
 
-        const { error } = await supabase.auth.signInWithOAuth({
+        const { error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
             redirectTo: window.location.origin + '/auth/callback'
@@ -419,7 +419,7 @@
     }
 
     async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
 
       if (session && ADMIN_EMAILS.includes(session.user.email)) {
         showMainContent();
@@ -429,7 +429,7 @@
         document.getElementById('auth-error').textContent = 'Acces refuse. Email non autorise.';
         document.getElementById('auth-error').style.display = 'block';
         document.getElementById('auth-loading').style.display = 'none';
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         return false;
       }
       return false;
@@ -452,7 +452,7 @@
     checkAuth();
 
     // Listen for auth state changes (after Google redirect)
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         checkAuth();
       }
@@ -609,11 +609,11 @@
 
       let error;
       if (editingId) {
-        const result = await supabase.from('modules').update(moduleData).eq('id', editingId);
+        const result = await supabaseClient.from('modules').update(moduleData).eq('id', editingId);
         error = result.error;
       } else {
         moduleData.sort_order = modules.length;
-        const result = await supabase.from('modules').insert(moduleData);
+        const result = await supabaseClient.from('modules').insert(moduleData);
         error = result.error;
       }
 
@@ -634,7 +634,7 @@
     async function deleteModule(id) {
       if (!confirm('Supprimer ce module ?')) return;
 
-      const { error } = await supabase.from('modules').delete().eq('id', id);
+      const { error } = await supabaseClient.from('modules').delete().eq('id', id);
 
       if (error) {
         alert('Erreur: ' + error.message);

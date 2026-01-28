@@ -1142,13 +1142,22 @@
         </svg>`
     };
 
+    // Emails admin qui voient tous les modules
+    const ADMIN_EMAILS = ['ludovikh@gmail.com'];
+
     // Charger les modules depuis Supabase
     async function loadModulesFromDB() {
       try {
-        // Determiner si l'utilisateur est testeur
+        // Determiner le role de l'utilisateur
+        let isAdmin = false;
         let isTester = false;
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session?.user?.id) {
+
+        if (session?.user?.email) {
+          isAdmin = ADMIN_EMAILS.includes(session.user.email);
+        }
+
+        if (session?.user?.id && !isAdmin) {
           const { data: sub } = await supabaseClient
             .from('subscriptions')
             .select('is_tester')
@@ -1163,13 +1172,17 @@
         let query = supabaseClient
           .from('modules')
           .select('*')
-          .in('status', ['available', 'beta'])
           .order('created_at', { ascending: true });
 
-        // Filtrer par visibilite
-        if (isTester) {
+        // Filtrer par visibilite selon le role
+        if (isAdmin) {
+          // Admin voit TOUT (public, beta, draft)
+          console.log('[Modules] Mode admin - affichage de tous les modules');
+        } else if (isTester) {
+          query = query.in('status', ['available', 'beta']);
           query = query.in('visibility', ['public', 'beta']);
         } else {
+          query = query.in('status', ['available', 'beta']);
           query = query.eq('visibility', 'public');
         }
 
