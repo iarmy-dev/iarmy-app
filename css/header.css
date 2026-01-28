@@ -157,3 +157,113 @@ nav {
   background: rgba(239,68,68,0.1) !important;
   color: #ef4444 !important;
 }
+
+/* Avatar stylé avec dropdown */
+.nav-user-section {
+  position: relative !important;
+}
+
+.nav-avatar-btn {
+  background: linear-gradient(135deg, #FF6B35, #FF8B5E, #FF6B35) !important;
+  background-size: 200% 200% !important;
+  border: none !important;
+  padding: 3px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  animation: avatarGradient 3s ease infinite !important;
+  box-shadow: 0 0 20px rgba(255,107,53,0.3) !important;
+  transition: all 0.3s !important;
+}
+
+.nav-avatar-btn:hover {
+  box-shadow: 0 0 30px rgba(255,107,53,0.5) !important;
+  transform: scale(1.08) !important;
+}
+
+@keyframes avatarGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.nav-avatar {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid #0f0f0f !important;
+  transition: all 0.3s !important;
+}
+
+.nav-dropdown {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  right: 0 !important;
+  min-width: 180px !important;
+  background: rgba(20,20,20,0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 16px !important;
+  padding: 8px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(-10px) scale(0.95) !important;
+  transition: all 0.2s ease !important;
+  z-index: 100 !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+}
+
+.nav-user-section.open .nav-dropdown {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+.nav-dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+  border-radius: 10px !important;
+  color: rgba(255,255,255,0.8) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.2s !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: none !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+
+.nav-dropdown-item:hover {
+  background: rgba(255,255,255,0.08) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.nav-dropdown-item.danger:hover {
+  background: rgba(239,68,68,0.15) !important;
+  color: #ef4444 !important;
+}
+
+.nav-dropdown-item svg {
+  width: 18px !important;
+  height: 18px !important;
+  opacity: 0.6 !important;
+}
+
+.nav-dropdown-item:hover svg {
+  opacity: 1 !important;
+}
+
+.nav-dropdown-divider {
+  height: 1px !important;
+  background: rgba(255,255,255,0.08) !important;
+  margin: 6px 0 !important;
+}

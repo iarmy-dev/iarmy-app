@@ -551,9 +551,38 @@
         <span style="font-weight: 700; font-size: 18px; letter-spacing: -0.5px;">iArmy</span>
       </a>
       <div class="nav-right" id="nav-right">
-        <button class="btn-icon danger" onclick="signOut()" title="Deconnexion">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </button>
+        <div class="nav-user-section" id="nav-user-section">
+          <button class="nav-avatar-btn" onclick="toggleUserMenu(event)" id="nav-avatar-btn">
+            <img src="" class="nav-avatar" alt="Avatar" id="nav-avatar-img" style="display:none;">
+          </button>
+          <div class="nav-dropdown">
+            <a href="/" class="nav-dropdown-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              Accueil
+            </a>
+            <a href="/soldats/" class="nav-dropdown-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              Soldats
+            </a>
+            <div class="nav-dropdown-divider"></div>
+            <button onclick="signOut()" class="nav-dropdown-item danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Deconnexion
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -1752,6 +1781,55 @@
       }
     }
 
+    // Cookie partage entre iarmy.fr et app.iarmy.fr
+    function writeSharedCookie(userName, avatarUrl, installedModules) {
+      try {
+        const data = {
+          n: userName,
+          a: avatarUrl || '',
+          m: installedModules || []
+        };
+        const value = btoa(encodeURIComponent(JSON.stringify(data)));
+        // Cookie valable 30 jours, accessible sur *.iarmy.fr
+        const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+        document.cookie = `iarmy_user=${value}; expires=${expires}; path=/; domain=.iarmy.fr; SameSite=Lax; Secure`;
+      } catch (e) {
+        console.error('[Cookie] Error writing shared cookie:', e);
+      }
+    }
+
+    function clearSharedCookie() {
+      document.cookie = 'iarmy_user=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.iarmy.fr';
+    }
+
+    // Menu dropdown utilisateur
+    function toggleUserMenu(e) {
+      e.stopPropagation();
+      const section = document.getElementById('nav-user-section');
+      if (section) section.classList.toggle('open');
+    }
+
+    function initUserMenuListeners() {
+      document.addEventListener('click', (e) => {
+        const section = document.getElementById('nav-user-section');
+        if (section && !section.contains(e.target)) section.classList.remove('open');
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const section = document.getElementById('nav-user-section');
+          if (section) section.classList.remove('open');
+        }
+      });
+    }
+
+    function updateNavAvatar(avatarUrl) {
+      const navAvatar = document.getElementById('nav-avatar-img');
+      if (navAvatar && avatarUrl) {
+        navAvatar.src = avatarUrl;
+        navAvatar.style.display = 'block';
+      }
+    }
+
     // Detecter Telegram Mini App - EXIGE le SDK avec des donnees valides
     function detectTelegram() {
       const tg = window.Telegram?.WebApp;
@@ -2019,6 +2097,11 @@
         document.getElementById('avatar').appendChild(img);
       }
 
+      // Avatar dans le nav
+      const navAvatarUrl = safeUserAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=FF6B35&color=fff`;
+      updateNavAvatar(navAvatarUrl);
+      initUserMenuListeners();
+
       // Settings
       document.getElementById('settings-name').value = userName;
       document.getElementById('settings-email').textContent = currentUser.email;
@@ -2243,7 +2326,14 @@
           };
         }
 
-        // 6. Rendre les cartes de modules dynamiquement
+        // 6. Ecrire le cookie partage pour iarmy.fr
+        const installedSlugs = Object.keys(userModuleStatuses).filter(slug => userModuleStatuses[slug].installed);
+        const userName = document.getElementById('user-name')?.textContent || '';
+        const avatarImg = document.querySelector('#avatar img');
+        const avatarUrl = avatarImg ? avatarImg.src : '';
+        writeSharedCookie(userName, avatarUrl, installedSlugs);
+
+        // 7. Rendre les cartes de modules dynamiquement
         renderModuleCards(userModuleStatuses);
 
       } catch (err) {
@@ -2924,6 +3014,7 @@
 
     // Sign out
     async function signOut() {
+      clearSharedCookie();
       await supabaseClient.auth.signOut();
       window.location.href = 'https://iarmy.fr';
     }
