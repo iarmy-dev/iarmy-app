@@ -1144,156 +1144,171 @@
       const isNew = !currentModule.id;
       const slug = currentModule.slug || 'nouveau';
 
+      // Badge "nouveau" par défaut pour les nouveaux modules
+      if (isNew && !selectedBadge) selectedBadge = 'nouveau';
+
       document.getElementById('header-actions').innerHTML = `
-        <button class="btn btn-secondary" onclick="currentModule=null;currentEditorTab='general';renderModulesTab();">← Retour</button>
+        <button class="btn btn-secondary" onclick="currentModule=null;renderModulesTab();">← Retour</button>
         ${!isNew ? `<button class="btn btn-danger" onclick="deleteModule()">Supprimer</button>` : ''}
-        <button class="btn btn-primary" onclick="saveModule()">💾 Enregistrer</button>
+        <button class="btn btn-primary" onclick="saveModule()">Enregistrer</button>
       `;
 
       document.getElementById('main-content').innerHTML = `
-        <div class="editor-split">
-          <div class="editor-form">
+        <div style="display:flex;gap:48px;align-items:flex-start;max-width:1000px;margin:0 auto;">
 
-            <!-- Quick AI Generator -->
-            <div class="card" style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(139,92,246,0.05));border-color:rgba(139,92,246,0.3);margin-bottom:24px;">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                <span style="font-size:24px;">✨</span>
-                <div>
-                  <div style="font-weight:600;">Generation rapide avec Claude</div>
-                  <div style="font-size:12px;color:rgba(255,255,255,0.5);">Decris ton module et l'IA remplit tout</div>
-                </div>
+          <!-- GRANDE PREVIEW -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+
+            <!-- Card Preview (Grande) -->
+            <div id="preview-card" style="width:280px;height:280px;border-radius:32px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;transition:all 0.3s;cursor:pointer;margin-bottom:24px;" onclick="openColorPicker()">
+              <div class="preview-badge" id="preview-badge" style="position:absolute;top:-10px;right:-10px;padding:6px 14px;border-radius:14px;font-size:11px;font-weight:700;text-transform:uppercase;"></div>
+              <div class="preview-icon" id="preview-icon" style="width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;"></div>
+              <div class="preview-name" id="preview-name" style="font-size:24px;font-weight:700;margin-bottom:8px;">Nom</div>
+              <div class="preview-desc" id="preview-desc" style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.4;"></div>
+            </div>
+
+            <!-- Prix -->
+            <div style="text-align:center;margin-bottom:24px;">
+              <div style="font-size:36px;font-weight:800;" id="preview-price-big">29€</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.4);">par mois • <span id="preview-trial-text">7 jours d'essai</span></div>
+            </div>
+
+            <!-- Barre de couleurs -->
+            <div style="display:flex;gap:6px;margin-bottom:16px;" id="color-bar"></div>
+
+            <!-- Badges -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;" id="badge-bar"></div>
+          </div>
+
+          <!-- CONTROLES -->
+          <div style="width:340px;display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Generateur IA -->
+            <div style="background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(139,92,246,0.04));border:1px solid rgba(139,92,246,0.25);border-radius:16px;padding:16px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:20px;">✨</span>
+                <span style="font-weight:600;font-size:14px;">Generer avec l'IA</span>
               </div>
               <div style="display:flex;gap:8px;">
-                <input type="text" class="form-input" id="ai-prompt" placeholder="Ex: Un module pour gerer les reservations de restaurant" style="flex:1;">
-                <button class="btn btn-ai" onclick="generateWithAI()" id="btn-generate-all">✨ Tout generer</button>
+                <input type="text" class="form-input" id="ai-prompt" placeholder="Decris ton module..." style="flex:1;font-size:13px;">
+                <button class="btn btn-ai btn-sm" onclick="generateWithAI()" id="btn-generate-all">Go</button>
               </div>
             </div>
 
-            <!-- Nom du module -->
-            <div class="card" style="margin-bottom:16px;">
-              <div class="form-row" style="margin-bottom:0;">
-                <div class="form-group" style="margin-bottom:0;flex:2;">
-                  <label class="form-label">📝 Nom du soldat *</label>
-                  <input type="text" class="form-input" id="field-name" value="${currentModule.name || ''}" placeholder="Ex: Compta, Stock, Planning..." oninput="updatePreview();autoSlug();" style="font-size:18px;font-weight:600;">
-                </div>
-                <div class="form-group" style="margin-bottom:0;flex:1;">
-                  <label class="form-label">🔗 ID technique</label>
-                  <input type="text" class="form-input" id="field-slug" value="${currentModule.slug || ''}" placeholder="compta" ${!isNew ? 'disabled style="opacity:0.5;"' : ''}>
-                </div>
-              </div>
+            <!-- Nom -->
+            <div>
+              <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Nom</label>
+              <input type="text" class="form-input" id="field-name" value="${currentModule.name || ''}" placeholder="Ex: Reservations" oninput="updatePreview();autoSlug();" style="font-size:16px;font-weight:600;margin-top:6px;">
+              <input type="hidden" id="field-slug" value="${currentModule.slug || ''}">
             </div>
 
             <!-- Description -->
-            <div class="card" style="margin-bottom:16px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <label class="form-label" style="margin:0;">💬 Description</label>
-                <button class="btn btn-sm btn-ai" onclick="generateDescriptionAI()" id="btn-gen-desc">✨ Ameliorer avec l'IA</button>
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Description</label>
+                <button style="background:none;border:none;color:#a78bfa;font-size:11px;cursor:pointer;" onclick="generateDescriptionAI()" id="btn-gen-desc">✨ IA</button>
               </div>
-              <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ton soldat... Les mots importants seront mis en couleur automatiquement" oninput="updatePreview()" style="min-height:80px;">${currentModule.description || ''}</textarea>
-              <div class="form-hint">Utilise &lt;strong style="color:${selectedColor};"&gt;mot&lt;/strong&gt; pour colorer des mots</div>
+              <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ton soldat..." oninput="updatePreview()" style="margin-top:6px;min-height:60px;font-size:13px;">${currentModule.description || ''}</textarea>
             </div>
 
-            <!-- Icone / Animation -->
-            <div class="card" style="margin-bottom:16px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <label class="form-label" style="margin:0;">🎨 Icone animee</label>
-                <button class="btn btn-sm btn-ai" onclick="suggestIconAI()" id="btn-gen-icon">✨ Suggerer une icone</button>
+            <!-- Icone -->
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Icone</label>
+                <button style="background:none;border:none;color:#a78bfa;font-size:11px;cursor:pointer;" onclick="suggestIconAI()" id="btn-gen-icon">✨ Suggerer</button>
               </div>
-              <div class="icon-grid" id="icon-grid"></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;" id="icon-bar"></div>
             </div>
 
-            <!-- Couleur -->
-            <div class="card" style="margin-bottom:16px;">
-              <label class="form-label">🎨 Couleur du module</label>
-              <div class="color-grid" id="color-grid"></div>
-            </div>
-
-            <!-- Badge -->
-            <div class="card" style="margin-bottom:16px;">
-              <label class="form-label">🏷️ Badge (optionnel)</label>
-              <div class="badge-grid" id="badge-grid"></div>
-            </div>
-
-            <!-- Parametres -->
-            <div class="card" style="margin-bottom:16px;">
-              <label class="form-label" style="margin-bottom:16px;">⚙️ Parametres</label>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" style="font-size:11px;">Visibilite</label>
-                  <select class="form-select" id="field-visibility" onchange="selectedVisibility=this.value;updatePreview();">
-                    <option value="draft" ${selectedVisibility === 'draft' ? 'selected' : ''}>🔒 Brouillon</option>
-                    <option value="beta" ${selectedVisibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
-                    <option value="public" ${selectedVisibility === 'public' ? 'selected' : ''}>🌍 Public</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" style="font-size:11px;">Prix (€/mois)</label>
-                  <input type="number" class="form-input" id="field-price" value="${currentModule.price || ''}" placeholder="39" oninput="updatePreview()">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" style="font-size:11px;">Essai gratuit (jours)</label>
-                  <input type="number" class="form-input" id="field-trial" value="${currentModule.trial_days || 7}" placeholder="7" oninput="updatePreview()">
-                </div>
+            <!-- Prix & Essai -->
+            <div style="display:flex;gap:12px;">
+              <div style="flex:1;">
+                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Prix €/mois</label>
+                <input type="number" class="form-input" id="field-price" value="${currentModule.price || '29'}" oninput="updatePreview()" style="margin-top:6px;">
               </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" style="font-size:11px;">Stripe Price ID</label>
-                <input type="text" class="form-input" id="field-stripe" value="${currentModule.stripe_price_id || ''}" placeholder="price_xxx">
+              <div style="flex:1;">
+                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Essai (jours)</label>
+                <input type="number" class="form-input" id="field-trial" value="${currentModule.trial_days || 7}" oninput="updatePreview()" style="margin-top:6px;">
               </div>
             </div>
 
-            <!-- URLs (si module existant) -->
-            ${!isNew ? `
-            <div class="card">
-              <label class="form-label" style="margin-bottom:16px;">🔗 URLs du module</label>
-              <div style="display:grid;gap:8px;">
-                <div class="url-box" style="margin:0;">
-                  <div class="url-label">Setup</div>
-                  <div class="url-value">
-                    <span class="url-text">app.iarmy.fr/${slug}/setup/</span>
-                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/${slug}/setup/', this)">📋</button>
-                  </div>
-                </div>
-                <div class="url-box" style="margin:0;">
-                  <div class="url-label">Dashboard</div>
-                  <div class="url-value">
-                    <span class="url-text">app.iarmy.fr/${slug}/</span>
-                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/${slug}/', this)">📋</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            ` : ''}
-
-          </div>
-
-          <!-- Preview Panel -->
-          <div class="preview-panel">
-            <div class="preview-title">👀 Apercu en direct</div>
-            <div class="preview-card" id="preview-card">
-              <div class="preview-badge" id="preview-badge" style="display:none;"></div>
-              <div class="preview-visibility" id="preview-visibility"></div>
-              <div class="preview-icon" id="preview-icon"></div>
-              <div class="preview-name" id="preview-name">Nom</div>
-              <div class="preview-desc" id="preview-desc">Description</div>
-            </div>
-            <div class="preview-info">
-              <div class="preview-info-row"><span class="preview-info-label">Prix</span><span class="preview-info-value" id="preview-price">0€/mois</span></div>
-              <div class="preview-info-row"><span class="preview-info-label">Essai</span><span class="preview-info-value" id="preview-trial">7 jours</span></div>
-              <div class="preview-info-row"><span class="preview-info-label">Visibilite</span><span class="preview-info-value" id="preview-vis-text">Brouillon</span></div>
+            <!-- Visibilite -->
+            <div>
+              <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Visibilite</label>
+              <select class="form-select" id="field-visibility" onchange="selectedVisibility=this.value;updatePreview();" style="margin-top:6px;">
+                <option value="draft" ${selectedVisibility === 'draft' ? 'selected' : ''}>🔒 Brouillon</option>
+                <option value="beta" ${selectedVisibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
+                <option value="public" ${selectedVisibility === 'public' ? 'selected' : ''}>🌍 Public</option>
+              </select>
             </div>
 
-            <!-- Mini actions -->
-            <div style="margin-top:16px;display:flex;gap:8px;">
-              <button class="btn btn-sm btn-secondary" style="flex:1;" onclick="randomizeModule()">🎲 Aleatoire</button>
-              <button class="btn btn-sm btn-secondary" style="flex:1;" onclick="resetModule()">🔄 Reset</button>
-            </div>
+            <!-- Stripe (collapsible) -->
+            <details style="margin-top:8px;">
+              <summary style="font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;">Avance (Stripe ID)</summary>
+              <input type="text" class="form-input" id="field-stripe" value="${currentModule.stripe_price_id || ''}" placeholder="price_xxx" style="margin-top:8px;font-size:12px;">
+            </details>
+
           </div>
         </div>
       `;
 
-      renderColorGrid();
-      renderIconGrid();
-      renderBadgeGrid();
+      renderColorBar();
+      renderIconBar();
+      renderBadgeBar();
+      updatePreview();
+    }
+
+    // Render compact color bar
+    function renderColorBar() {
+      const bar = document.getElementById('color-bar');
+      if (!bar) return;
+      bar.innerHTML = COLOR_PRESETS.map(c => `
+        <div onclick="selectColor('${c.color}')" style="width:24px;height:24px;border-radius:50%;background:${c.color};cursor:pointer;border:2px solid ${selectedColor === c.color ? 'white' : 'transparent'};transition:all 0.2s;${selectedColor === c.color ? 'transform:scale(1.2);' : ''}" title="${c.name}"></div>
+      `).join('');
+    }
+
+    // Render compact icon bar
+    function renderIconBar() {
+      const bar = document.getElementById('icon-bar');
+      if (!bar) return;
+      bar.innerHTML = ICON_TYPES.map(icon => `
+        <div onclick="selectIcon('${icon.id}')" style="width:40px;height:40px;border-radius:10px;background:${selectedIconType === icon.id ? 'rgba(255,107,53,0.2)' : 'rgba(255,255,255,0.04)'};border:1px solid ${selectedIconType === icon.id ? '#FF6B35' : 'rgba(255,255,255,0.08)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" title="${icon.name}">
+          ${getModuleIconMini(icon.id)}
+        </div>
+      `).join('');
+    }
+
+    // Render badge bar
+    function renderBadgeBar() {
+      const bar = document.getElementById('badge-bar');
+      if (!bar) return;
+      const badges = [
+        { id: 'nouveau', label: '🆕 Nouveau', bg: 'rgba(34,197,94,0.15)', color: '#4ade80' },
+        { id: 'populaire', label: '🔥 Populaire', bg: 'rgba(245,158,11,0.15)', color: '#fbbf24' },
+        { id: 'promo', label: '💰 Promo', bg: 'rgba(239,68,68,0.15)', color: '#f87171' },
+        { id: null, label: 'Aucun', bg: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)' }
+      ];
+      bar.innerHTML = badges.map(b => `
+        <div onclick="selectBadge(${b.id ? `'${b.id}'` : 'null'})" style="padding:6px 12px;border-radius:20px;font-size:11px;cursor:pointer;background:${b.bg};color:${b.color};border:1px solid ${selectedBadge === b.id ? b.color : 'transparent'};transition:all 0.2s;">${b.label}</div>
+      `).join('');
+    }
+
+    // Mini icon for bar
+    function getModuleIconMini(type) {
+      const icons = {
+        'telegram_sheets': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>',
+        'bottles_count': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2h8v4l2 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V8l2-2V2z"/></svg>',
+        'people_pdf': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/></svg>',
+        'calendar': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+        'reservation': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
+        'star': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+      };
+      return icons[type] || icons['telegram_sheets'];
+    }
+
+    function selectBadge(badge) {
+      selectedBadge = badge;
+      renderBadgeBar();
       updatePreview();
     }
 
@@ -1566,49 +1581,66 @@
       `).join('');
     }
 
-    function selectColor(color) { selectedColor = color; renderColorGrid(); renderIconGrid(); updatePreview(); }
-    function selectIcon(iconType) { selectedIconType = iconType; renderIconGrid(); updatePreview(); }
-    function selectBadge(badge) { selectedBadge = badge; renderBadgeGrid(); updatePreview(); }
+    function selectColor(color) { selectedColor = color; if(typeof renderColorBar==='function')renderColorBar(); if(typeof renderColorGrid==='function')renderColorGrid(); if(typeof renderIconBar==='function')renderIconBar(); if(typeof renderIconGrid==='function')renderIconGrid(); updatePreview(); }
+    function selectIcon(iconType) { selectedIconType = iconType; if(typeof renderIconBar==='function')renderIconBar(); if(typeof renderIconGrid==='function')renderIconGrid(); updatePreview(); }
 
     function updatePreview() {
       const name = document.getElementById('field-name')?.value || 'Nom';
-      const desc = document.getElementById('field-description')?.value || 'Description';
-      const price = document.getElementById('field-price')?.value || '0';
+      const desc = document.getElementById('field-description')?.value || '';
+      const price = document.getElementById('field-price')?.value || '29';
       const trial = document.getElementById('field-trial')?.value || '7';
 
       const card = document.getElementById('preview-card');
       if (!card) return;
 
-      card.style.background = `linear-gradient(145deg, ${selectedColor}40, ${selectedColor}25)`;
-      card.style.borderColor = `${selectedColor}60`;
+      // Card background
+      card.style.background = `linear-gradient(145deg, ${selectedColor}35, ${selectedColor}15)`;
+      card.style.border = `2px solid ${selectedColor}50`;
 
+      // Icon
       const icon = document.getElementById('preview-icon');
-      icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColorHex(selectedColor)})`;
-      icon.innerHTML = getModuleIcon(selectedIconType, 'white');
-
-      document.getElementById('preview-name').textContent = name;
-      document.getElementById('preview-desc').textContent = desc.substring(0, 30) + (desc.length > 30 ? '...' : '');
-
-      const badgeEl = document.getElementById('preview-badge');
-      if (selectedBadge === 'none') {
-        badgeEl.style.display = 'none';
-      } else if (selectedBadge) {
-        badgeEl.style.display = 'block';
-        badgeEl.className = 'preview-badge ' + selectedBadge;
-        badgeEl.textContent = selectedBadge === 'nouveau' ? '🆕 Nouveau' : selectedBadge === 'populaire' ? '🔥 Populaire' : '💰 Promo';
-      } else {
-        badgeEl.style.display = 'block';
-        badgeEl.className = 'preview-badge nouveau';
-        badgeEl.textContent = '🆕 Auto';
+      if (icon) {
+        icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColorHex(selectedColor)})`;
+        icon.innerHTML = getModuleIcon(selectedIconType, 'white');
       }
 
-      const visEl = document.getElementById('preview-visibility');
-      visEl.className = 'preview-visibility ' + selectedVisibility;
-      visEl.textContent = selectedVisibility === 'draft' ? '🔒' : selectedVisibility === 'beta' ? '🧪' : '🌍';
+      // Name
+      const nameEl = document.getElementById('preview-name');
+      if (nameEl) nameEl.textContent = name;
 
-      document.getElementById('preview-price').textContent = price + '€/mois';
-      document.getElementById('preview-trial').textContent = trial + ' jours';
-      document.getElementById('preview-vis-text').textContent = selectedVisibility === 'draft' ? 'Brouillon' : selectedVisibility === 'beta' ? 'Beta' : 'Public';
+      // Description (with HTML support)
+      const descEl = document.getElementById('preview-desc');
+      if (descEl) descEl.innerHTML = desc || '<span style="opacity:0.4;">Ajoute une description...</span>';
+
+      // Badge
+      const badgeEl = document.getElementById('preview-badge');
+      if (badgeEl) {
+        if (selectedBadge && selectedBadge !== 'none') {
+          badgeEl.style.display = 'block';
+          const badgeStyles = {
+            'nouveau': { bg: 'linear-gradient(135deg, #22c55e, #4ade80)', text: 'Nouveau' },
+            'populaire': { bg: 'linear-gradient(135deg, #f59e0b, #fbbf24)', text: 'Populaire' },
+            'promo': { bg: 'linear-gradient(135deg, #ef4444, #f87171)', text: 'Promo' }
+          };
+          const style = badgeStyles[selectedBadge] || badgeStyles['nouveau'];
+          badgeEl.style.background = style.bg;
+          badgeEl.style.color = 'white';
+          badgeEl.textContent = style.text;
+        } else {
+          badgeEl.style.display = 'none';
+        }
+      }
+
+      // Price (big)
+      const priceBig = document.getElementById('preview-price-big');
+      if (priceBig) priceBig.textContent = price + '€';
+
+      // Trial
+      const trialText = document.getElementById('preview-trial-text');
+      if (trialText) trialText.textContent = trial + ' jours d\'essai';
+
+      // Also update bars
+      if (typeof renderColorBar === 'function') renderColorBar();
     }
 
     function darkenColorHex(hex, amount = 30) {
