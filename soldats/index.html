@@ -446,12 +446,31 @@
       }
     }
 
+    // Emails admin qui voient tous les modules
+    const ADMIN_EMAILS = ['ludovikh@gmail.com'];
+
     async function loadModulesFromDB() {
-      const { data, error } = await supabaseClient
+      // Verifier si admin
+      let isAdmin = false;
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session?.user?.email) {
+        isAdmin = ADMIN_EMAILS.includes(session.user.email);
+      }
+
+      let query = supabaseClient
         .from('modules')
         .select('*')
-        .in('status', ['available', 'beta'])
         .order('sort_order', { ascending: true });
+
+      // Admin voit tout, sinon filtrer
+      if (!isAdmin) {
+        query = query.in('status', ['available', 'beta']);
+        query = query.in('visibility', ['public', 'beta']);
+      } else {
+        console.log('[Soldats] Mode admin - affichage de tous les modules');
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error loading modules:', error);
