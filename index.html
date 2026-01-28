@@ -344,187 +344,85 @@
     .btn-back:hover { background: rgba(255,255,255,0.08); color: white; }
     #module-settings .stat-value { color: var(--module-color, #FF6B35); }
 
-    /* Loading Screen - Late Soldier Edition */
+    /* Loading Screen - Unified iArmy Loader */
     .loading-screen {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
       background: #0f0f0f;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-      overflow: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
     }
     .loading-screen.hidden {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
     }
-
-    /* Dot grid on loading screen */
-    .loading-grid {
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
-      background-size: 32px 32px;
-      pointer-events: none;
-    }
-
-    /* Glow background */
     .loading-glow {
       position: absolute;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(255,107,53,0.15) 0%, transparent 70%);
-      animation: glowPulse 2.5s ease-in-out infinite;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255,107,53,0.25) 0%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(40px);
+      animation: loaderGlowPulse 2s ease-in-out infinite;
     }
-    @keyframes glowPulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.2); opacity: 0.8; }
+    @keyframes loaderGlowPulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.3); opacity: 1; }
     }
-
-    /* Soldier container - court vers le centre */
-    .loading-soldier-container {
-      position: relative;
-      animation: soldierRun 2.5s ease-out infinite;
-    }
-    @keyframes soldierRun {
-      0% { transform: translateX(-60px); }
-      30% { transform: translateX(5px); }
-      40% { transform: translateX(0); }
-      100% { transform: translateX(0); }
-    }
-
-    /* The soldier box */
-    .loading-soldier-box {
-      width: 72px;
-      height: 72px;
+    .loading-logo {
+      width: 80px;
+      height: 80px;
       background: linear-gradient(135deg, #FF6B35, #FF8B5E);
-      border-radius: 18px;
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: 0 8px 40px rgba(255,107,53,0.4);
-      animation: soldierBounce 2.5s ease-out infinite;
+      z-index: 1;
+      box-shadow: 0 10px 50px rgba(255,107,53,0.5);
+      animation: logoFloat 2s ease-in-out infinite;
     }
-    @keyframes soldierBounce {
-      /* Course - rebonds */
-      0% { transform: translateY(0); }
-      8% { transform: translateY(-4px); }
-      16% { transform: translateY(0); }
-      24% { transform: translateY(-4px); }
-      30% { transform: translateY(0); }
-      /* Arrivé - se stabilise */
-      40% { transform: translateY(0); }
-      /* Garde à vous ! */
-      55% { transform: translateY(-6px); }
-      62% { transform: translateY(0); }
-      100% { transform: translateY(0); }
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
-
-    /* Soldier inner parts */
-    .loading-soldier-inner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transform: scale(1.8);
+    .loading-logo svg {
+      width: 70%;
+      height: 70%;
+      animation: logoSoldier 2s ease-in-out infinite;
     }
-
-    /* Helmet - bouge pendant la course, se stabilise */
-    .loading-soldier-cap {
-      width: 9px;
-      height: 4px;
-      background: white;
-      border-radius: 5px 5px 1px 1px;
-      position: relative;
-      margin-bottom: 0px;
-      z-index: 2;
-      animation: capChaos 2.5s ease-out infinite;
+    @keyframes logoSoldier {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-4deg); }
+      75% { transform: rotate(4deg); }
     }
-    .loading-soldier-cap::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: -2px;
-      width: 13px;
-      height: 2px;
-      background: white;
-      border-radius: 1px;
-      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+    .loading-logo #i-helmet {
+      animation: loaderHelmet 2s ease-in-out infinite;
+      transform-origin: 70px 70px;
     }
-    @keyframes capChaos {
-      /* Course - casque bouge */
-      0% { transform: translateX(2px) rotate(6deg); }
-      8% { transform: translateX(-2px) rotate(-8deg); }
-      16% { transform: translateX(2px) rotate(6deg); }
-      24% { transform: translateX(-2px) rotate(-6deg); }
-      /* Arrivée - casque se stabilise */
-      35% { transform: translateX(1px) rotate(3deg); }
-      42% { transform: translateX(0) rotate(0); }
-      /* Garde à vous - petit rebond du casque */
-      55% { transform: translateY(2px) rotate(-4deg); }
-      60% { transform: translateY(-1px) rotate(2deg); }
-      68% { transform: translateY(0) rotate(0); }
-      100% { transform: translateX(0) translateY(0) rotate(0deg); }
+    @keyframes loaderHelmet {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-10deg); }
+      40% { transform: rotate(0deg); }
+      60% { transform: rotate(8deg); }
+      80% { transform: rotate(0deg); }
     }
-
-    .loading-soldier-head {
-      width: 7px;
-      height: 6px;
-      background: white;
-      border-radius: 50%;
-      margin-bottom: 2px;
-    }
-
-    .loading-soldier-body {
-      width: 5px;
-      height: 9px;
-      background: white;
-      border-radius: 2px;
-    }
-
-    /* Loading text changes */
     .loading-text {
-      margin-top: 32px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
+      margin-top: 28px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
       letter-spacing: 3px;
       text-transform: uppercase;
+      animation: textPulse 2s ease-in-out infinite;
     }
-
-    /* Dust particles when running */
-    .loading-dust {
-      position: absolute;
-      bottom: -15px;
-      left: -20px;
-      display: flex;
-      gap: 6px;
-      animation: dustAppear 2.5s ease-out infinite;
-    }
-    @keyframes dustAppear {
-      0%, 25% { opacity: 0.5; }
-      40%, 100% { opacity: 0; }
-    }
-    .dust-particle {
-      width: 5px;
-      height: 5px;
-      background: rgba(255,107,53,0.4);
-      border-radius: 50%;
-      animation: dustFloat 2.5s ease-out infinite;
-    }
-    .dust-particle:nth-child(1) { animation-delay: 0s; }
-    .dust-particle:nth-child(2) { animation-delay: 0.08s; width: 4px; height: 4px; }
-    .dust-particle:nth-child(3) { animation-delay: 0.15s; width: 3px; height: 3px; }
-    @keyframes dustFloat {
-      0% { transform: translateX(0) translateY(0); opacity: 0.5; }
-      30% { transform: translateX(-15px) translateY(-8px); opacity: 0.2; }
-      40%, 100% { transform: translateX(-25px) translateY(-12px); opacity: 0; }
+    @keyframes textPulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
     }
   </style>
 </head>
@@ -541,21 +439,14 @@
     var skipLoading = sessionStorage.getItem('compte_loaded') === 'true';
   </script>
   <div class="loading-screen" id="loading-screen">
-    <div class="loading-grid"></div>
     <div class="loading-glow"></div>
-    <div class="loading-soldier-container">
-      <div class="loading-soldier-box">
-        <div class="loading-soldier-inner">
-          <div class="loading-soldier-cap"></div>
-          <div class="loading-soldier-head"></div>
-          <div class="loading-soldier-body"></div>
-        </div>
-      </div>
-      <div class="loading-dust">
-        <div class="dust-particle"></div>
-        <div class="dust-particle"></div>
-        <div class="dust-particle"></div>
-      </div>
+    <div class="loading-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 139.61 327.81">
+        <defs><style>.logo-body{fill:#fff;stroke:#fff;stroke-miterlimit:10}.logo-shadow{fill:#cecdd1;stroke-miterlimit:10}.logo-helmet-band{fill:#FF6B35;stroke:#FF6B35;stroke-miterlimit:10}</style></defs>
+        <g id="i-body"><path class="logo-body" d="M85.32,142.54c-2.41.32-5.05.57-7.21.96-8.54,1.56-33.88,6.95-43.99,9.8-12.24,3.46-13.3,11.97-14.1,17.56-.8,5.59,1.41,17.88,11.17,17.88,8.54,0,8.25,10.59,8.25,10.59,0,0,.14,68.63,0,84.86-.16,17.89-10.64,17.82-10.64,17.82,0,0-7.71,0-7.71,12.24,0,13.39,14.1,13.03,14.1,13.03h85.12c10.91,0,11.7-14.63,11.7-14.63,0,0,1.6-13.83-10.64-13.83-8.78,0-8.25-15.69-8.25-15.69v-112.79s1.05-15.65-4.69-20.55c-7.08-6.86-15.9-8.21-23.11-7.24Z"/><path class="logo-shadow" d="M51.63,148.52c-15.07,6.79-15.86,21.93-15.86,21.93,0,0-1.5,12.05,11.76,14.95,6.69,1.42,6.63,13.69,6.63,13.69v85.37c0,16.21-8.04,17.97-8.04,17.97,0,0-7.31.55-7.31,12.31,0,13.47,11.31,13.07,11.31,13.07h-14.97s-14.9.36-14.89-13.11c0-12.31,7.71-13.2,7.71-13.2,0,0,10.92.15,10.92-17.04v-85.37s.24-9.76-7.67-9.76c-10.37,0-12.68-13.36-11.88-18.98.8-5.62,2.46-14.33,14.77-17.81l17.49-4.02Z"/></g>
+        <g id="i-head"><circle class="logo-body" cx="71.97" cy="86.29" r="47.78"/><path class="logo-shadow" d="M28.09,105.24c-2.51-5.81-3.9-12.22-3.9-18.95,0-26.39,21.39-47.78,47.78-47.78,21.31,0,39.36,13.95,45.52,33.22,0,0-57.76-3.29-89.39,33.5Z"/></g>
+        <g id="i-helmet"><path class="logo-body" d="M.66,106s-1.06-3.33,2.22-6.38c4.51-4.19-.15-23.54-.15-23.54-1.07-4.54-1.64-9.28-1.64-14.14C1.09,28.01,28.6.5,62.53.5c28.39,0,52.29,19.26,59.33,45.43,0,0,.69,6.19,7.75,9.4,4.72,2.14,9.06,4.39,9.43,7.55,0,0-22.99-6.11-65.67,3.07-25.04,4.53-39.22,19.55-39.22,19.55,0,0-23.43,24.08-33.47,20.51Z"/><path class="logo-helmet-band" d="M.66,106c10.04,3.58,33.47-20.51,33.47-20.51,0,0,14.19-15.02,39.22-19.55,42.68-9.18,65.67-3.07,65.67-3.07.14,1.18-.2,2.38-1.34,3.86l-.02.03c-5.59-1.12-27.75-4.42-64.31,3.45-25.04,4.53-39.22,19.55-39.22,19.55,0,0-13.82,14.38-24.79,19.32,0,0-8.43-.46-8.68-3.09Z"/></g>
+      </svg>
     </div>
     <div class="loading-text">Chargement</div>
   </div>
