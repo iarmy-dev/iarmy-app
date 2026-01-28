@@ -395,16 +395,25 @@
       document.getElementById('auth-loading').style.display = 'block';
       document.getElementById('auth-error').style.display = 'none';
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.href
-        }
-      });
+      try {
+        // Stocker l'URL de retour pour après l'auth
+        sessionStorage.setItem('auth_redirect', window.location.href);
 
-      if (error) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + '/auth/callback.html'
+          }
+        });
+
+        if (error) {
+          document.getElementById('auth-loading').style.display = 'none';
+          document.getElementById('auth-error').textContent = error.message;
+          document.getElementById('auth-error').style.display = 'block';
+        }
+      } catch (err) {
         document.getElementById('auth-loading').style.display = 'none';
-        document.getElementById('auth-error').textContent = error.message;
+        document.getElementById('auth-error').textContent = 'Erreur: ' + err.message;
         document.getElementById('auth-error').style.display = 'block';
       }
     }
