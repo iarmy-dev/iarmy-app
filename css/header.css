@@ -131,6 +131,31 @@ nav {
   gap: 8px !important;
 }
 
+/* Avatar miniature dans le header */
+.nav-avatar-link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.nav-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(255,255,255,0.1) !important;
+  transition: all 0.2s !important;
+}
+
+.nav-avatar:hover {
+  border-color: rgba(255,107,53,0.5) !important;
+  transform: scale(1.05) !important;
+}
+
 .btn-icon {
   width: 36px !important;
   height: 36px !important;
