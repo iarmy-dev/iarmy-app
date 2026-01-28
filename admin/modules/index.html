@@ -9,619 +9,763 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0f0f0f; color: white; min-height: 100vh; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+    /* Layout */
+    .app { display: grid; grid-template-columns: 380px 1fr; min-height: 100vh; }
+    @media (max-width: 900px) { .app { grid-template-columns: 1fr; } }
 
-    h1 { font-size: 24px; margin-bottom: 8px; }
-    .subtitle { color: rgba(255,255,255,0.5); margin-bottom: 32px; }
+    /* Sidebar */
+    .sidebar {
+      background: #0f0f0f;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .sidebar-title a { color: rgba(255,255,255,0.4); text-decoration: none; }
+    .sidebar-title a:hover { color: white; }
 
-    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    /* Modules List */
+    .modules-list { flex: 1; overflow-y: auto; padding: 12px; }
+    .module-item {
+      padding: 14px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .module-item:hover { background: rgba(255,255,255,0.04); }
+    .module-item.active { background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); }
+    .module-item-color { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; }
+    .module-item-info { flex: 1; min-width: 0; }
+    .module-item-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .module-item-meta { font-size: 11px; color: rgba(255,255,255,0.4); display: flex; gap: 8px; }
+    .module-item-badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; text-transform: uppercase; }
+    .module-item-badge.draft { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+    .module-item-badge.beta { background: rgba(168,85,247,0.15); color: #c084fc; }
+    .module-item-badge.public { background: rgba(34,197,94,0.15); color: #4ade80; }
 
-    .btn { padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 14px; }
+    .btn-new {
+      margin: 12px;
+      padding: 14px;
+      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-new:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,53,0.3); }
+
+    /* Main Content */
+    .main { padding: 32px; overflow-y: auto; }
+    .main-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.3); }
+
+    /* Editor */
+    .editor { max-width: 800px; margin: 0 auto; }
+    .editor-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+    .editor-title { font-size: 24px; font-weight: 700; }
+    .editor-actions { display: flex; gap: 12px; }
+    .btn { padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; border: none; }
     .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8B5E); color: white; }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,107,53,0.3); }
     .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; }
     .btn-secondary:hover { background: rgba(255,255,255,0.1); }
     .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
     .btn-danger:hover { background: rgba(239,68,68,0.2); }
-    .btn-small { padding: 8px 16px; font-size: 12px; }
 
-    /* Modules Grid */
-    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
-
-    .module-card {
+    /* Preview Section */
+    .preview-section {
       background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 20px;
-      position: relative;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 24px;
+      padding: 32px;
+      margin-bottom: 32px;
+      text-align: center;
     }
-    .module-card.inactive { opacity: 0.5; }
-    .module-card.draft { border: 2px dashed rgba(255,255,255,0.2); }
+    .preview-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
 
-    .module-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .module-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .module-name { font-size: 18px; font-weight: 600; }
-    .module-status { position: absolute; top: 16px; right: 16px; padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
-    .module-status.available { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .module-status.coming_soon { background: rgba(251,191,36,0.15); color: #fbbf24; }
-    .module-status.beta { background: rgba(59,130,246,0.15); color: #60a5fa; }
-
-    .module-visibility { position: absolute; top: 16px; left: 16px; padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: 500; }
-    .module-visibility.draft { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
-    .module-visibility.beta { background: rgba(168,85,247,0.15); color: #c084fc; }
-    .module-visibility.public { background: rgba(34,197,94,0.15); color: #4ade80; }
-
-    .module-desc { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
-    .module-meta { display: flex; gap: 16px; font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
-    .module-actions { display: flex; gap: 8px; }
-
-    /* Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      display: none;
+    /* Preview Card - Exactement comme sur le site */
+    .preview-card {
+      width: 180px;
+      height: 180px;
+      border-radius: 20px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
-      padding: 20px;
+      text-align: center;
+      margin: 0 auto;
+      transition: all 0.3s;
+      border: 1px solid transparent;
     }
-    .modal-overlay.active { display: flex; }
+    .preview-card:hover { transform: translateY(-4px); }
+    .preview-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .preview-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .preview-status { font-size: 11px; color: rgba(255,255,255,0.5); }
 
-    .modal {
-      background: #1a1a1a;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      width: 100%;
-      max-width: 700px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-header {
-      padding: 24px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .modal-title { font-size: 20px; font-weight: 600; }
-    .modal-close { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 24px; }
-    .modal-close:hover { color: white; }
+    /* Mini icon animations - copied from home page */
+    .mini-sheet { width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
+    .mini-sheet-row { display: flex; height: 8px; }
+    .mini-sheet-cell { flex: 1; background: rgba(255,255,255,0.1); margin: 1px; border-radius: 1px; }
+    .mini-sheet-cell.fill { animation: cellFill 2s ease-in-out infinite; }
+    .mini-sheet-cell.fill-1 { animation-delay: 0s; }
+    .mini-sheet-cell.fill-2 { animation-delay: 0.3s; }
+    .mini-sheet-cell.fill-3 { animation-delay: 0.6s; }
+    .mini-sheet-cell.fill-4 { animation-delay: 0.9s; }
+    .mini-sheet-cell.fill-5 { animation-delay: 1.2s; }
+    .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
+    @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.1); } 50%, 90% { background: #4ade80; } 100% { background: rgba(255,255,255,0.1); } }
 
-    .modal-body { padding: 24px; }
+    .mini-stock { width: 36px; height: 28px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; position: relative; }
+    .mini-bottle { position: relative; width: 12px; height: 24px; }
+    .mini-bottle-body { position: absolute; bottom: 0; width: 12px; height: 16px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-radius: 2px 2px 3px 3px; overflow: hidden; }
+    .mini-bottle-neck { position: absolute; bottom: 15px; left: 3px; width: 6px; height: 6px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-bottom: none; border-radius: 2px 2px 0 0; }
+    .mini-bottle-cap { position: absolute; bottom: 20px; left: 2px; width: 8px; height: 3px; background: #06B6D4; border-radius: 1px; }
+    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #22D3EE, #06B6D4); border-radius: 0 0 2px 2px; }
+    .mini-bottle-1 .mini-bottle-fill { animation: bottleEmpty 3s ease-in-out infinite; }
+    .mini-bottle-2 .mini-bottle-fill { animation: bottleFill 3s ease-in-out infinite; }
+    @keyframes bottleEmpty { 0%, 10% { height: 75%; } 45%, 55% { height: 15%; } 90%, 100% { height: 75%; } }
+    @keyframes bottleFill { 0%, 10% { height: 15%; } 45%, 55% { height: 75%; } 90%, 100% { height: 15%; } }
+    .mini-stock-count { position: absolute; top: 0; right: -2px; width: 12px; height: 12px; background: #06B6D4; border-radius: 50%; font-size: 7px; font-weight: 700; color: #083344; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
+    @keyframes countPop { 0%, 35% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 60%, 80% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
 
-    .form-group { margin-bottom: 20px; }
-    .form-label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+    .mini-paie { width: 32px; height: 28px; display: flex; align-items: center; justify-content: center; position: relative; }
+    .mini-paie-people { display: flex; align-items: flex-end; gap: 1px; position: absolute; animation: paiePeopleToEuro 3.5s ease-in-out infinite; }
+    .mini-paie-person { display: flex; flex-direction: column; align-items: center; }
+    .mini-paie-head { width: 5px; height: 5px; border-radius: 50%; background: white; margin-bottom: 1px; }
+    .mini-paie-body { width: 7px; height: 7px; background: white; border-radius: 2px 2px 1px 1px; }
+    @keyframes paiePeopleToEuro { 0%, 50% { opacity: 1; } 60%, 90% { opacity: 0; } 100% { opacity: 1; } }
+    .mini-paie-euro { position: absolute; font-size: 18px; font-weight: 800; color: white; opacity: 0; animation: paieEuroAppear 3.5s ease-in-out infinite; }
+    @keyframes paieEuroAppear { 0%, 50% { opacity: 0; transform: scale(0.5); } 65% { opacity: 1; transform: scale(1.1); } 75%, 85% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(0.8); } }
+
+    /* Form */
+    .form-section { margin-bottom: 28px; }
+    .form-section-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
     .form-input, .form-select, .form-textarea {
       width: 100%;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
       color: white;
       font-size: 14px;
       transition: all 0.2s;
     }
     .form-input:focus, .form-select:focus, .form-textarea:focus {
       outline: none;
-      border-color: #FF6B35;
-      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,107,53,0.5);
+      background: rgba(255,255,255,0.06);
     }
-    .form-textarea { min-height: 100px; resize: vertical; }
-    .form-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-hint { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 6px; }
 
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
-
-    .color-preview {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 2px solid rgba(255,255,255,0.2);
-      cursor: pointer;
-    }
-    .color-row { display: flex; align-items: center; gap: 12px; }
-    .color-row .form-input { flex: 1; }
-
-    .icon-selector {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .icon-option {
-      width: 100%;
+    /* Color Picker */
+    .color-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .color-option {
       aspect-ratio: 1;
-      border-radius: 10px;
-      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .color-option:hover { transform: scale(1.1); }
+    .color-option.selected { border-color: white; box-shadow: 0 0 20px currentColor; }
+    .color-option svg { opacity: 0; }
+    .color-option.selected svg { opacity: 1; }
+
+    /* Icon Type */
+    .icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .icon-option {
+      padding: 16px;
       background: rgba(255,255,255,0.02);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .icon-option:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.15); }
+    .icon-option.selected { border-color: #FF6B35; background: rgba(255,107,53,0.1); }
+    .icon-option-preview { height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+    .icon-option-label { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+    /* Auth Screen */
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .auth-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    .auth-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
+      border-radius: 18px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .auth-subtitle { color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 32px; }
+    .auth-btn {
+      width: 100%;
+      padding: 16px 24px;
+      background: white;
+      border: none;
+      border-radius: 14px;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      gap: 12px;
       transition: all 0.2s;
     }
-    .icon-option:hover { border-color: rgba(255,255,255,0.3); }
-    .icon-option.selected { border-color: #FF6B35; background: rgba(255,107,53,0.1); }
+    .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,0.2); }
+    .auth-error { color: #ef4444; margin-top: 16px; font-size: 13px; display: none; }
+    .auth-loading { color: rgba(255,255,255,0.5); margin-top: 16px; font-size: 13px; display: none; }
 
-    .tags-input { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .tag { padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
-    .tag-remove { cursor: pointer; opacity: 0.5; }
-    .tag-remove:hover { opacity: 1; }
-    .tag-add { padding: 6px 12px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; cursor: pointer; }
-    .tag-add:hover { border-color: rgba(255,255,255,0.4); }
-
-    .modal-footer {
-      padding: 24px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-    }
-
-    .loading { text-align: center; padding: 60px; color: rgba(255,255,255,0.5); }
-    .empty-state { text-align: center; padding: 60px; color: rgba(255,255,255,0.4); }
-
-    .back-link { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; margin-bottom: 24px; font-size: 14px; }
-    .back-link:hover { color: white; }
-
-    /* Preview */
-    .preview-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); }
-    .preview-title { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); margin-bottom: 16px; }
-    .preview-card {
-      border-radius: 20px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      max-width: 280px;
-      margin: 0 auto;
-    }
-    .preview-icons { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; height: 50px; }
-    .preview-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .preview-dots { display: flex; gap: 4px; }
-    .preview-dot { width: 8px; height: 8px; background: #FF6B35; border-radius: 50%; }
+    /* Delete confirmation */
+    .delete-confirm { display: none; padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; margin-top: 24px; }
+    .delete-confirm.active { display: block; }
+    .delete-confirm p { margin-bottom: 12px; font-size: 13px; color: #f87171; }
+    .delete-confirm-actions { display: flex; gap: 12px; }
   </style>
 </head>
 <body>
   <!-- Auth Screen -->
-  <div id="auth-screen" style="position: fixed; inset: 0; background: #0f0f0f; display: flex; align-items: center; justify-content: center; z-index: 9999;">
-    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; text-align: center;">
-      <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-radius: 16px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-box">
+      <div class="auth-icon">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
       </div>
-      <h2 style="margin-bottom: 8px;">Admin iArmy</h2>
-      <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px; font-size: 14px;">Connexion reservee aux administrateurs</p>
-      <button onclick="signInWithGoogle()" style="width: 100%; padding: 14px 20px; background: white; border: none; border-radius: 12px; color: #333; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;">
+      <h2 class="auth-title">Admin iArmy</h2>
+      <p class="auth-subtitle">Connexion reservee aux administrateurs</p>
+      <button class="auth-btn" onclick="signInWithGoogle()">
         <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Connexion avec Google
       </button>
-      <p id="auth-error" style="color: #ef4444; margin-top: 16px; font-size: 13px; display: none;"></p>
-      <p id="auth-loading" style="color: rgba(255,255,255,0.5); margin-top: 16px; font-size: 13px; display: none;">Verification...</p>
+      <p class="auth-error" id="auth-error"></p>
+      <p class="auth-loading" id="auth-loading">Verification...</p>
     </div>
   </div>
 
-  <div class="container" id="main-content" style="display: none;">
-    <a href="/admin/" class="back-link">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Retour Admin
-    </a>
-
-    <div class="header-row">
-      <div>
-        <h1>Gestion des Modules</h1>
-        <p class="subtitle">Ajoute et modifie les modules iArmy</p>
+  <!-- Main App -->
+  <div class="app" id="main-app" style="display: none;">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <a href="/">←</a>
+          Modules
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="openModal()">+ Nouveau Module</button>
+      <div class="modules-list" id="modules-list">
+        <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.3);">Chargement...</div>
+      </div>
+      <button class="btn-new" onclick="createNew()">+ Nouveau Soldat</button>
     </div>
 
-    <div id="modules-list" class="modules-grid">
-      <div class="loading">Chargement...</div>
+    <!-- Main Content -->
+    <div class="main" id="main-content">
+      <div class="main-empty">
+        <p>Selectionne un module ou cree-en un nouveau</p>
+      </div>
     </div>
   </div>
 
-  <!-- Modal Add/Edit -->
-  <div class="modal-overlay" id="modal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="modal-title">Nouveau Module</h2>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+  <!-- Editor Template (hidden) -->
+  <template id="editor-template">
+    <div class="editor">
+      <div class="editor-header">
+        <h1 class="editor-title" id="editor-title">Nouveau Soldat</h1>
+        <div class="editor-actions">
+          <button class="btn btn-danger" onclick="confirmDelete()" id="btn-delete" style="display: none;">Supprimer</button>
+          <button class="btn btn-primary" onclick="save()">Enregistrer</button>
+        </div>
       </div>
-      <div class="modal-body">
-        <form id="module-form">
-          <input type="hidden" id="module-id">
 
+      <!-- Live Preview -->
+      <div class="preview-section">
+        <div class="preview-label">Apercu en temps reel</div>
+        <div class="preview-card" id="preview-card">
+          <div class="preview-icon" id="preview-icon"></div>
+          <div class="preview-name" id="preview-name">Nom</div>
+          <div class="preview-status" id="preview-status">Description</div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form id="module-form" onsubmit="return false;">
+        <input type="hidden" id="field-id">
+
+        <!-- Basic Info -->
+        <div class="form-section">
+          <div class="form-section-title">Informations</div>
           <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nom du soldat *</label>
+              <input type="text" class="form-input" id="field-name" placeholder="Ex: Compta, Stock, Paie" required>
+            </div>
             <div class="form-group">
               <label class="form-label">ID technique *</label>
-              <input type="text" class="form-input" id="module-slug" placeholder="ex: compta, stock, paie" required pattern="[a-z_]+">
-              <p class="form-hint">Lettres minuscules et underscore uniquement</p>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Nom affiche *</label>
-              <input type="text" class="form-input" id="module-name" placeholder="ex: Compta" required>
+              <input type="text" class="form-input" id="field-slug" placeholder="ex: compta" required pattern="[a-z_]+">
+              <p class="form-hint">Minuscules et underscores uniquement</p>
             </div>
           </div>
-
           <div class="form-group">
-            <label class="form-label">Description (avec HTML pour les mots en couleur)</label>
-            <textarea class="form-textarea" id="module-description" placeholder='ex: Envoie ta caisse sur <strong style="color:#0088cc;">Telegram</strong>'></textarea>
+            <label class="form-label">Description courte</label>
+            <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ce soldat en une phrase..."></textarea>
           </div>
+        </div>
 
+        <!-- Color -->
+        <div class="form-section">
+          <div class="form-section-title">Couleur</div>
+          <div class="color-grid" id="color-grid"></div>
+        </div>
+
+        <!-- Icon Type -->
+        <div class="form-section">
+          <div class="form-section-title">Animation</div>
+          <div class="icon-grid" id="icon-grid"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="form-section">
+          <div class="form-section-title">Parametres</div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Couleur principale *</label>
-              <div class="color-row">
-                <input type="color" class="color-preview" id="module-color" value="#22c55e">
-                <input type="text" class="form-input" id="module-color-text" value="#22c55e" placeholder="#22c55e">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Statut *</label>
-              <select class="form-select" id="module-status">
+              <label class="form-label">Statut</label>
+              <select class="form-select" id="field-status">
                 <option value="available">Disponible</option>
-                <option value="coming_soon">Bientot</option>
                 <option value="beta">Beta</option>
+                <option value="coming_soon">Bientot</option>
               </select>
             </div>
-          </div>
-
-          <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Visibilite *</label>
-              <select class="form-select" id="module-visibility">
-                <option value="draft">Brouillon (admin seul)</option>
+              <label class="form-label">Visibilite</label>
+              <select class="form-select" id="field-visibility">
+                <option value="draft">Brouillon (moi seul)</option>
                 <option value="beta">Beta (testeurs)</option>
                 <option value="public">Public (tous)</option>
               </select>
-              <p class="form-hint">Qui peut voir ce module</p>
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Prix</label>
-              <input type="text" class="form-input" id="module-price" placeholder="9.99">
+              <label class="form-label">Prix mensuel (€)</label>
+              <input type="text" class="form-input" id="field-price" placeholder="9.99">
             </div>
             <div class="form-group">
               <label class="form-label">URL Setup</label>
-              <input type="text" class="form-input" id="module-setup-url" placeholder="/compta/setup/">
+              <input type="text" class="form-input" id="field-setup-url" placeholder="/compta/setup/">
             </div>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label class="form-label">Categories</label>
-            <div style="display: flex; gap: 16px; margin-top: 8px;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="cat-restaurant" value="restaurant"> Restaurant
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="cat-bar" value="bar"> Bar
-              </label>
-            </div>
+        <!-- Delete Confirmation -->
+        <div class="delete-confirm" id="delete-confirm">
+          <p>⚠️ Supprimer definitivement ce module ? Cette action est irreversible.</p>
+          <div class="delete-confirm-actions">
+            <button type="button" class="btn btn-secondary" onclick="cancelDelete()">Annuler</button>
+            <button type="button" class="btn btn-danger" onclick="deleteModule()">Supprimer</button>
           </div>
-
-          <div class="form-group">
-            <label class="form-label">Tags (appuie Entree pour ajouter)</label>
-            <input type="text" class="form-input" id="tag-input" placeholder="ex: Restaurant, Commerce">
-            <div class="tags-input" id="tags-container"></div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Type d'icone</label>
-            <select class="form-select" id="module-icon-type" onchange="updateIconPreview()">
-              <option value="telegram_sheets">Telegram → Sheets (Compta)</option>
-              <option value="bottles_count">Bouteilles → Compteur (Stock)</option>
-              <option value="people_pdf">Personnes → PDF (Paie)</option>
-              <option value="calendar">Calendrier (Planning)</option>
-              <option value="reservation">Reservation</option>
-              <option value="star">Fidelite</option>
-              <option value="custom">Personnalise (SVG)</option>
-            </select>
-          </div>
-
-          <div class="form-group" id="custom-icon-group" style="display: none;">
-            <label class="form-label">SVG Icone gauche</label>
-            <textarea class="form-textarea" id="module-icon-left" placeholder="<svg>...</svg>"></textarea>
-            <label class="form-label" style="margin-top: 12px;">SVG Icone droite</label>
-            <textarea class="form-textarea" id="module-icon-right" placeholder="<svg>...</svg>"></textarea>
-          </div>
-
-          <!-- Preview -->
-          <div class="preview-section">
-            <p class="preview-title">Apercu de la carte</p>
-            <div class="preview-card" id="preview-card">
-              <div class="preview-icons">
-                <div class="preview-icon" id="preview-icon-left"></div>
-                <div class="preview-dots"><div class="preview-dot"></div><div class="preview-dot"></div><div class="preview-dot"></div></div>
-                <div class="preview-icon" id="preview-icon-right"></div>
-              </div>
-              <div style="font-size: 18px; font-weight: 600; margin-bottom: 6px;" id="preview-name">Nom</div>
-              <div style="font-size: 12px; color: rgba(255,255,255,0.5);" id="preview-desc">Description</div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
-        <button class="btn btn-primary" onclick="saveModule()">Enregistrer</button>
-      </div>
+        </div>
+      </form>
     </div>
-  </div>
+  </template>
 
   <script>
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
-
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let modules = [];
-    let currentTags = [];
-    let editingId = null;
-
-    // Icon templates
-    const ICON_TEMPLATES = {
-      telegram_sheets: {
-        left: `<svg width="24" height="24" viewBox="0 0 240 240"><circle cx="120" cy="120" r="120" fill="#229ED9"/><path fill="#fff" d="M81.486 130.178l-17.8-5.467s-2.006-.808-1.366-2.671c.143-.42.522-.72 1.773-1.5 5.912-3.686 108.297-41.223 108.297-41.223s1.928-.6 3.277-.138a1.7 1.7 0 011.377 1.152c.118.58.138 1.368.138 2.14 0 .663-.06 1.41-.06 2.292-.469 8.312-14.237 90.178-14.237 90.178s-.803 3.262-3.686 3.372c-1.99.067-5.104-1.29-6.897-2.352z"/></svg>`,
-        right: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#22c55e"/><rect x="5" y="5" width="14" height="14" rx="2" fill="rgba(255,255,255,0.2)"/><line x1="5" y1="9" x2="19" y2="9" stroke="white" stroke-width="0.5"/><line x1="5" y1="13" x2="19" y2="13" stroke="white" stroke-width="0.5"/><line x1="9" y1="5" x2="9" y2="19" stroke="white" stroke-width="0.5"/><line x1="14" y1="5" x2="14" y2="19" stroke="white" stroke-width="0.5"/></svg>`
-      },
-      bottles_count: {
-        left: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#06b6d4"/><rect x="7" y="10" width="4" height="8" rx="1" fill="white"/><rect x="8" y="7" width="2" height="3" fill="white"/><rect x="13" y="10" width="4" height="8" rx="1" fill="white"/><rect x="14" y="7" width="2" height="3" fill="white"/></svg>`,
-        right: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#06b6d4"/><text x="12" y="16" font-family="Arial" font-size="10" font-weight="bold" fill="white" text-anchor="middle">12</text></svg>`
-      },
-      people_pdf: {
-        left: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#f59e0b"/><circle cx="9" cy="8" r="2.5" fill="white"/><circle cx="15" cy="8" r="2" fill="rgba(255,255,255,0.7)"/><path d="M5 18c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" fill="white"/></svg>`,
-        right: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#ef4444"/><rect x="7" y="5" width="10" height="14" rx="1" fill="white"/><text x="12" y="14" font-family="Arial" font-size="5" font-weight="bold" fill="#ef4444" text-anchor="middle">PDF</text></svg>`
-      },
-      calendar: {
-        left: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#8b5cf6"/><rect x="5" y="6" width="14" height="12" rx="2" stroke="white" stroke-width="1.5" fill="none"/><line x1="5" y1="10" x2="19" y2="10" stroke="white" stroke-width="1.5"/><line x1="9" y1="4" x2="9" y2="8" stroke="white" stroke-width="1.5"/><line x1="15" y1="4" x2="15" y2="8" stroke="white" stroke-width="1.5"/></svg>`,
-        right: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#8b5cf6"/><circle cx="12" cy="12" r="6" stroke="white" stroke-width="1.5" fill="none"/><polyline points="12 8 12 12 15 14" stroke="white" stroke-width="1.5" fill="none"/></svg>`
-      },
-      reservation: {
-        left: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#ec4899"/><path d="M12 4a8 8 0 100 16 8 8 0 000-16zm-1 12l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 9l-7 7z" fill="white"/></svg>`,
-        right: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#ec4899"/><rect x="6" y="6" width="12" height="12" rx="2" stroke="white" stroke-width="1.5" fill="none"/><line x1="9" y1="9" x2="15" y2="9" stroke="white" stroke-width="1"/><line x1="9" y1="12" x2="15" y2="12" stroke="white" stroke-width="1"/><line x1="9" y1="15" x2="12" y2="15" stroke="white" stroke-width="1"/></svg>`
-      },
-      star: {
-        left: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#eab308"/><path d="M12 6l1.5 3 3.5.5-2.5 2.5.5 3.5-3-1.5-3 1.5.5-3.5L7 9.5l3.5-.5z" fill="white"/></svg>`,
-        right: `<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#eab308"/><path d="M12 6c-3 0-5.5 2-5.5 4.5 0 3 5.5 7.5 5.5 7.5s5.5-4.5 5.5-7.5C17.5 8 15 6 12 6z" fill="white"/></svg>`
-      }
-    };
-
-    // Admin authentication - Google OAuth
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
 
+    // Color presets
+    const COLOR_PRESETS = [
+      { name: 'Vert', color: '#22c55e' },
+      { name: 'Cyan', color: '#06b6d4' },
+      { name: 'Orange', color: '#f59e0b' },
+      { name: 'Violet', color: '#8b5cf6' },
+      { name: 'Rose', color: '#ec4899' },
+      { name: 'Jaune', color: '#eab308' },
+      { name: 'Bleu', color: '#3b82f6' },
+      { name: 'Rouge', color: '#ef4444' },
+      { name: 'Indigo', color: '#6366f1' },
+      { name: 'Emeraude', color: '#10b981' },
+      { name: 'Fuchsia', color: '#d946ef' },
+      { name: 'Lime', color: '#84cc16' }
+    ];
+
+    // Icon types with preview
+    const ICON_TYPES = [
+      { id: 'telegram_sheets', name: 'Tableur', desc: 'Cellules qui se remplissent' },
+      { id: 'bottles_count', name: 'Bouteilles', desc: 'Stock qui change' },
+      { id: 'people_pdf', name: 'Equipe', desc: 'Personnes → Euro' },
+      { id: 'calendar', name: 'Calendrier', desc: 'Planning' },
+      { id: 'reservation', name: 'Reservation', desc: 'Check liste' },
+      { id: 'star', name: 'Fidelite', desc: 'Etoile coeur' }
+    ];
+
+    // Icon HTML templates
+    const MINI_ICON_TEMPLATES = {
+      telegram_sheets: (color) => `
+        <div class="mini-sheet">
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-1"></div><div class="mini-sheet-cell fill fill-2"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-3"></div><div class="mini-sheet-cell fill fill-4"></div></div>
+          <div class="mini-sheet-row"><div class="mini-sheet-cell fill fill-5"></div><div class="mini-sheet-cell fill fill-6"></div></div>
+        </div>`,
+      bottles_count: (color) => `
+        <div class="mini-stock" style="transform: scale(0.8);">
+          <div class="mini-bottle mini-bottle-1">
+            <div class="mini-bottle-cap"></div>
+            <div class="mini-bottle-neck"></div>
+            <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
+          </div>
+          <div class="mini-bottle mini-bottle-2">
+            <div class="mini-bottle-cap"></div>
+            <div class="mini-bottle-neck"></div>
+            <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
+          </div>
+          <div class="mini-stock-count">12</div>
+        </div>`,
+      people_pdf: (color) => `
+        <div class="mini-paie">
+          <div class="mini-paie-people">
+            <div class="mini-paie-person"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+            <div class="mini-paie-person"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+            <div class="mini-paie-person"><div class="mini-paie-head"></div><div class="mini-paie-body"></div></div>
+          </div>
+          <div class="mini-paie-euro">€</div>
+        </div>`,
+      calendar: (color) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+      reservation: (color) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`,
+      star: (color) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+    };
+
+    let modules = [];
+    let currentModule = null;
+    let selectedColor = COLOR_PRESETS[0].color;
+    let selectedIconType = 'telegram_sheets';
+
+    // ==================
+    // AUTH
+    // ==================
     async function signInWithGoogle() {
       document.getElementById('auth-loading').style.display = 'block';
       document.getElementById('auth-error').style.display = 'none';
-
-      try {
-        // Stocker l'URL de retour pour après l'auth
-        sessionStorage.setItem('auth_redirect', window.location.href);
-
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin + '/auth/callback'
-          }
-        });
-
-        if (error) {
-          document.getElementById('auth-loading').style.display = 'none';
-          document.getElementById('auth-error').textContent = error.message;
-          document.getElementById('auth-error').style.display = 'block';
-        }
-      } catch (err) {
+      sessionStorage.setItem('auth_redirect', window.location.href);
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/auth/callback' }
+      });
+      if (error) {
         document.getElementById('auth-loading').style.display = 'none';
-        document.getElementById('auth-error').textContent = 'Erreur: ' + err.message;
+        document.getElementById('auth-error').textContent = error.message;
         document.getElementById('auth-error').style.display = 'block';
       }
     }
 
     async function checkAuth() {
-      console.log('[ADMIN] Verification auth...');
       document.getElementById('auth-loading').style.display = 'block';
-
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
-
-      console.log('[ADMIN] Session:', session ? session.user.email : 'aucune', 'Error:', error);
+      const { data: { session } } = await supabaseClient.auth.getSession();
 
       if (session && ADMIN_EMAILS.includes(session.user.email)) {
-        console.log('[ADMIN] Admin verifie:', session.user.email);
-        showMainContent();
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'grid';
+        init();
         return true;
       } else if (session) {
-        // Logged in but not admin
-        console.log('[ADMIN] Email non autorise:', session.user.email);
-        document.getElementById('auth-error').textContent = 'Acces refuse. Email non autorise: ' + session.user.email;
+        document.getElementById('auth-error').textContent = 'Email non autorise: ' + session.user.email;
         document.getElementById('auth-error').style.display = 'block';
         document.getElementById('auth-loading').style.display = 'none';
         await supabaseClient.auth.signOut();
         return false;
       }
-
-      console.log('[ADMIN] Pas de session');
       document.getElementById('auth-loading').style.display = 'none';
       return false;
     }
 
-    function showMainContent() {
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
-      init();
-    }
-
-    async function init() {
-      await loadModules();
-      setupTagInput();
-      setupColorSync();
-      setupPreview();
-    }
-
-    // Check auth on page load
-    console.log('[ADMIN] Page chargee, verification auth initiale...');
     checkAuth();
-
-    // Listen for auth state changes (after Google redirect)
     supabaseClient.auth.onAuthStateChange((event, session) => {
-      console.log('[ADMIN] Auth state change:', event, session?.user?.email);
-      if (event === 'SIGNED_IN' && session) {
-        checkAuth();
-      }
+      if (event === 'SIGNED_IN' && session) checkAuth();
     });
 
-    async function loadModules() {
-      const container = document.getElementById('modules-list');
+    // ==================
+    // INIT
+    // ==================
+    async function init() {
+      await loadModules();
+      setupColorGrid();
+      setupIconGrid();
+    }
 
+    // ==================
+    // MODULES LIST
+    // ==================
+    async function loadModules() {
       const { data, error } = await supabaseClient
         .from('modules')
         .select('*')
         .order('sort_order', { ascending: true });
 
       if (error) {
-        console.error('Error loading modules:', error);
-        container.innerHTML = '<div class="empty-state">Erreur de chargement. La table "modules" existe-t-elle dans Supabase?</div>';
+        console.error('Error:', error);
         return;
       }
 
       modules = data || [];
+      renderModulesList();
+    }
 
+    function renderModulesList() {
+      const container = document.getElementById('modules-list');
       if (modules.length === 0) {
-        container.innerHTML = '<div class="empty-state">Aucun module. Clique sur "Nouveau Module" pour commencer.</div>';
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.3);">Aucun module</div>';
         return;
       }
 
       container.innerHTML = modules.map(m => `
-        <div class="module-card ${m.status !== 'available' ? 'inactive' : ''} ${m.visibility === 'draft' ? 'draft' : ''}">
-          <span class="module-status ${m.status}">${m.status === 'available' ? 'Actif' : m.status === 'coming_soon' ? 'Bientot' : 'Beta'}</span>
-          <span class="module-visibility ${m.visibility || 'public'}">${m.visibility === 'draft' ? '🔒 Brouillon' : m.visibility === 'beta' ? '🧪 Beta' : '🌍 Public'}</span>
-          <div class="module-header">
-            <div class="module-icon" style="background: ${m.color}20; color: ${m.color};">
-              ${m.icon_type === 'custom' ? '✨' : getIconEmoji(m.icon_type)}
+        <div class="module-item ${currentModule?.id === m.id ? 'active' : ''}" onclick="selectModule('${m.id}')">
+          <div class="module-item-color" style="background: ${m.color};"></div>
+          <div class="module-item-info">
+            <div class="module-item-name">${m.name}</div>
+            <div class="module-item-meta">
+              <span class="module-item-badge ${m.visibility || 'public'}">${m.visibility === 'draft' ? '🔒' : m.visibility === 'beta' ? '🧪' : '🌍'}</span>
+              <span>${m.price || '0'}€</span>
             </div>
-            <div class="module-name">${m.name}</div>
-          </div>
-          <div class="module-desc">${stripHtml(m.description || '')}</div>
-          <div class="module-meta">
-            <span>${m.price || '0'}€/mois</span>
-            <span>${(m.categories || []).join(', ')}</span>
-          </div>
-          <div class="module-actions">
-            <button class="btn btn-secondary btn-small" onclick="editModule('${m.id}')">Modifier</button>
-            <button class="btn btn-danger btn-small" onclick="deleteModule('${m.id}')">Supprimer</button>
           </div>
         </div>
       `).join('');
     }
 
-    function getIconEmoji(type) {
-      const emojis = {
-        telegram_sheets: '📊',
-        bottles_count: '🍾',
-        people_pdf: '👥',
-        calendar: '📅',
-        reservation: '🍽️',
-        star: '⭐'
-      };
-      return emojis[type] || '📦';
+    // ==================
+    // SELECT MODULE
+    // ==================
+    function selectModule(id) {
+      currentModule = modules.find(m => m.id === id) || null;
+      renderModulesList();
+      showEditor();
     }
 
-    function stripHtml(html) {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || '';
+    function createNew() {
+      currentModule = null;
+      selectedColor = COLOR_PRESETS[0].color;
+      selectedIconType = 'telegram_sheets';
+      showEditor();
     }
 
-    function openModal(module = null) {
-      editingId = module?.id || null;
-      document.getElementById('modal-title').textContent = module ? 'Modifier le module' : 'Nouveau Module';
+    // ==================
+    // EDITOR
+    // ==================
+    function showEditor() {
+      const main = document.getElementById('main-content');
+      const template = document.getElementById('editor-template');
+      main.innerHTML = template.innerHTML;
 
-      // Reset form
-      document.getElementById('module-id').value = module?.id || '';
-      document.getElementById('module-slug').value = module?.slug || '';
-      document.getElementById('module-slug').disabled = !!module; // Can't change slug after creation
-      document.getElementById('module-name').value = module?.name || '';
-      document.getElementById('module-description').value = module?.description || '';
-      document.getElementById('module-color').value = module?.color || '#22c55e';
-      document.getElementById('module-color-text').value = module?.color || '#22c55e';
-      document.getElementById('module-status').value = module?.status || 'available';
-      document.getElementById('module-visibility').value = module?.visibility || 'draft';
-      document.getElementById('module-price').value = module?.price || '';
-      document.getElementById('module-setup-url').value = module?.setup_url || '';
-      document.getElementById('module-icon-type').value = module?.icon_type || 'telegram_sheets';
-      document.getElementById('module-icon-left').value = module?.icon_left || '';
-      document.getElementById('module-icon-right').value = module?.icon_right || '';
+      // Setup listeners
+      setupColorGrid();
+      setupIconGrid();
+      setupFormListeners();
 
-      // Categories
-      document.getElementById('cat-restaurant').checked = (module?.categories || []).includes('restaurant');
-      document.getElementById('cat-bar').checked = (module?.categories || []).includes('bar');
+      // Fill form if editing
+      if (currentModule) {
+        document.getElementById('editor-title').textContent = currentModule.name;
+        document.getElementById('field-id').value = currentModule.id;
+        document.getElementById('field-name').value = currentModule.name || '';
+        document.getElementById('field-slug').value = currentModule.slug || '';
+        document.getElementById('field-slug').disabled = true;
+        document.getElementById('field-description').value = stripHtml(currentModule.description || '');
+        document.getElementById('field-status').value = currentModule.status || 'available';
+        document.getElementById('field-visibility').value = currentModule.visibility || 'public';
+        document.getElementById('field-price').value = currentModule.price || '';
+        document.getElementById('field-setup-url').value = currentModule.setup_url || '';
+        document.getElementById('btn-delete').style.display = 'block';
 
-      // Tags
-      currentTags = module?.tags || [];
-      renderTags();
-
-      // Show/hide custom icon fields
-      updateIconTypeVisibility();
-      updatePreview();
-
-      document.getElementById('modal').classList.add('active');
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-      editingId = null;
-    }
-
-    function updateIconTypeVisibility() {
-      const type = document.getElementById('module-icon-type').value;
-      document.getElementById('custom-icon-group').style.display = type === 'custom' ? 'block' : 'none';
-    }
-
-    async function saveModule() {
-      const slug = document.getElementById('module-slug').value.trim();
-      const name = document.getElementById('module-name').value.trim();
-      const description = document.getElementById('module-description').value;
-      const color = document.getElementById('module-color-text').value;
-      const status = document.getElementById('module-status').value;
-      const visibility = document.getElementById('module-visibility').value;
-      const price = document.getElementById('module-price').value;
-      const setupUrl = document.getElementById('module-setup-url').value;
-      const iconType = document.getElementById('module-icon-type').value;
-
-      const categories = [];
-      if (document.getElementById('cat-restaurant').checked) categories.push('restaurant');
-      if (document.getElementById('cat-bar').checked) categories.push('bar');
-
-      // Get icon SVGs
-      let iconLeft, iconRight;
-      if (iconType === 'custom') {
-        iconLeft = document.getElementById('module-icon-left').value;
-        iconRight = document.getElementById('module-icon-right').value;
+        selectedColor = currentModule.color || COLOR_PRESETS[0].color;
+        selectedIconType = currentModule.icon_type || 'telegram_sheets';
       } else {
-        iconLeft = ICON_TEMPLATES[iconType]?.left || '';
-        iconRight = ICON_TEMPLATES[iconType]?.right || '';
+        document.getElementById('editor-title').textContent = 'Nouveau Soldat';
+        document.getElementById('field-slug').disabled = false;
+        document.getElementById('btn-delete').style.display = 'none';
+      }
+
+      // Highlight selected color and icon
+      updateColorSelection();
+      updateIconSelection();
+      updatePreview();
+    }
+
+    function setupColorGrid() {
+      const grid = document.getElementById('color-grid');
+      if (!grid) return;
+
+      grid.innerHTML = COLOR_PRESETS.map(c => `
+        <div class="color-option ${selectedColor === c.color ? 'selected' : ''}"
+             style="background: ${c.color};"
+             onclick="selectColor('${c.color}')"
+             title="${c.name}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      `).join('');
+    }
+
+    function setupIconGrid() {
+      const grid = document.getElementById('icon-grid');
+      if (!grid) return;
+
+      grid.innerHTML = ICON_TYPES.map(icon => `
+        <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')">
+          <div class="icon-option-preview">${MINI_ICON_TEMPLATES[icon.id](selectedColor)}</div>
+          <div class="icon-option-label">${icon.name}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectColor(color) {
+      selectedColor = color;
+      updateColorSelection();
+      updateIconSelection();
+      updatePreview();
+    }
+
+    function selectIcon(iconType) {
+      selectedIconType = iconType;
+      updateIconSelection();
+      updatePreview();
+    }
+
+    function updateColorSelection() {
+      document.querySelectorAll('.color-option').forEach(el => {
+        el.classList.toggle('selected', el.style.background === selectedColor || rgbToHex(el.style.background) === selectedColor);
+      });
+    }
+
+    function updateIconSelection() {
+      const grid = document.getElementById('icon-grid');
+      if (!grid) return;
+      grid.innerHTML = ICON_TYPES.map(icon => `
+        <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')">
+          <div class="icon-option-preview">${MINI_ICON_TEMPLATES[icon.id](selectedColor)}</div>
+          <div class="icon-option-label">${icon.name}</div>
+        </div>
+      `).join('');
+    }
+
+    function setupFormListeners() {
+      const nameField = document.getElementById('field-name');
+      const descField = document.getElementById('field-description');
+      const slugField = document.getElementById('field-slug');
+
+      if (nameField) {
+        nameField.addEventListener('input', () => {
+          updatePreview();
+          // Auto-generate slug from name
+          if (!currentModule && slugField && !slugField.disabled) {
+            slugField.value = nameField.value.toLowerCase().replace(/[^a-z]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+          }
+        });
+      }
+      if (descField) descField.addEventListener('input', updatePreview);
+    }
+
+    function updatePreview() {
+      const card = document.getElementById('preview-card');
+      const icon = document.getElementById('preview-icon');
+      const name = document.getElementById('preview-name');
+      const status = document.getElementById('preview-status');
+
+      if (!card) return;
+
+      const nameVal = document.getElementById('field-name')?.value || 'Nom';
+      const descVal = document.getElementById('field-description')?.value || 'Description';
+
+      // Update card background
+      card.style.background = `linear-gradient(145deg, ${selectedColor}40, ${selectedColor}25)`;
+      card.style.borderColor = `${selectedColor}60`;
+
+      // Update icon
+      icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
+      icon.innerHTML = MINI_ICON_TEMPLATES[selectedIconType](selectedColor);
+
+      // Update text
+      name.textContent = nameVal;
+      status.textContent = descVal.substring(0, 30) + (descVal.length > 30 ? '...' : '');
+    }
+
+    // ==================
+    // SAVE
+    // ==================
+    async function save() {
+      const slug = document.getElementById('field-slug').value.trim();
+      const name = document.getElementById('field-name').value.trim();
+      const description = document.getElementById('field-description').value;
+      const status = document.getElementById('field-status').value;
+      const visibility = document.getElementById('field-visibility').value;
+      const price = document.getElementById('field-price').value;
+      const setupUrl = document.getElementById('field-setup-url').value || `/${slug}/setup/`;
+
+      if (!name || !slug) {
+        alert('Nom et ID technique requis');
+        return;
       }
 
       const moduleData = {
         slug,
         name,
         description,
-        color,
+        color: selectedColor,
         status,
         visibility,
         price: price || null,
-        setup_url: setupUrl || `/${slug}/setup/`,
+        setup_url: setupUrl,
         settings_url: `/?soldat=${slug}`,
-        icon_type: iconType,
-        icon_left: iconLeft,
-        icon_right: iconRight,
-        categories,
-        tags: currentTags
+        icon_type: selectedIconType
       };
 
       let error;
-      if (editingId) {
-        const result = await supabaseClient.from('modules').update(moduleData).eq('id', editingId);
+      if (currentModule) {
+        const result = await supabaseClient.from('modules').update(moduleData).eq('id', currentModule.id);
         error = result.error;
       } else {
         moduleData.sort_order = modules.length;
@@ -634,105 +778,67 @@
         return;
       }
 
-      closeModal();
       await loadModules();
+
+      // Select the saved module
+      if (!currentModule) {
+        const newMod = modules.find(m => m.slug === slug);
+        if (newMod) selectModule(newMod.id);
+      } else {
+        selectModule(currentModule.id);
+      }
     }
 
-    function editModule(id) {
-      const module = modules.find(m => m.id === id);
-      if (module) openModal(module);
+    // ==================
+    // DELETE
+    // ==================
+    function confirmDelete() {
+      document.getElementById('delete-confirm').classList.add('active');
     }
 
-    async function deleteModule(id) {
-      if (!confirm('Supprimer ce module ?')) return;
+    function cancelDelete() {
+      document.getElementById('delete-confirm').classList.remove('active');
+    }
 
-      const { error } = await supabaseClient.from('modules').delete().eq('id', id);
+    async function deleteModule() {
+      if (!currentModule) return;
+
+      const { error } = await supabaseClient.from('modules').delete().eq('id', currentModule.id);
 
       if (error) {
         alert('Erreur: ' + error.message);
         return;
       }
 
+      currentModule = null;
       await loadModules();
+      document.getElementById('main-content').innerHTML = '<div class="main-empty"><p>Selectionne un module ou cree-en un nouveau</p></div>';
     }
 
-    // Tags management
-    function setupTagInput() {
-      const input = document.getElementById('tag-input');
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const tag = input.value.trim();
-          if (tag && !currentTags.includes(tag)) {
-            currentTags.push(tag);
-            renderTags();
-          }
-          input.value = '';
-        }
-      });
+    // ==================
+    // UTILS
+    // ==================
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
     }
 
-    function renderTags() {
-      const container = document.getElementById('tags-container');
-      container.innerHTML = currentTags.map((tag, i) => `
-        <span class="tag">${tag} <span class="tag-remove" onclick="removeTag(${i})">&times;</span></span>
-      `).join('');
+    function darkenColor(hex) {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const amt = -40;
+      const R = Math.max(0, (num >> 16) + amt);
+      const G = Math.max(0, ((num >> 8) & 0x00FF) + amt);
+      const B = Math.max(0, (num & 0x0000FF) + amt);
+      return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
     }
 
-    function removeTag(index) {
-      currentTags.splice(index, 1);
-      renderTags();
+    function rgbToHex(rgb) {
+      if (!rgb || rgb.startsWith('#')) return rgb;
+      const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      if (!match) return rgb;
+      return '#' + [match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
     }
-
-    // Color sync
-    function setupColorSync() {
-      const colorPicker = document.getElementById('module-color');
-      const colorText = document.getElementById('module-color-text');
-
-      colorPicker.addEventListener('input', () => {
-        colorText.value = colorPicker.value;
-        updatePreview();
-      });
-
-      colorText.addEventListener('input', () => {
-        if (/^#[0-9A-Fa-f]{6}$/.test(colorText.value)) {
-          colorPicker.value = colorText.value;
-        }
-        updatePreview();
-      });
-    }
-
-    // Preview
-    function setupPreview() {
-      document.getElementById('module-name').addEventListener('input', updatePreview);
-      document.getElementById('module-description').addEventListener('input', updatePreview);
-      document.getElementById('module-icon-type').addEventListener('change', () => {
-        updateIconTypeVisibility();
-        updatePreview();
-      });
-    }
-
-    function updatePreview() {
-      const name = document.getElementById('module-name').value || 'Nom';
-      const desc = stripHtml(document.getElementById('module-description').value) || 'Description';
-      const color = document.getElementById('module-color-text').value;
-      const iconType = document.getElementById('module-icon-type').value;
-
-      document.getElementById('preview-name').textContent = name;
-      document.getElementById('preview-desc').textContent = desc;
-
-      const card = document.getElementById('preview-card');
-      card.style.background = `linear-gradient(145deg, ${color}40, ${color}20)`;
-      card.style.border = `1px solid ${color}60`;
-
-      const icons = ICON_TEMPLATES[iconType] || ICON_TEMPLATES.telegram_sheets;
-      document.getElementById('preview-icon-left').innerHTML = icons.left;
-      document.getElementById('preview-icon-left').style.background = color;
-      document.getElementById('preview-icon-right').innerHTML = icons.right;
-      document.getElementById('preview-icon-right').style.background = color;
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
