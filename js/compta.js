@@ -821,14 +821,14 @@ function comptaResetConfig() {
   const modal = document.createElement('div');
   modal.id = 'compta-reset-modal';
   modal.innerHTML = `
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; max-width: 320px; text-align: center;">
-        <div style="font-size: 32px; margin-bottom: 12px;">🔄</div>
-        <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 8px;">Nouveau fichier ?</div>
-        <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 20px;">Ta config actuelle sera supprimee et tu pourras creer un nouveau fichier iArmy.</div>
-        <div style="display: flex; gap: 10px;">
-          <button onclick="document.getElementById('compta-reset-modal').remove()" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer;">Annuler</button>
-          <button onclick="comptaDoResetConfig()" style="flex: 1; padding: 12px; background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; color: #f87171; font-size: 13px; font-weight: 600; cursor: pointer;">Supprimer</button>
+    <div class="delete-modal-overlay show">
+      <div class="delete-modal">
+        <div class="delete-modal-icon">🔄</div>
+        <div class="delete-modal-title">Nouveau fichier ?</div>
+        <div class="delete-modal-text">Ta config actuelle sera supprimee et tu pourras creer un nouveau fichier iArmy.</div>
+        <div class="delete-modal-btns">
+          <button class="delete-modal-btn cancel" onclick="document.getElementById('compta-reset-modal').remove()">Annuler</button>
+          <button class="delete-modal-btn confirm" onclick="comptaDoResetConfig()">Supprimer</button>
         </div>
       </div>
     </div>
