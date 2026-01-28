@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration Équipe - iArmy</title>
+  <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/header.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0f0f0f; color: white; min-height: 100vh; }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 32px 20px; }
+
+    .header { text-align: center; margin-bottom: 48px; }
+    .header-icon {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 12px 40px rgba(139,92,246,0.3);
+    }
+    .header-icon svg { width: 40px; height: 40px; }
+    .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .header p { color: rgba(255,255,255,0.5); font-size: 15px; }
+
+    /* Steps */
+    .steps { display: flex; gap: 8px; justify-content: center; margin-bottom: 48px; }
+    .step { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+    .step.active { background: #8b5cf6; color: white; }
+    .step.done { background: #22c55e; color: white; }
+    .step.pending { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+
+    /* Upload Zone */
+    .upload-section { margin-bottom: 32px; }
+    .upload-zone {
+      border: 2px dashed rgba(139,92,246,0.4);
+      border-radius: 20px;
+      padding: 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: rgba(139,92,246,0.05);
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #8b5cf6;
+      background: rgba(139,92,246,0.1);
+    }
+    .upload-zone.uploading { pointer-events: none; opacity: 0.7; }
+    .upload-icon { width: 64px; height: 64px; margin: 0 auto 16px; opacity: 0.5; }
+    .upload-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .upload-hint { color: rgba(255,255,255,0.4); font-size: 13px; }
+    .upload-input { display: none; }
+
+    /* Employees List */
+    .employees-section { margin-top: 32px; }
+    .employees-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .employees-count { background: #8b5cf6; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+
+    .employee-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .employee-card:hover { border-color: rgba(139,92,246,0.3); }
+    .employee-card.extracting { opacity: 0.6; }
+    .employee-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .employee-name { font-size: 18px; font-weight: 600; }
+    .employee-badge { padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .employee-badge.cdi { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .employee-badge.cdd { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .employee-badge.tp { background: rgba(139,92,246,0.15); color: #a78bfa; }
+
+    .employee-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+    .employee-detail { }
+    .employee-detail-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 4px; }
+    .employee-detail-value { font-size: 14px; font-weight: 500; }
+
+    .employee-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .btn-sm { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-edit { background: rgba(255,255,255,0.1); color: white; }
+    .btn-edit:hover { background: rgba(255,255,255,0.15); }
+    .btn-delete { background: rgba(239,68,68,0.1); color: #f87171; }
+    .btn-delete:hover { background: rgba(239,68,68,0.2); }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: rgba(255,255,255,0.4);
+    }
+    .empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: 0.3; }
+
+    /* Actions */
+    .actions { display: flex; gap: 16px; justify-content: center; margin-top: 48px; }
+    .btn {
+      padding: 14px 32px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      color: white;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(139,92,246,0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: white;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    /* Loading */
+    .loading { text-align: center; padding: 48px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(139,92,246,0.2);
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Progress */
+    .progress-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+      transition: width 0.3s;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(34,197,94,0.9);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 500;
+      transition: transform 0.3s;
+      z-index: 1000;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { background: rgba(239,68,68,0.9); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
+        <div class="logo-i">
+          <div class="logo-i-new">
+            <div class="logo-i-helmet"></div>
+            <div class="logo-i-head"></div>
+            <div class="logo-i-stem"></div>
+          </div>
+        </div>
+        <span style="font-weight: 600;">iArmy</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h1>Configure ton équipe</h1>
+      <p>Uploade tes contrats de travail, l'IA extrait automatiquement les infos</p>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step active" id="step-1">1</div>
+      <div class="step pending" id="step-2">2</div>
+      <div class="step pending" id="step-3">3</div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="upload-section">
+      <div class="upload-zone" id="upload-zone">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div class="upload-title">Dépose tes contrats ici</div>
+        <div class="upload-hint">PDF uniquement • Plusieurs fichiers acceptés</div>
+        <input type="file" class="upload-input" id="file-input" accept=".pdf" multiple>
+      </div>
+      <div class="progress-bar" id="progress-bar" style="display: none;">
+        <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Employees List -->
+    <div class="employees-section" id="employees-section" style="display: none;">
+      <div class="employees-title">
+        Ton équipe
+        <span class="employees-count" id="employees-count">0</span>
+      </div>
+      <div id="employees-list"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <p>Aucun employé pour l'instant<br>Uploade des contrats pour commencer</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="window.location.href='/'">Retour</button>
+      <button class="btn btn-primary" id="btn-continue" disabled onclick="continueSetup()">
+        Continuer
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let employees = [];
+    let currentUser = null;
+
+    // Toast notification
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast' + (isError ? ' error' : '');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Render employees list
+    function renderEmployees() {
+      const list = document.getElementById('employees-list');
+      const section = document.getElementById('employees-section');
+      const empty = document.getElementById('empty-state');
+      const count = document.getElementById('employees-count');
+      const btn = document.getElementById('btn-continue');
+
+      if (employees.length === 0) {
+        section.style.display = 'none';
+        empty.style.display = 'block';
+        btn.disabled = true;
+        return;
+      }
+
+      section.style.display = 'block';
+      empty.style.display = 'none';
+      count.textContent = employees.length;
+      btn.disabled = false;
+
+      list.innerHTML = employees.map((emp, idx) => {
+        const contractBadge = emp.contract_type.includes('TP')
+          ? `<span class="employee-badge tp">${emp.contract_type}</span>`
+          : emp.contract_type === 'CDD'
+            ? `<span class="employee-badge cdd">CDD</span>`
+            : `<span class="employee-badge cdi">CDI</span>`;
+
+        return `
+          <div class="employee-card" data-id="${emp.id || idx}">
+            <div class="employee-header">
+              <div class="employee-name">${emp.first_name} ${emp.last_name}</div>
+              ${contractBadge}
+            </div>
+            <div class="employee-details">
+              <div class="employee-detail">
+                <div class="employee-detail-label">Poste</div>
+                <div class="employee-detail-value">${emp.job_title}</div>
+              </div>
+              <div class="employee-detail">
+                <div class="employee-detail-label">Début</div>
+                <div class="employee-detail-value">${formatDate(emp.start_date)}</div>
+              </div>
+              <div class="employee-detail">
+                <div class="employee-detail-label">Heures/sem</div>
+                <div class="employee-detail-value">${emp.weekly_hours}h</div>
+              </div>
+              <div class="employee-detail">
+                <div class="employee-detail-label">Salaire brut</div>
+                <div class="employee-detail-value">${emp.monthly_salary.toLocaleString('fr-FR')}€</div>
+              </div>
+            </div>
+            <div class="employee-actions">
+              <button class="btn-sm btn-edit" onclick="editEmployee(${idx})">Modifier</button>
+              <button class="btn-sm btn-delete" onclick="deleteEmployee(${idx})">Supprimer</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    // File upload handling
+    const uploadZone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('file-input');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('drag-over');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('drag-over');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+      if (files.length) processFiles(files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length) processFiles(files);
+    });
+
+    async function processFiles(files) {
+      const progressBar = document.getElementById('progress-bar');
+      const progressFill = document.getElementById('progress-fill');
+
+      uploadZone.classList.add('uploading');
+      progressBar.style.display = 'block';
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showToast('Tu dois être connecté', true);
+        uploadZone.classList.remove('uploading');
+        return;
+      }
+
+      let processed = 0;
+      const total = files.length;
+
+      for (const file of files) {
+        try {
+          // Convert to base64
+          const base64 = await fileToBase64(file);
+
+          // Call extraction API
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/extract-contract`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+              pdf_base64: base64,
+              file_name: file.name
+            })
+          });
+
+          const result = await response.json();
+
+          if (result.error) {
+            showToast(`Erreur: ${result.error}`, true);
+            continue;
+          }
+
+          // Add extracted employee
+          const data = result.data;
+          employees.push({
+            first_name: data.employee.first_name,
+            last_name: data.employee.last_name,
+            email: data.employee.email,
+            phone: data.employee.phone,
+            contract_type: data.contract.type,
+            job_title: data.contract.job_title,
+            start_date: data.contract.start_date,
+            end_date: data.contract.end_date,
+            weekly_hours: data.hours.weekly_hours,
+            monthly_salary: data.salary.monthly_gross,
+            hourly_rate: data.salary.hourly_rate,
+            contract_raw_data: data
+          });
+
+          showToast(`${data.employee.first_name} ${data.employee.last_name} ajouté`);
+
+        } catch (err) {
+          console.error(err);
+          showToast(`Erreur avec ${file.name}`, true);
+        }
+
+        processed++;
+        progressFill.style.width = `${(processed / total) * 100}%`;
+      }
+
+      uploadZone.classList.remove('uploading');
+      setTimeout(() => {
+        progressBar.style.display = 'none';
+        progressFill.style.width = '0%';
+      }, 500);
+
+      renderEmployees();
+      updateSteps();
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+    }
+
+    function updateSteps() {
+      const step1 = document.getElementById('step-1');
+      const step2 = document.getElementById('step-2');
+
+      if (employees.length > 0) {
+        step1.className = 'step done';
+        step2.className = 'step active';
+      }
+    }
+
+    function editEmployee(idx) {
+      // TODO: Open edit modal
+      alert('Édition à implémenter');
+    }
+
+    function deleteEmployee(idx) {
+      if (confirm('Supprimer cet employé ?')) {
+        employees.splice(idx, 1);
+        renderEmployees();
+        updateSteps();
+      }
+    }
+
+    async function continueSetup() {
+      if (employees.length === 0) return;
+
+      const btn = document.getElementById('btn-continue');
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement...';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Non connecté');
+
+        // Save all employees
+        for (const emp of employees) {
+          const { error } = await supabase.from('employees').insert({
+            user_id: session.user.id,
+            first_name: emp.first_name,
+            last_name: emp.last_name,
+            email: emp.email,
+            phone: emp.phone,
+            contract_type: emp.contract_type,
+            job_title: emp.job_title,
+            start_date: emp.start_date,
+            end_date: emp.end_date,
+            weekly_hours: emp.weekly_hours,
+            monthly_salary: emp.monthly_salary,
+            hourly_rate: emp.hourly_rate,
+            contract_raw_data: emp.contract_raw_data
+          });
+
+          if (error) throw error;
+        }
+
+        // Mark step as done
+        document.getElementById('step-2').className = 'step done';
+        document.getElementById('step-3').className = 'step active';
+
+        showToast('Équipe enregistrée !');
+
+        // Redirect to Telegram link step
+        setTimeout(() => {
+          window.location.href = '/equipe/?setup=telegram';
+        }, 1500);
+
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Erreur d\'enregistrement', true);
+        btn.disabled = false;
+        btn.textContent = 'Continuer';
+      }
+    }
+
+    // Init
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/?login=1';
+        return;
+      }
+      currentUser = session.user;
+
+      // Load existing employees
+      const { data: existing } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('status', 'active');
+
+      if (existing?.length > 0) {
+        employees = existing;
+        renderEmployees();
+        updateSteps();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

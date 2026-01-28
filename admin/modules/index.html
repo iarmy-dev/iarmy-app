@@ -470,7 +470,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
               Générer avec l'IA
             </div>
-            <textarea class="ai-generator-input" id="ai-prompt" rows="2" placeholder="Décris l'icône... ex: une bouteille de vin, un calendrier avec une horloge, des personnes en équipe..."></textarea>
+            <textarea class="ai-generator-input" id="ai-prompt" rows="2" placeholder="Décris ton idée d'icône... ex: une bouteille de vin qui se vide, un calendrier avec horloge, des personnes en équipe..."></textarea>
             <div class="ai-generator-actions">
               <button class="ai-btn" id="ai-generate-btn" onclick="generateIcon()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -482,10 +482,17 @@
             </div>
             <div class="ai-preview" id="ai-preview">
               <div class="ai-preview-icon" id="ai-preview-icon"></div>
-              <div class="ai-preview-actions">
-                <button class="ai-preview-btn use" onclick="useGeneratedIcon()">Utiliser</button>
-                <button class="ai-preview-btn" onclick="generateIcon()">Régénérer</button>
-                <button class="ai-preview-btn" onclick="copyIconSvg()">Copier SVG</button>
+              <div style="flex:1;">
+                <p id="ai-preview-desc" style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:10px;"></p>
+                <div class="ai-preview-actions">
+                  <button class="ai-preview-btn use" onclick="useGeneratedIcon()">Utiliser</button>
+                  <button class="ai-preview-btn" onclick="generateIcon()">Régénérer</button>
+                  <button class="ai-preview-btn" onclick="copyIconSvg()">Copier SVG</button>
+                </div>
+                <div style="margin-top:10px; display:flex; gap:6px;">
+                  <input type="text" id="ai-modify-input" class="form-input" style="flex:1; padding:8px 12px; font-size:12px;" placeholder="Modifier: plus grande, ajouter...">
+                  <button class="ai-btn secondary" onclick="modifyIcon()" style="padding:8px 12px; font-size:11px;">Modifier</button>
+                </div>
               </div>
             </div>
           </div>
@@ -518,8 +525,35 @@
               <input type="text" class="form-input" id="field-price" placeholder="9.99">
             </div>
             <div class="form-group">
+              <label class="form-label">Stripe Price ID</label>
+              <input type="text" class="form-input" id="field-stripe-price-id" placeholder="price_xxxxx">
+              <p class="form-hint">ID Stripe pour la facturation (depuis dashboard.stripe.com)</p>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
               <label class="form-label">URL Setup</label>
               <input type="text" class="form-input" id="field-setup-url" placeholder="/compta/setup/">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Jours d'essai</label>
+              <input type="number" class="form-input" id="field-trial-days" placeholder="7" value="7">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Badge</label>
+              <select class="form-select" id="field-badge">
+                <option value="">Auto (nouveau si < 30j)</option>
+                <option value="nouveau">Nouveau</option>
+                <option value="populaire">Populaire</option>
+                <option value="promo">Promo</option>
+                <option value="none">Aucun</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Badge jusqu'au</label>
+              <input type="date" class="form-input" id="field-badge-until">
             </div>
           </div>
         </div>
@@ -709,6 +743,10 @@
         document.getElementById('field-visibility').value = currentModule.visibility || 'public';
         document.getElementById('field-price').value = currentModule.price || '';
         document.getElementById('field-setup-url').value = currentModule.setup_url || '';
+        document.getElementById('field-stripe-price-id').value = currentModule.stripe_price_id || '';
+        document.getElementById('field-trial-days').value = currentModule.trial_days || 7;
+        document.getElementById('field-badge').value = currentModule.badge || '';
+        document.getElementById('field-badge-until').value = currentModule.badge_until ? currentModule.badge_until.split('T')[0] : '';
         document.getElementById('btn-delete').style.display = 'block';
 
         selectedColor = currentModule.color || COLOR_PRESETS[0].color;
@@ -717,6 +755,7 @@
         document.getElementById('editor-title').textContent = 'Nouveau Soldat';
         document.getElementById('field-slug').disabled = false;
         document.getElementById('btn-delete').style.display = 'none';
+        document.getElementById('field-trial-days').value = 7;
       }
 
       // Highlight selected color and icon
@@ -768,6 +807,7 @@
     // AI ICON GENERATOR
     // ==================
     let generatedSvg = null;
+    let generatedDescription = null;
 
     async function generateIcon() {
       const prompt = document.getElementById('ai-prompt').value.trim();
@@ -775,6 +815,7 @@
       const btn = document.getElementById('ai-generate-btn');
       const preview = document.getElementById('ai-preview');
       const previewIcon = document.getElementById('ai-preview-icon');
+      const previewDesc = document.getElementById('ai-preview-desc');
 
       if (!prompt) {
         alert('Décris l\'icône que tu veux générer');
@@ -787,10 +828,15 @@
       preview.classList.remove('show');
 
       try {
-        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/generate-icon', {
+        // Utiliser admin-ai-generate avec le type generate_svg
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: prompt, animated })
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({ type: 'generate_svg', prompt, animated })
         });
 
         const data = await response.json();
@@ -800,19 +846,78 @@
           return;
         }
 
-        generatedSvg = data.svg;
+        generatedSvg = data.result?.svg;
+        generatedDescription = data.result?.description;
+
+        if (!generatedSvg) {
+          alert('Pas de SVG généré');
+          return;
+        }
 
         // Show preview with current color
         previewIcon.style.background = `linear-gradient(135deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
         previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
+        if (previewDesc) previewDesc.textContent = generatedDescription || '';
         preview.classList.add('show');
 
       } catch (err) {
         console.error(err);
-        alert('Erreur de génération');
+        alert('Erreur de génération: ' + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer`;
+      }
+    }
+
+    async function modifyIcon() {
+      const modifyInput = document.getElementById('ai-modify-input');
+      const modification = modifyInput?.value.trim();
+      const preview = document.getElementById('ai-preview');
+      const previewIcon = document.getElementById('ai-preview-icon');
+      const previewDesc = document.getElementById('ai-preview-desc');
+
+      if (!generatedSvg) {
+        alert('Génère d\'abord une icône');
+        return;
+      }
+      if (!modification) {
+        alert('Décris la modification souhaitée');
+        return;
+      }
+
+      modifyInput.disabled = true;
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({ type: 'modify_svg', currentSvg: generatedSvg, modification })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          alert('Erreur: ' + data.error);
+          return;
+        }
+
+        generatedSvg = data.result?.svg;
+        generatedDescription = data.result?.description;
+
+        // Update preview
+        previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
+        if (previewDesc) previewDesc.textContent = generatedDescription || '';
+        modifyInput.value = '';
+
+      } catch (err) {
+        console.error(err);
+        alert('Erreur de modification');
+      } finally {
+        modifyInput.disabled = false;
       }
     }
 
@@ -909,6 +1014,10 @@
       const visibility = document.getElementById('field-visibility').value;
       const price = document.getElementById('field-price').value;
       const setupUrl = document.getElementById('field-setup-url').value || `/${slug}/setup/`;
+      const stripePriceId = document.getElementById('field-stripe-price-id').value.trim();
+      const trialDays = parseInt(document.getElementById('field-trial-days').value) || 7;
+      const badge = document.getElementById('field-badge').value || null;
+      const badgeUntil = document.getElementById('field-badge-until').value || null;
 
       if (!name || !slug) {
         alert('Nom et ID technique requis');
@@ -925,7 +1034,11 @@
         price: price || null,
         setup_url: setupUrl,
         settings_url: `/?soldat=${slug}`,
-        icon_type: selectedIconType
+        icon_type: selectedIconType,
+        stripe_price_id: stripePriceId || null,
+        trial_days: trialDays,
+        badge: badge,
+        badge_until: badgeUntil
       };
 
       let error;
