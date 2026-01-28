@@ -265,7 +265,11 @@
         </div>
         <span style="font-weight: 700; font-size: 18px; letter-spacing: -0.5px;">iArmy</span>
       </a>
-      <div class="nav-right"></div>
+      <div class="nav-right" id="nav-right">
+        <a href="/" class="nav-avatar-link" id="nav-avatar-link" title="Mon compte" style="display:none;">
+          <img src="" class="nav-avatar" alt="Avatar" id="nav-avatar-img">
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -614,6 +618,32 @@
         });
       });
     }
+
+    // Avatar nav - simple lien
+    function showNavAvatar(user) {
+      const avatarLink = document.getElementById('nav-avatar-link');
+      const avatarImg = document.getElementById('nav-avatar-img');
+      if (!avatarLink || !avatarImg) return;
+
+      const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Utilisateur';
+      const avatarUrl = user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=FF6B35&color=fff`;
+
+      avatarImg.src = avatarUrl;
+      avatarLink.style.display = 'flex';
+    }
+
+    // Override init to show avatar
+    const originalInit = init;
+    init = async function() {
+      await originalInit();
+      // Show avatar if logged in
+      if (currentUser && !isTelegramMode) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user) {
+          showNavAvatar(session.user);
+        }
+      }
+    };
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
