@@ -51,56 +51,46 @@ nav {
   object-fit: contain !important;
 }
 
-/* Animation idle - le soldat "surveille" doucement */
+/* Animation idle - le soldat entier balance doucement */
+.logo-i svg {
+  animation: soldierIdle 3s ease-in-out infinite !important;
+}
+
+@keyframes soldierIdle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-1.5deg) scale(1.02); }
+  75% { transform: rotate(1.5deg) scale(1.02); }
+}
+
+/* Le casque bouge un peu plus que le reste */
 .logo-i #i-helmet {
-  transform-origin: 70px 80px !important;
-  animation: soldierWatch 4s ease-in-out infinite !important;
+  transform-origin: 70px 60px !important;
+  animation: helmetWatch 3s ease-in-out infinite !important;
 }
 
-@keyframes soldierWatch {
+@keyframes helmetWatch {
   0%, 100% { transform: rotate(0deg); }
-  15% { transform: rotate(0deg); }
-  20% { transform: rotate(-2deg); }
   25% { transform: rotate(-2deg); }
-  30% { transform: rotate(0deg); }
-  70% { transform: rotate(0deg); }
-  75% { transform: rotate(1.5deg); }
-  80% { transform: rotate(1.5deg); }
-  85% { transform: rotate(0deg); }
-}
-
-/* Petit rebond mignon de la tête */
-.logo-i #i-head {
-  transform-origin: 72px 86px !important;
-  animation: headBob 4s ease-in-out infinite !important;
-}
-
-@keyframes headBob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-1px); }
+  75% { transform: rotate(2deg); }
 }
 
 /* Animation au hover - salut militaire */
+.logo-i:hover svg {
+  animation: soldierSalute 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
+}
+
 .logo-i:hover #i-helmet {
-  animation: salute 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
+  animation: helmetSalute 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
 }
 
-.logo-i:hover #i-head {
-  animation: headSalute 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
+@keyframes soldierSalute {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(-3deg) scale(1.05); }
 }
 
-@keyframes salute {
-  0% { transform: rotate(0deg) translateY(0); }
-  40% { transform: rotate(-6deg) translateY(-2px); }
-  60% { transform: rotate(-6deg) translateY(-2px); }
-  100% { transform: rotate(0deg) translateY(0); }
-}
-
-@keyframes headSalute {
-  0% { transform: translateY(0) rotate(0deg); }
-  40% { transform: translateY(-2px) rotate(-3deg); }
-  60% { transform: translateY(-2px) rotate(-3deg); }
-  100% { transform: translateY(0) rotate(0deg); }
+@keyframes helmetSalute {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg) translateY(-2px); }
 }
 
 /* Petit brillant sur le casque au hover */
