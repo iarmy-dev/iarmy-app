@@ -870,6 +870,7 @@
 
       document.getElementById('header-actions').innerHTML = `
         <button class="btn btn-secondary" onclick="currentModule=null;currentEditorTab='general';renderModulesTab();">Annuler</button>
+        ${!isNew ? `<button class="btn btn-secondary" onclick="duplicateModule()">Dupliquer</button>` : ''}
         ${!isNew ? `<button class="btn btn-danger" onclick="deleteModule()">Supprimer</button>` : ''}
         <button class="btn btn-primary" onclick="saveModule()">Enregistrer</button>
       `;
@@ -881,6 +882,7 @@
             <div class="editor-tabs">
               <button class="editor-tab ${currentEditorTab === 'general' ? 'active' : ''}" onclick="switchEditorTab('general')">General</button>
               <button class="editor-tab ${currentEditorTab === 'setup' ? 'active' : ''}" onclick="switchEditorTab('setup')">Setup <span style="opacity:0.5;font-size:11px;">(${currentSetupSteps.length})</span></button>
+              ${!isNew ? `<button class="editor-tab ${currentEditorTab === 'urls' ? 'active' : ''}" onclick="switchEditorTab('urls')">URLs & Infos</button>` : ''}
             </div>
 
             <!-- General Panel -->

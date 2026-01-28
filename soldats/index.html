@@ -123,6 +123,8 @@
       text-transform: uppercase;
     }
     .card-badge.nouveau { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .card-badge.populaire { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .card-badge.promo { background: rgba(239,68,68,0.2); color: #f87171; }
     .card-badge.installe { background: rgba(255,255,255,0.15); color: white; }
 
     /* Animated icons container */
@@ -523,6 +525,20 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
+    // Determiner le badge d'un module depuis la BDD
+    function getModuleBadge(mod) {
+      if (mod.badge === 'none') return null;
+      if (mod.badge === 'nouveau') return { class: 'nouveau', text: '🆕 NOUVEAU' };
+      if (mod.badge === 'populaire') return { class: 'populaire', text: '🔥 POPULAIRE' };
+      if (mod.badge === 'promo') return { class: 'promo', text: '💰 PROMO' };
+      // Auto: nouveau si < 14 jours
+      if (!mod.badge && mod.created_at) {
+        const daysSince = (Date.now() - new Date(mod.created_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSince < 14) return { class: 'nouveau', text: '🆕 NOUVEAU' };
+      }
+      return null;
+    }
+
     function renderModules() {
       const container = document.getElementById('modules-container');
       const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
@@ -540,9 +556,18 @@
 
       container.innerHTML = modules.map(m => {
         const isInstalled = userModules.includes(m.slug);
-        const badge = isInstalled
-          ? '<span class="card-badge installe">INSTALLE</span>'
-          : '<span class="card-badge nouveau">NOUVEAU</span>';
+
+        // Determiner le badge a afficher
+        let badge = '';
+        if (isInstalled) {
+          badge = '<span class="card-badge installe">INSTALLE</span>';
+        } else {
+          // Utiliser le badge de la base de donnees
+          const dbBadge = getModuleBadge(m);
+          if (dbBadge) {
+            badge = `<span class="card-badge ${dbBadge.class}">${dbBadge.text}</span>`;
+          }
+        }
 
         // URL selon si installé ou non
         let url;
