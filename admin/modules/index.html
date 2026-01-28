@@ -213,6 +213,101 @@
     .icon-option-preview { height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
     .icon-option-label { font-size: 11px; color: rgba(255,255,255,0.5); }
 
+    /* AI Icon Generator */
+    .ai-generator {
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(255,107,53,0.05);
+      border: 1px dashed rgba(255,107,53,0.3);
+      border-radius: 16px;
+    }
+    .ai-generator-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: #FF6B35;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .ai-generator-input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: white;
+      font-size: 13px;
+      resize: none;
+      margin-bottom: 12px;
+    }
+    .ai-generator-input::placeholder { color: rgba(255,255,255,0.3); }
+    .ai-generator-input:focus { outline: none; border-color: #FF6B35; }
+    .ai-generator-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .ai-btn {
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ai-btn:hover { transform: scale(1.02); box-shadow: 0 4px 15px rgba(255,107,53,0.3); }
+    .ai-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .ai-btn.secondary { background: rgba(255,255,255,0.1); }
+    .ai-preview {
+      margin-top: 12px;
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      display: none;
+      align-items: center;
+      gap: 16px;
+    }
+    .ai-preview.show { display: flex; }
+    .ai-preview-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ai-preview-icon svg { width: 28px; height: 28px; }
+    .ai-preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .ai-preview-btn {
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ai-preview-btn:hover { background: rgba(255,255,255,0.15); }
+    .ai-preview-btn.use { background: #22c55e; }
+    .ai-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* Auth Screen */
     .auth-screen {
       position: fixed;
@@ -366,8 +461,34 @@
 
         <!-- Icon Type -->
         <div class="form-section">
-          <div class="form-section-title">Animation</div>
+          <div class="form-section-title">Icône</div>
           <div class="icon-grid" id="icon-grid"></div>
+
+          <!-- AI Generator -->
+          <div class="ai-generator">
+            <div class="ai-generator-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              Générer avec l'IA
+            </div>
+            <textarea class="ai-generator-input" id="ai-prompt" rows="2" placeholder="Décris l'icône... ex: une bouteille de vin, un calendrier avec une horloge, des personnes en équipe..."></textarea>
+            <div class="ai-generator-actions">
+              <button class="ai-btn" id="ai-generate-btn" onclick="generateIcon()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Générer
+              </button>
+              <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:rgba(255,255,255,0.5); cursor:pointer;">
+                <input type="checkbox" id="ai-animated" style="accent-color:#FF6B35;"> Animée
+              </label>
+            </div>
+            <div class="ai-preview" id="ai-preview">
+              <div class="ai-preview-icon" id="ai-preview-icon"></div>
+              <div class="ai-preview-actions">
+                <button class="ai-preview-btn use" onclick="useGeneratedIcon()">Utiliser</button>
+                <button class="ai-preview-btn" onclick="generateIcon()">Régénérer</button>
+                <button class="ai-preview-btn" onclick="copyIconSvg()">Copier SVG</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Settings -->
@@ -417,7 +538,7 @@
 
   <script>
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL5CSx3az8';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
@@ -641,6 +762,82 @@
       selectedIconType = iconType;
       updateIconSelection();
       updatePreview();
+    }
+
+    // ==================
+    // AI ICON GENERATOR
+    // ==================
+    let generatedSvg = null;
+
+    async function generateIcon() {
+      const prompt = document.getElementById('ai-prompt').value.trim();
+      const animated = document.getElementById('ai-animated').checked;
+      const btn = document.getElementById('ai-generate-btn');
+      const preview = document.getElementById('ai-preview');
+      const previewIcon = document.getElementById('ai-preview-icon');
+
+      if (!prompt) {
+        alert('Décris l\'icône que tu veux générer');
+        return;
+      }
+
+      // Loading state
+      btn.disabled = true;
+      btn.innerHTML = '<div class="ai-spinner"></div> Génération...';
+      preview.classList.remove('show');
+
+      try {
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/generate-icon', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: prompt, animated })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          alert('Erreur: ' + data.error);
+          return;
+        }
+
+        generatedSvg = data.svg;
+
+        // Show preview with current color
+        previewIcon.style.background = `linear-gradient(135deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
+        previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
+        preview.classList.add('show');
+
+      } catch (err) {
+        console.error(err);
+        alert('Erreur de génération');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer`;
+      }
+    }
+
+    function useGeneratedIcon() {
+      if (!generatedSvg) return;
+
+      // Add the generated icon to MODULE_ICON_TEMPLATES as 'custom'
+      // and select it
+      const customTemplate = (color) => generatedSvg.replace(/stroke="currentColor"/g, `stroke="${color}"`);
+      MODULE_ICON_TEMPLATES.custom = customTemplate;
+
+      selectedIconType = 'custom';
+      updateIconSelection();
+      updatePreview();
+
+      // Update preview icon to show it's now the active icon
+      document.getElementById('ai-preview').classList.remove('show');
+      alert('Icône appliquée ! Elle sera sauvegardée avec le module.');
+    }
+
+    function copyIconSvg() {
+      if (!generatedSvg) return;
+      navigator.clipboard.writeText(generatedSvg).then(() => {
+        alert('SVG copié !');
+      });
     }
 
     function updateColorSelection() {

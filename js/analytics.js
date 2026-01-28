@@ -1,7 +1,7 @@
 // iArmy Analytics - Tracking des visites (sessions uniques, pas les refresh)
 (function() {
   const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MzQ4NDYsImV4cCI6MjA1MjIxMDg0Nn0.YjrRXPHBmag47WyLWOKPr7TIc0z3oN_AzNL5CSx3az8';
 
   // Session duration in milliseconds (1 hour)
   const SESSION_DURATION = 60 * 60 * 1000;
