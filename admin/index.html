@@ -1142,165 +1142,133 @@
 
     function renderModuleEditor() {
       const isNew = !currentModule.id;
+      const slug = currentModule.slug || 'nouveau';
 
       document.getElementById('header-actions').innerHTML = `
-        <button class="btn btn-secondary" onclick="currentModule=null;currentEditorTab='general';renderModulesTab();">Annuler</button>
-        ${!isNew ? `<button class="btn btn-secondary" onclick="duplicateModule('${currentModule.id}')">Dupliquer</button>` : ''}
+        <button class="btn btn-secondary" onclick="currentModule=null;currentEditorTab='general';renderModulesTab();">← Retour</button>
         ${!isNew ? `<button class="btn btn-danger" onclick="deleteModule()">Supprimer</button>` : ''}
-        <button class="btn btn-primary" onclick="saveModule()">Enregistrer</button>
+        <button class="btn btn-primary" onclick="saveModule()">💾 Enregistrer</button>
       `;
-
-      const slug = currentModule.slug || 'nouveau';
 
       document.getElementById('main-content').innerHTML = `
         <div class="editor-split">
           <div class="editor-form">
-            <div class="editor-tabs">
-              <button class="editor-tab ${currentEditorTab === 'general' ? 'active' : ''}" onclick="switchEditorTab('general')">General</button>
-              <button class="editor-tab ${currentEditorTab === 'setup' ? 'active' : ''}" onclick="switchEditorTab('setup')">Setup (${currentSetupSteps.length})</button>
-              ${!isNew ? `<button class="editor-tab ${currentEditorTab === 'urls' ? 'active' : ''}" onclick="switchEditorTab('urls')">URLs</button>` : ''}
-            </div>
 
-            <!-- General Panel -->
-            <div class="editor-panel ${currentEditorTab === 'general' ? 'active' : ''}" id="panel-general">
-              <div class="form-section">
-                <div class="form-section-title">✨ Generation IA (Claude)</div>
-                <div class="ai-input-wrapper">
-                  <textarea class="form-textarea" id="ai-prompt" placeholder="Decris ton soldat... Ex: Un module pour gerer les reservations de restaurant"></textarea>
-                  <button class="ai-suggest-btn" onclick="generateWithAI()">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-                    Generer
-                  </button>
+            <!-- Quick AI Generator -->
+            <div class="card" style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(139,92,246,0.05));border-color:rgba(139,92,246,0.3);margin-bottom:24px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <span style="font-size:24px;">✨</span>
+                <div>
+                  <div style="font-weight:600;">Generation rapide avec Claude</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,0.5);">Decris ton module et l'IA remplit tout</div>
                 </div>
               </div>
+              <div style="display:flex;gap:8px;">
+                <input type="text" class="form-input" id="ai-prompt" placeholder="Ex: Un module pour gerer les reservations de restaurant" style="flex:1;">
+                <button class="btn btn-ai" onclick="generateWithAI()" id="btn-generate-all">✨ Tout generer</button>
+              </div>
+            </div>
 
-              <div class="form-section">
-                <div class="form-section-title">Informations</div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Nom *</label>
-                    <input type="text" class="form-input" id="field-name" value="${currentModule.name || ''}" placeholder="Ex: Compta" oninput="updatePreview()">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">ID technique *</label>
-                    <input type="text" class="form-input" id="field-slug" value="${currentModule.slug || ''}" placeholder="ex: compta" ${!isNew ? 'disabled' : ''}>
-                  </div>
+            <!-- Nom du module -->
+            <div class="card" style="margin-bottom:16px;">
+              <div class="form-row" style="margin-bottom:0;">
+                <div class="form-group" style="margin-bottom:0;flex:2;">
+                  <label class="form-label">📝 Nom du soldat *</label>
+                  <input type="text" class="form-input" id="field-name" value="${currentModule.name || ''}" placeholder="Ex: Compta, Stock, Planning..." oninput="updatePreview();autoSlug();" style="font-size:18px;font-weight:600;">
+                </div>
+                <div class="form-group" style="margin-bottom:0;flex:1;">
+                  <label class="form-label">🔗 ID technique</label>
+                  <input type="text" class="form-input" id="field-slug" value="${currentModule.slug || ''}" placeholder="compta" ${!isNew ? 'disabled style="opacity:0.5;"' : ''}>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="card" style="margin-bottom:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <label class="form-label" style="margin:0;">💬 Description</label>
+                <button class="btn btn-sm btn-ai" onclick="generateDescriptionAI()" id="btn-gen-desc">✨ Ameliorer avec l'IA</button>
+              </div>
+              <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ton soldat... Les mots importants seront mis en couleur automatiquement" oninput="updatePreview()" style="min-height:80px;">${currentModule.description || ''}</textarea>
+              <div class="form-hint">Utilise &lt;strong style="color:${selectedColor};"&gt;mot&lt;/strong&gt; pour colorer des mots</div>
+            </div>
+
+            <!-- Icone / Animation -->
+            <div class="card" style="margin-bottom:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <label class="form-label" style="margin:0;">🎨 Icone animee</label>
+                <button class="btn btn-sm btn-ai" onclick="suggestIconAI()" id="btn-gen-icon">✨ Suggerer une icone</button>
+              </div>
+              <div class="icon-grid" id="icon-grid"></div>
+            </div>
+
+            <!-- Couleur -->
+            <div class="card" style="margin-bottom:16px;">
+              <label class="form-label">🎨 Couleur du module</label>
+              <div class="color-grid" id="color-grid"></div>
+            </div>
+
+            <!-- Badge -->
+            <div class="card" style="margin-bottom:16px;">
+              <label class="form-label">🏷️ Badge (optionnel)</label>
+              <div class="badge-grid" id="badge-grid"></div>
+            </div>
+
+            <!-- Parametres -->
+            <div class="card" style="margin-bottom:16px;">
+              <label class="form-label" style="margin-bottom:16px;">⚙️ Parametres</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" style="font-size:11px;">Visibilite</label>
+                  <select class="form-select" id="field-visibility" onchange="selectedVisibility=this.value;updatePreview();">
+                    <option value="draft" ${selectedVisibility === 'draft' ? 'selected' : ''}>🔒 Brouillon</option>
+                    <option value="beta" ${selectedVisibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
+                    <option value="public" ${selectedVisibility === 'public' ? 'selected' : ''}>🌍 Public</option>
+                  </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Description</label>
-                  <textarea class="form-textarea" id="field-description" placeholder="Description du soldat..." oninput="updatePreview()">${currentModule.description || ''}</textarea>
-                </div>
-              </div>
-
-              <div class="form-section">
-                <div class="form-section-title">Couleur</div>
-                <div class="color-grid" id="color-grid"></div>
-              </div>
-
-              <div class="form-section">
-                <div class="form-section-title">Animation</div>
-                <div class="icon-grid" id="icon-grid"></div>
-              </div>
-
-              <div class="form-section">
-                <div class="form-section-title">Badge</div>
-                <div class="badge-grid" id="badge-grid"></div>
-              </div>
-
-              <div class="form-section">
-                <div class="form-section-title">Parametres</div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Visibilite</label>
-                    <select class="form-select" id="field-visibility" onchange="selectedVisibility=this.value;updatePreview();">
-                      <option value="draft" ${selectedVisibility === 'draft' ? 'selected' : ''}>🔒 Brouillon</option>
-                      <option value="beta" ${selectedVisibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
-                      <option value="public" ${selectedVisibility === 'public' ? 'selected' : ''}>🌍 Public</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Statut</label>
-                    <select class="form-select" id="field-status">
-                      <option value="available" ${currentModule.status === 'available' ? 'selected' : ''}>Disponible</option>
-                      <option value="beta" ${currentModule.status === 'beta' ? 'selected' : ''}>Beta</option>
-                      <option value="coming_soon" ${currentModule.status === 'coming_soon' ? 'selected' : ''}>Bientot</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Prix (€/mois)</label>
-                    <input type="number" class="form-input" id="field-price" value="${currentModule.price || ''}" placeholder="39" oninput="updatePreview()">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Essai gratuit (jours)</label>
-                    <input type="number" class="form-input" id="field-trial" value="${currentModule.trial_days || 7}" placeholder="7" oninput="updatePreview()">
-                  </div>
+                  <label class="form-label" style="font-size:11px;">Prix (€/mois)</label>
+                  <input type="number" class="form-input" id="field-price" value="${currentModule.price || ''}" placeholder="39" oninput="updatePreview()">
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Stripe Price ID</label>
-                  <input type="text" class="form-input" id="field-stripe" value="${currentModule.stripe_price_id || ''}" placeholder="price_xxx">
+                  <label class="form-label" style="font-size:11px;">Essai gratuit (jours)</label>
+                  <input type="number" class="form-input" id="field-trial" value="${currentModule.trial_days || 7}" placeholder="7" oninput="updatePreview()">
                 </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="font-size:11px;">Stripe Price ID</label>
+                <input type="text" class="form-input" id="field-stripe" value="${currentModule.stripe_price_id || ''}" placeholder="price_xxx">
               </div>
             </div>
 
-            <!-- Setup Panel -->
-            <div class="editor-panel ${currentEditorTab === 'setup' ? 'active' : ''}" id="panel-setup">
-              <div class="form-section">
-                <div class="form-section-title">Etapes du Setup</div>
-                <p class="form-hint" style="margin-bottom:16px;">Glisse-depose pour reordonner. L'utilisateur passera par ces etapes.</p>
-                <div class="setup-steps" id="setup-steps-list"></div>
-                <div class="setup-add-bar">
-                  ${SETUP_STEP_TYPES.map(t => `
-                    <button class="setup-add-btn" onclick="addSetupStep('${t.id}')" title="${t.desc}">
-                      <span>${t.icon}</span> ${t.name}
-                    </button>
-                  `).join('')}
-                </div>
-              </div>
-            </div>
-
-            <!-- URLs Panel -->
+            <!-- URLs (si module existant) -->
             ${!isNew ? `
-            <div class="editor-panel ${currentEditorTab === 'urls' ? 'active' : ''}" id="panel-urls">
-              <div class="form-section">
-                <div class="form-section-title">URLs du Module</div>
-                <div class="url-box">
-                  <div class="url-label">Page Setup</div>
+            <div class="card">
+              <label class="form-label" style="margin-bottom:16px;">🔗 URLs du module</label>
+              <div style="display:grid;gap:8px;">
+                <div class="url-box" style="margin:0;">
+                  <div class="url-label">Setup</div>
                   <div class="url-value">
-                    <span class="url-text">https://app.iarmy.fr/${slug}/setup/</span>
-                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/${slug}/setup/', this)">Copier</button>
+                    <span class="url-text">app.iarmy.fr/${slug}/setup/</span>
+                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/${slug}/setup/', this)">📋</button>
                   </div>
                 </div>
-                <div class="url-box">
+                <div class="url-box" style="margin:0;">
                   <div class="url-label">Dashboard</div>
                   <div class="url-value">
-                    <span class="url-text">https://app.iarmy.fr/${slug}/</span>
-                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/${slug}/', this)">Copier</button>
-                  </div>
-                </div>
-                <div class="url-box">
-                  <div class="url-label">Page Compte (settings)</div>
-                  <div class="url-value">
-                    <span class="url-text">https://app.iarmy.fr/?soldat=${slug}</span>
-                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/?soldat=${slug}', this)">Copier</button>
-                  </div>
-                </div>
-                <div class="url-box">
-                  <div class="url-label">Page Subscribe</div>
-                  <div class="url-value">
-                    <span class="url-text">https://app.iarmy.fr/subscribe/?module=${slug}</span>
-                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/subscribe/?module=${slug}', this)">Copier</button>
+                    <span class="url-text">app.iarmy.fr/${slug}/</span>
+                    <button class="url-copy" onclick="copyUrl('https://app.iarmy.fr/${slug}/', this)">📋</button>
                   </div>
                 </div>
               </div>
             </div>
             ` : ''}
+
           </div>
 
-          <!-- Preview -->
+          <!-- Preview Panel -->
           <div class="preview-panel">
-            <div class="preview-title">Apercu en temps reel</div>
+            <div class="preview-title">👀 Apercu en direct</div>
             <div class="preview-card" id="preview-card">
               <div class="preview-badge" id="preview-badge" style="display:none;"></div>
               <div class="preview-visibility" id="preview-visibility"></div>
@@ -1313,6 +1281,12 @@
               <div class="preview-info-row"><span class="preview-info-label">Essai</span><span class="preview-info-value" id="preview-trial">7 jours</span></div>
               <div class="preview-info-row"><span class="preview-info-label">Visibilite</span><span class="preview-info-value" id="preview-vis-text">Brouillon</span></div>
             </div>
+
+            <!-- Mini actions -->
+            <div style="margin-top:16px;display:flex;gap:8px;">
+              <button class="btn btn-sm btn-secondary" style="flex:1;" onclick="randomizeModule()">🎲 Aleatoire</button>
+              <button class="btn btn-sm btn-secondary" style="flex:1;" onclick="resetModule()">🔄 Reset</button>
+            </div>
           </div>
         </div>
       `;
@@ -1320,8 +1294,112 @@
       renderColorGrid();
       renderIconGrid();
       renderBadgeGrid();
-      renderSetupSteps();
       updatePreview();
+    }
+
+    // Auto-generate slug from name
+    function autoSlug() {
+      const nameField = document.getElementById('field-name');
+      const slugField = document.getElementById('field-slug');
+      if (slugField && !slugField.disabled && nameField) {
+        slugField.value = nameField.value.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+      }
+    }
+
+    // Generate description with AI
+    async function generateDescriptionAI() {
+      const name = document.getElementById('field-name')?.value || '';
+      if (!name) { showToast('Donne un nom au module d\'abord', 'error'); return; }
+
+      const btn = document.getElementById('btn-gen-desc');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;"></div>';
+      btn.disabled = true;
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-ai-generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ type: 'description', name, currentDescription: document.getElementById('field-description')?.value || '', color: selectedColor })
+        });
+        const data = await response.json();
+        if (data.result) {
+          document.getElementById('field-description').value = data.result;
+          updatePreview();
+          showToast('Description amelioree !');
+        }
+      } catch (e) { showToast('Erreur: ' + e.message, 'error'); }
+
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+
+    // Suggest icon with AI
+    async function suggestIconAI() {
+      const name = document.getElementById('field-name')?.value || '';
+      const desc = document.getElementById('field-description')?.value || '';
+      if (!name) { showToast('Donne un nom au module d\'abord', 'error'); return; }
+
+      const btn = document.getElementById('btn-gen-icon');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;"></div>';
+      btn.disabled = true;
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-ai-generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ type: 'suggest_icon', name, description: desc, availableIcons: ICON_TYPES.map(i => i.id) })
+        });
+        const data = await response.json();
+        if (data.result && data.result.icon_type) {
+          selectedIconType = data.result.icon_type;
+          renderIconGrid();
+          updatePreview();
+          showToast('Icone suggeree: ' + (ICON_TYPES.find(i => i.id === data.result.icon_type)?.name || data.result.icon_type));
+        }
+      } catch (e) { showToast('Erreur: ' + e.message, 'error'); }
+
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+
+    // Randomize module (fun!)
+    function randomizeModule() {
+      const randomColor = COLOR_PRESETS[Math.floor(Math.random() * COLOR_PRESETS.length)];
+      const randomIcon = ICON_TYPES[Math.floor(Math.random() * ICON_TYPES.length)];
+      selectedColor = randomColor.color;
+      selectedIconType = randomIcon.id;
+      renderColorGrid();
+      renderIconGrid();
+      updatePreview();
+      showToast('🎲 Couleur: ' + randomColor.name + ', Icone: ' + randomIcon.name);
+    }
+
+    // Reset module
+    function resetModule() {
+      if (currentModule.id) {
+        selectedColor = currentModule.color || '#22c55e';
+        selectedIconType = currentModule.icon_type || 'telegram_sheets';
+        selectedVisibility = currentModule.visibility || 'draft';
+        document.getElementById('field-name').value = currentModule.name || '';
+        document.getElementById('field-description').value = currentModule.description || '';
+        document.getElementById('field-price').value = currentModule.price || '';
+      } else {
+        selectedColor = '#22c55e';
+        selectedIconType = 'telegram_sheets';
+        selectedVisibility = 'draft';
+        document.getElementById('field-name').value = '';
+        document.getElementById('field-slug').value = '';
+        document.getElementById('field-description').value = '';
+        document.getElementById('field-price').value = '';
+      }
+      renderColorGrid();
+      renderIconGrid();
+      updatePreview();
+      showToast('🔄 Module reinitialise');
     }
 
     function switchEditorTab(tab) {
