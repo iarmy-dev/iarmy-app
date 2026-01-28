@@ -362,3 +362,154 @@ nav {
   background: rgba(255,107,53,0.15) !important;
   color: #FF8B5E !important;
 }
+
+/* ==================== */
+/* Loader unifié iArmy */
+/* ==================== */
+
+/* Page loader - plein écran avec logo animé */
+.iarmy-loader {
+  position: fixed !important;
+  inset: 0 !important;
+  background: #0f0f0f !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: opacity 0.4s ease, visibility 0.4s ease !important;
+}
+
+.iarmy-loader.hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Glow derrière le logo */
+.iarmy-loader-glow {
+  position: absolute !important;
+  width: 150px !important;
+  height: 150px !important;
+  background: radial-gradient(circle, rgba(255,107,53,0.25) 0%, transparent 70%) !important;
+  border-radius: 50% !important;
+  filter: blur(30px) !important;
+  animation: loaderGlow 2s ease-in-out infinite !important;
+}
+
+@keyframes loaderGlow {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Container du logo */
+.iarmy-loader-logo {
+  width: 80px !important;
+  height: 80px !important;
+  background: linear-gradient(135deg, #FF6B35, #FF8B5E) !important;
+  border-radius: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  z-index: 1 !important;
+  box-shadow: 0 10px 40px rgba(255,107,53,0.4) !important;
+  animation: logoFloat 2s ease-in-out infinite !important;
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.iarmy-loader-logo svg {
+  width: 70% !important;
+  height: 70% !important;
+}
+
+/* Animation du soldat dans le loader */
+.iarmy-loader-logo svg {
+  animation: loaderSoldier 2s ease-in-out infinite !important;
+}
+
+@keyframes loaderSoldier {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+/* Casque qui surveille */
+.iarmy-loader-logo #i-helmet {
+  animation: loaderHelmet 2s ease-in-out infinite !important;
+  transform-origin: 70px 70px !important;
+}
+
+@keyframes loaderHelmet {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  20% { transform: rotate(-12deg) translateX(-2px); }
+  40% { transform: rotate(0deg) translateX(0); }
+  60% { transform: rotate(10deg) translateX(2px); }
+  80% { transform: rotate(0deg) translateX(0); }
+}
+
+/* Label optionnel */
+.iarmy-loader-label {
+  margin-top: 24px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: rgba(255,255,255,0.5) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  animation: loaderLabelPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes loaderLabelPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Mini loader - spinner pour actions rapides */
+.mini-loader {
+  width: 20px !important;
+  height: 20px !important;
+  border: 2px solid rgba(255,107,53,0.2) !important;
+  border-top-color: #FF6B35 !important;
+  border-radius: 50% !important;
+  animation: miniSpin 0.8s linear infinite !important;
+}
+
+.mini-loader.white {
+  border-color: rgba(255,255,255,0.2) !important;
+  border-top-color: white !important;
+}
+
+@keyframes miniSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Overlay loader - fond semi-transparent */
+.overlay-loader {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.85) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: all 0.3s ease !important;
+}
+
+.overlay-loader.show {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.overlay-loader .mini-loader {
+  width: 32px !important;
+  height: 32px !important;
+  border-width: 3px !important;
+}
