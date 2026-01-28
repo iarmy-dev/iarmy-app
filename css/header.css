@@ -62,16 +62,16 @@ nav {
   70% { transform: rotate(3deg); }
 }
 
-/* Le casque bouge encore plus */
+/* Le casque bouge bien - surveille à gauche/droite */
 .logo-i #i-helmet {
-  transform-origin: 70px 60px !important;
+  transform-origin: 70px 70px !important;
   animation: helmetWatch 2.5s ease-in-out infinite !important;
 }
 
 @keyframes helmetWatch {
-  0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(-4deg); }
-  70% { transform: rotate(4deg); }
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  25% { transform: rotate(-8deg) translateX(-1px); }
+  75% { transform: rotate(8deg) translateX(1px); }
 }
 
 /* Animation au hover - salut militaire */
