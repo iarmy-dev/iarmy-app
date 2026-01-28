@@ -3,177 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://byqfnpdcnifauhwgetcq.supabase.co;">
   <title>Connexion en cours... - iArmy</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF6B35'/%3E%3Crect x='35' y='18' width='30' height='12' rx='6' fill='white'/%3E%3Crect x='32' y='26' width='36' height='5' rx='2' fill='white'/%3E%3Ccircle cx='50' cy='42' r='10' fill='white'/%3E%3Crect x='44' y='52' width='12' height='28' rx='3' fill='white'/%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    * { font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #030303; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .container { text-align: center; display: none; }
-    .error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px 24px; color: #ef4444; margin-top: 24px; max-width: 400px; }
+    .loader { text-align: center; }
+    .spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #FF6B35; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px 24px; color: #ef4444; margin-top: 24px; max-width: 400px; display: none; }
     .btn { background: linear-gradient(135deg, #FF6B35, #FF8B5E); padding: 12px 24px; border-radius: 12px; font-weight: 600; border: none; color: white; cursor: pointer; margin-top: 16px; text-decoration: none; display: inline-block; }
   </style>
 </head>
 <body>
-  <div class="container" id="error-container">
+  <div class="loader">
+    <div class="spinner"></div>
+    <p>Connexion en cours...</p>
     <div class="error" id="error"></div>
   </div>
-
   <script>
-    console.log('[CALLBACK] OAuth callback init');
-
-    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
-
-    // Cookie storage - DOIT etre EXACTEMENT identique aux autres pages
-    const cookieStorage = {
-      getItem: (key) => {
-        const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
-        return match ? decodeURIComponent(match[2]) : null;
-      },
-      setItem: (key, value) => {
-        document.cookie = `${key}=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Lax; Secure`;
-      },
-      removeItem: (key) => {
-        document.cookie = `${key}=; domain=.iarmy.fr; path=/; max-age=0`;
-      }
-    };
-
-    // Initialiser Supabase avec le MEME storage que les autres pages
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
-    });
-
-    function showError(message) {
-      document.getElementById('error-container').style.display = 'block';
-      const errorDiv = document.getElementById('error');
-      errorDiv.innerHTML = message + '<br><a href="/" class="btn">Retour</a>';
+    const supabase = window.supabase.createClient('https://byqfnpdcnifauhwgetcq.supabase.co', 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT');
+    function showError(msg) {
+      document.getElementById('error').innerHTML = msg + '<br><a href="/" class="btn">Retour</a>';
+      document.getElementById('error').style.display = 'block';
+      document.querySelector('.spinner').style.display = 'none';
     }
-
     async function handleCallback() {
       try {
-        console.log('[CALLBACK] Traitement du callback...');
-        console.log('[CALLBACK] Hash:', window.location.hash ? 'present' : 'absent');
-        console.log('[CALLBACK] Search:', window.location.search ? 'present' : 'absent');
-
-        // Verifier si code dans query string (PKCE flow)
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-
-        if (code) {
-          console.log('[CALLBACK] Code PKCE detecte, echange...');
-          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
-          if (error) {
-            console.error('[CALLBACK] Erreur exchangeCode:', error);
-            showError('Erreur: ' + error.message);
-            return;
-          }
-          if (data.session) {
-            await finishLogin(data.session);
-            return;
-          }
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) { showError('Erreur: ' + error.message); return; }
+        if (session) {
+          const redirect = sessionStorage.getItem('auth_redirect') || '/';
+          sessionStorage.removeItem('auth_redirect');
+          window.location.href = redirect;
+          return;
         }
-
-        // Sinon essayer avec le hash (implicit flow)
-        if (window.location.hash) {
-          console.log('[CALLBACK] Hash detecte, attente auth...');
-
-          // Ecouter le changement de session
-          const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
-            console.log('[CALLBACK] Auth event:', event);
-            if (event === 'SIGNED_IN' && session) {
-              subscription.unsubscribe();
-              await finishLogin(session);
-            }
-          });
-
-          // Timeout apres 5 secondes
-          setTimeout(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_IN' && session) {
             subscription.unsubscribe();
-            showError('Timeout - session non etablie. Reessayez.');
-          }, 5000);
-          return;
-        }
-
-        // Fallback: verifier session existante
-        console.log('[CALLBACK] Verification session existante...');
-        const { data, error } = await supabaseClient.auth.getSession();
-
-        if (error) {
-          console.error('[CALLBACK] Erreur getSession:', error);
-          showError('Erreur: ' + error.message);
-          return;
-        }
-
-        if (data.session) {
-          await finishLogin(data.session);
-          return;
-        }
-
-        showError('Aucune session trouvee. Reessayez.');
-
-      } catch (err) {
-        console.error('[CALLBACK] Erreur:', err);
-        showError('Erreur: ' + err.message);
-      }
-    }
-
-    async function finishLogin(session) {
-      console.log('[CALLBACK] Session etablie:', session.user.email);
-
-      // Nettoyer l'URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-
-      // Creer profil si necessaire
-      await createProfileIfNeeded(session.user, session.access_token);
-
-      // Redirection vers la page d'origine ou accueil
-      const redirectUrl = sessionStorage.getItem('auth_redirect');
-      sessionStorage.removeItem('auth_redirect');
-      console.log('[CALLBACK] Redirection vers:', redirectUrl || '/');
-      window.location.href = redirectUrl || '/';
-    }
-
-    async function createProfileIfNeeded(user, accessToken) {
-      try {
-        // Verifier si profil existe
-        const { data: existing, error } = await supabaseClient
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .single();
-
-        if (error && error.code !== 'PGRST116') {
-          // PGRST116 = not found, c'est OK
-          console.log('[CALLBACK] Erreur check profil:', error.message);
-        }
-
-        if (!existing) {
-          console.log('[CALLBACK] Creation du profil...');
-          const { error: insertError } = await supabaseClient
-            .from('profiles')
-            .insert({
-              id: user.id,
-              email: user.email,
-              name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
-              plan: 'free'
-            });
-
-          if (insertError) {
-            console.log('[CALLBACK] Erreur creation profil:', insertError.message);
-          } else {
-            console.log('[CALLBACK] Profil cree');
+            const redirect = sessionStorage.getItem('auth_redirect') || '/';
+            sessionStorage.removeItem('auth_redirect');
+            window.location.href = redirect;
           }
-        }
-      } catch (e) {
-        console.log('[CALLBACK] Profil existant ou erreur ignoree:', e.message);
-      }
+        });
+        setTimeout(() => { subscription.unsubscribe(); showError('Connexion expirée.'); }, 10000);
+      } catch (e) { showError('Erreur: ' + e.message); }
     }
-
-    // Lancer au chargement
-    document.addEventListener('DOMContentLoaded', handleCallback);
+    handleCallback();
   </script>
 </body>
 </html>

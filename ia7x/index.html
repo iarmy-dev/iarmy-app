@@ -140,23 +140,7 @@
     const DEBUG = window.location.hostname === 'localhost';
     const log = (...args) => DEBUG && console.log(...args);
 
-    // Cookie storage pour partager la session entre iarmy.fr et app.iarmy.fr
-    const cookieStorage = {
-      getItem: (key) => {
-        const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
-        return match ? decodeURIComponent(match[2]) : null;
-      },
-      setItem: (key, value) => {
-        document.cookie = `${key}=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Lax; Secure`;
-      },
-      removeItem: (key) => {
-        document.cookie = `${key}=; domain=.iarmy.fr; path=/; max-age=0`;
-      }
-    };
-
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
-    });
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
 
@@ -202,7 +186,7 @@
 
       if (!session) {
         console.log('[ADMIN] ❌ Pas de session valide, redirection...');
-        cookieStorage.removeItem('sb-auth-token');
+        
         window.location.href = 'https://iarmy.fr';
         return;
       }
@@ -262,7 +246,7 @@
             if (isExpired) {
               console.log('[ADMIN] ❌ Session expirée, nettoyage et redirection...');
               await supabaseClient.auth.signOut();
-              cookieStorage.removeItem('sb-auth-token');
+              
               window.location.href = 'https://iarmy.fr';
               return;
             }
@@ -276,7 +260,7 @@
 
       if (!activeSession) {
         console.log('[ADMIN] ❌ Pas de session valide');
-        cookieStorage.removeItem('sb-auth-token');
+        
         window.location.href = 'https://iarmy.fr';
         return;
       }
@@ -303,7 +287,7 @@
           if (response.status === 401) {
             console.log('[ADMIN] Token invalide, nettoyage session...');
             await supabaseClient.auth.signOut();
-            cookieStorage.removeItem('sb-auth-token');
+            
             window.location.href = 'https://iarmy.fr';
             return;
           }
