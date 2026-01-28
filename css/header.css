@@ -43,11 +43,11 @@ nav {
   box-shadow: 0 8px 30px rgba(255,107,53,0.5) !important;
 }
 
-/* Logo SVG iArmy */
+/* Logo SVG iArmy - avec padding pour voir l'orange autour */
 .logo-i svg,
 .logo-i img {
-  width: 100% !important;
-  height: 100% !important;
+  width: 75% !important;
+  height: 75% !important;
   object-fit: contain !important;
 }
 
