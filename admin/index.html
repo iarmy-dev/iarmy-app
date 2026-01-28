@@ -644,21 +644,93 @@
       // Charger les conversations support depuis Supabase
       const { data } = await supabaseClient
         .from('support_conversations')
-        .select('*')
-        .order('updated_at', { ascending: false })
+        .select('*, support_messages(id, content, sender_type, is_read, created_at)')
+        .order('last_message_at', { ascending: false })
         .limit(50);
 
-      conversations = data || [];
+      conversations = (data || []).map(c => {
+        const lastMsg = c.support_messages?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+        const unreadCount = c.support_messages?.filter(m => m.sender_type === 'user' && !m.is_read).length || 0;
+        return {
+          ...c,
+          last_message: lastMsg?.content || '',
+          unread_count: unreadCount
+        };
+      });
 
-      // Compter les non-lus
-      const unread = conversations.filter(c => !c.read_by_admin).length;
+      // Compter les conversations avec messages non-lus
+      const unread = conversations.filter(c => c.unread_count > 0).length;
       const badge = document.getElementById('support-count');
-      if (unread > 0) {
-        badge.textContent = unread;
-        badge.style.display = 'block';
-      } else {
-        badge.style.display = 'none';
+      if (badge) {
+        if (unread > 0) {
+          badge.textContent = unread;
+          badge.style.display = 'block';
+        } else {
+          badge.style.display = 'none';
+        }
       }
+    }
+
+    let currentConversation = null;
+    let currentMessages = [];
+
+    async function openConversation(convId) {
+      currentConversation = conversations.find(c => c.id === convId);
+      if (!currentConversation) return;
+
+      // Charger les messages
+      const { data } = await supabaseClient
+        .from('support_messages')
+        .select('*')
+        .eq('conversation_id', convId)
+        .order('created_at', { ascending: true });
+
+      currentMessages = data || [];
+
+      // Marquer comme lus
+      await supabaseClient
+        .from('support_messages')
+        .update({ is_read: true })
+        .eq('conversation_id', convId)
+        .eq('sender_type', 'user');
+
+      renderSupportTab();
+    }
+
+    async function sendSupportMessage() {
+      if (!currentConversation) return;
+      const input = document.getElementById('chat-input');
+      const content = input.value.trim();
+      if (!content) return;
+
+      const { error } = await supabaseClient
+        .from('support_messages')
+        .insert({
+          conversation_id: currentConversation.id,
+          sender_type: 'admin',
+          sender_name: 'Admin',
+          content: content
+        });
+
+      if (error) {
+        showToast('Erreur: ' + error.message, 'error');
+        return;
+      }
+
+      input.value = '';
+      await openConversation(currentConversation.id);
+    }
+
+    async function updateConversationStatus(status) {
+      if (!currentConversation) return;
+      await supabaseClient
+        .from('support_conversations')
+        .update({ status })
+        .eq('id', currentConversation.id);
+
+      showToast('Statut mis a jour');
+      await loadConversations();
+      renderSupportTab();
     }
 
     // ==================
@@ -1422,30 +1494,99 @@
     }
 
     function renderSupportTab() {
-      document.getElementById('header-actions').innerHTML = '';
+      const statusColors = { open: '#4ade80', pending: '#fbbf24', resolved: '#60a5fa', closed: '#6b7280' };
+      const statusLabels = { open: 'Ouvert', pending: 'En attente', resolved: 'Resolu', closed: 'Ferme' };
+
+      document.getElementById('header-actions').innerHTML = currentConversation ? `
+        <select class="form-select" style="width:auto;" onchange="updateConversationStatus(this.value)">
+          <option value="open" ${currentConversation.status === 'open' ? 'selected' : ''}>🟢 Ouvert</option>
+          <option value="pending" ${currentConversation.status === 'pending' ? 'selected' : ''}>🟡 En attente</option>
+          <option value="resolved" ${currentConversation.status === 'resolved' ? 'selected' : ''}>🔵 Resolu</option>
+          <option value="closed" ${currentConversation.status === 'closed' ? 'selected' : ''}>⚫ Ferme</option>
+        </select>
+      ` : '';
+
       document.getElementById('main-content').innerHTML = `
         <div class="chat-container">
           <div class="chat-sidebar">
             <div class="chat-sidebar-header">
-              <input type="text" class="search-input" placeholder="Rechercher..." style="width:100%;">
+              <input type="text" class="search-input" placeholder="Rechercher..." style="width:100%;" oninput="filterConversations(this.value)">
             </div>
-            <div class="chat-list">
-              ${conversations.length === 0 ? '<div class="empty-state" style="padding:40px;"><p>Aucune conversation</p></div>' : conversations.map(c => `
-                <div class="chat-item ${!c.read_by_admin ? 'unread' : ''}">
+            <div class="chat-list" id="chat-list">
+              ${conversations.length === 0 ? '<div class="empty-state" style="padding:40px;text-align:center;"><p style="color:rgba(255,255,255,0.4);">Aucune conversation</p></div>' : conversations.map(c => `
+                <div class="chat-item ${c.unread_count > 0 ? 'unread' : ''} ${currentConversation?.id === c.id ? 'active' : ''}" onclick="openConversation('${c.id}')">
                   <div class="chat-item-header">
-                    <span class="chat-item-name">${c.user_name || 'Utilisateur'}</span>
-                    <span class="chat-item-time">${new Date(c.updated_at).toLocaleDateString('fr-FR')}</span>
+                    <span class="chat-item-name">${c.user_name || c.user_email || 'Utilisateur'}</span>
+                    <span class="chat-item-time">${formatTime(c.last_message_at)}</span>
                   </div>
-                  <div class="chat-item-preview">${c.last_message || 'Nouvelle conversation'}</div>
+                  <div class="chat-item-preview">
+                    ${c.unread_count > 0 ? `<span style="background:#FF6B35;color:white;padding:1px 6px;border-radius:8px;font-size:10px;margin-right:6px;">${c.unread_count}</span>` : ''}
+                    ${c.last_message || c.subject || 'Nouvelle conversation'}
+                  </div>
+                  <div style="margin-top:6px;"><span style="font-size:10px;padding:2px 8px;border-radius:6px;background:${statusColors[c.status]}20;color:${statusColors[c.status]};">${statusLabels[c.status]}</span></div>
                 </div>
               `).join('')}
             </div>
           </div>
           <div class="chat-main">
-            <div class="chat-empty">Selectionnez une conversation pour commencer</div>
+            ${currentConversation ? `
+              <div class="chat-header">
+                <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FF8B5E);display:flex;align-items:center;justify-content:center;font-weight:700;">${(currentConversation.user_name || currentConversation.user_email || 'U')[0].toUpperCase()}</div>
+                <div>
+                  <div style="font-weight:600;">${currentConversation.user_name || currentConversation.user_email || 'Utilisateur'}</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,0.4);">${currentConversation.subject || 'Conversation'}</div>
+                </div>
+                ${currentConversation.module_slug ? `<span style="margin-left:auto;padding:4px 12px;background:rgba(255,107,53,0.15);border-radius:8px;font-size:12px;color:#FF6B35;">${currentConversation.module_slug}</span>` : ''}
+              </div>
+              <div class="chat-messages" id="chat-messages">
+                ${currentMessages.length === 0 ? '<div style="text-align:center;color:rgba(255,255,255,0.3);padding:40px;">Aucun message</div>' : currentMessages.map(m => `
+                  <div class="chat-message ${m.sender_type === 'admin' ? 'outgoing' : 'incoming'}">
+                    <div class="chat-bubble">${m.content}</div>
+                    <div class="chat-message-time" style="text-align:${m.sender_type === 'admin' ? 'right' : 'left'};">${formatTime(m.created_at)}</div>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="chat-input-area">
+                <textarea class="chat-input" id="chat-input" placeholder="Tapez votre message..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupportMessage();}"></textarea>
+                <button class="btn btn-primary" onclick="sendSupportMessage()">Envoyer</button>
+              </div>
+            ` : `
+              <div class="chat-empty">
+                <div style="text-align:center;">
+                  <div style="font-size:48px;margin-bottom:16px;">💬</div>
+                  <div style="color:rgba(255,255,255,0.5);">Selectionnez une conversation</div>
+                </div>
+              </div>
+            `}
           </div>
         </div>
       `;
+
+      // Scroll to bottom of messages
+      if (currentConversation) {
+        const messagesDiv = document.getElementById('chat-messages');
+        if (messagesDiv) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+    }
+
+    function formatTime(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = now - date;
+      if (diff < 60000) return 'A l\'instant';
+      if (diff < 3600000) return Math.floor(diff/60000) + 'min';
+      if (diff < 86400000) return date.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+      return date.toLocaleDateString('fr-FR', {day:'numeric',month:'short'});
+    }
+
+    function filterConversations(query) {
+      const items = document.querySelectorAll('.chat-item');
+      items.forEach(item => {
+        const name = item.querySelector('.chat-item-name')?.textContent.toLowerCase() || '';
+        const preview = item.querySelector('.chat-item-preview')?.textContent.toLowerCase() || '';
+        item.style.display = (name.includes(query.toLowerCase()) || preview.includes(query.toLowerCase())) ? 'block' : 'none';
+      });
     }
 
     function renderAnalyticsTab() {
