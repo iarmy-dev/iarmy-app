@@ -1140,156 +1140,386 @@
       renderModulesTab();
     }
 
+    // Categories disponibles
+    const CATEGORIES = [
+      { id: 'restaurant', label: '🍽️ Restaurant', color: '#f59e0b' },
+      { id: 'bar', label: '🍸 Bar', color: '#8b5cf6' },
+      { id: 'hotel', label: '🏨 Hotel', color: '#3b82f6' },
+      { id: 'commerce', label: '🛒 Commerce', color: '#22c55e' },
+      { id: 'service', label: '🔧 Service', color: '#06b6d4' }
+    ];
+    let selectedCategories = [];
+
     function renderModuleEditor() {
       const isNew = !currentModule.id;
-      const slug = currentModule.slug || 'nouveau';
+      const slug = currentModule.slug || '';
 
-      // Badge "nouveau" par défaut pour les nouveaux modules
+      // Defaults pour nouveau module
       if (isNew && !selectedBadge) selectedBadge = 'nouveau';
+      if (currentModule.categories) selectedCategories = [...currentModule.categories];
 
       document.getElementById('header-actions').innerHTML = `
         <button class="btn btn-secondary" onclick="currentModule=null;renderModulesTab();">← Retour</button>
         ${!isNew ? `<button class="btn btn-danger" onclick="deleteModule()">Supprimer</button>` : ''}
-        <button class="btn btn-primary" onclick="saveModule()">Enregistrer</button>
+        <button class="btn btn-primary" onclick="saveModule()">💾 Sauver</button>
       `;
 
       document.getElementById('main-content').innerHTML = `
-        <div style="display:flex;gap:48px;align-items:flex-start;max-width:1000px;margin:0 auto;">
+        <style>
+          .module-studio { max-width:900px; margin:0 auto; }
+          .studio-preview {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+          }
+          .studio-card {
+            width: 300px;
+            height: 300px;
+            border-radius: 32px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+            margin-bottom: 32px;
+          }
+          .studio-card:hover { transform: scale(1.02); }
+          .studio-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            position: relative;
+          }
+          .studio-icon:hover::after {
+            content: '✨ Changer';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+          }
+          .studio-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            cursor: text;
+            padding: 4px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            min-width: 100px;
+            outline: none;
+          }
+          .studio-name:hover, .studio-name:focus { background: rgba(255,255,255,0.1); }
+          .studio-desc {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.5;
+            cursor: text;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            max-width: 250px;
+            outline: none;
+          }
+          .studio-desc:hover, .studio-desc:focus { background: rgba(255,255,255,0.1); }
+          .studio-badge {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+          }
+          .studio-price { font-size: 42px; font-weight: 800; margin-bottom: 4px; }
+          .studio-trial { font-size: 14px; color: rgba(255,255,255,0.4); }
+          .studio-toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 24px;
+          }
+          .toolbar-btn {
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .toolbar-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+          .toolbar-btn.active { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3); color: #FF6B35; }
+          .toolbar-btn.ai { background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(139,92,246,0.1)); border-color: rgba(139,92,246,0.3); color: #a78bfa; }
+          .toolbar-btn.ai:hover { background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(139,92,246,0.15)); }
+          .studio-section { margin-bottom: 20px; }
+          .section-title { font-size: 11px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+          .color-dots { display: flex; gap: 8px; flex-wrap: wrap; }
+          .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
+          .color-dot:hover { transform: scale(1.15); }
+          .color-dot.active { border-color: white; transform: scale(1.15); }
+          .category-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+          .category-chip { padding: 8px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; }
+          .category-chip:hover { background: rgba(255,255,255,0.08); }
+          .category-chip.active { border-color: currentColor; }
+          .studio-footer { display: flex; gap: 16px; flex-wrap: wrap; }
+          .footer-field { flex: 1; min-width: 120px; }
+          .footer-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+          .footer-input { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: white; font-size: 14px; }
+          .footer-input:focus { outline: none; border-color: rgba(255,107,53,0.5); }
+          @keyframes sparkle { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+          .generating { animation: sparkle 0.5s infinite; }
+        </style>
 
-          <!-- GRANDE PREVIEW -->
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
-
-            <!-- Card Preview (Grande) -->
-            <div id="preview-card" style="width:280px;height:280px;border-radius:32px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;transition:all 0.3s;cursor:pointer;margin-bottom:24px;" onclick="openColorPicker()">
-              <div class="preview-badge" id="preview-badge" style="position:absolute;top:-10px;right:-10px;padding:6px 14px;border-radius:14px;font-size:11px;font-weight:700;text-transform:uppercase;"></div>
-              <div class="preview-icon" id="preview-icon" style="width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;"></div>
-              <div class="preview-name" id="preview-name" style="font-size:24px;font-weight:700;margin-bottom:8px;">Nom</div>
-              <div class="preview-desc" id="preview-desc" style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.4;"></div>
+        <div class="module-studio">
+          <!-- ZONE PREVIEW -->
+          <div class="studio-preview">
+            <!-- Card -->
+            <div class="studio-card" id="preview-card">
+              <div class="studio-badge" id="preview-badge" onclick="cycleBadge()">Nouveau</div>
+              <div class="studio-icon" id="preview-icon" onclick="openIconPicker()"></div>
+              <div class="studio-name" id="preview-name" contenteditable="true" onblur="syncName()" oninput="syncNameLive()">${currentModule.name || 'Nom du module'}</div>
+              <div class="studio-desc" id="preview-desc" contenteditable="true" onblur="syncDesc()" oninput="syncDescLive()">${currentModule.description || 'Clique pour ajouter une description...'}</div>
             </div>
 
             <!-- Prix -->
-            <div style="text-align:center;margin-bottom:24px;">
-              <div style="font-size:36px;font-weight:800;" id="preview-price-big">29€</div>
-              <div style="font-size:13px;color:rgba(255,255,255,0.4);">par mois • <span id="preview-trial-text">7 jours d'essai</span></div>
+            <div style="text-align:center;">
+              <div class="studio-price"><span id="preview-price-value">${currentModule.price || 29}</span>€<span style="font-size:18px;font-weight:400;color:rgba(255,255,255,0.4);">/mois</span></div>
+              <div class="studio-trial"><span id="preview-trial-value">${currentModule.trial_days || 7}</span> jours d'essai gratuit</div>
             </div>
 
-            <!-- Barre de couleurs -->
-            <div style="display:flex;gap:6px;margin-bottom:16px;" id="color-bar"></div>
-
-            <!-- Badges -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;" id="badge-bar"></div>
+            <!-- Toolbar IA -->
+            <div class="studio-toolbar">
+              <button class="toolbar-btn ai" onclick="generateFullModule()" id="btn-ai-full">
+                ✨ Generer tout avec l'IA
+              </button>
+              <button class="toolbar-btn ai" onclick="generateDescriptionAI()" id="btn-ai-desc">
+                ✨ Refaire le texte
+              </button>
+              <button class="toolbar-btn ai" onclick="suggestIconAI()" id="btn-ai-icon">
+                ✨ Suggerer icone
+              </button>
+            </div>
           </div>
 
-          <!-- CONTROLES -->
-          <div style="width:340px;display:flex;flex-direction:column;gap:16px;">
-
-            <!-- Generateur IA -->
-            <div style="background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(139,92,246,0.04));border:1px solid rgba(139,92,246,0.25);border-radius:16px;padding:16px;">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:20px;">✨</span>
-                <span style="font-weight:600;font-size:14px;">Generer avec l'IA</span>
-              </div>
-              <div style="display:flex;gap:8px;">
-                <input type="text" class="form-input" id="ai-prompt" placeholder="Decris ton module..." style="flex:1;font-size:13px;">
-                <button class="btn btn-ai btn-sm" onclick="generateWithAI()" id="btn-generate-all">Go</button>
-              </div>
-            </div>
-
-            <!-- Nom -->
-            <div>
-              <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Nom</label>
-              <input type="text" class="form-input" id="field-name" value="${currentModule.name || ''}" placeholder="Ex: Reservations" oninput="updatePreview();autoSlug();" style="font-size:16px;font-weight:600;margin-top:6px;">
-              <input type="hidden" id="field-slug" value="${currentModule.slug || ''}">
-            </div>
-
-            <!-- Description -->
-            <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Description</label>
-                <button style="background:none;border:none;color:#a78bfa;font-size:11px;cursor:pointer;" onclick="generateDescriptionAI()" id="btn-gen-desc">✨ IA</button>
-              </div>
-              <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ton soldat..." oninput="updatePreview()" style="margin-top:6px;min-height:60px;font-size:13px;">${currentModule.description || ''}</textarea>
-            </div>
-
-            <!-- Icone -->
-            <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Icone</label>
-                <button style="background:none;border:none;color:#a78bfa;font-size:11px;cursor:pointer;" onclick="suggestIconAI()" id="btn-gen-icon">✨ Suggerer</button>
-              </div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;" id="icon-bar"></div>
-            </div>
-
-            <!-- Prix & Essai -->
-            <div style="display:flex;gap:12px;">
-              <div style="flex:1;">
-                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Prix €/mois</label>
-                <input type="number" class="form-input" id="field-price" value="${currentModule.price || '29'}" oninput="updatePreview()" style="margin-top:6px;">
-              </div>
-              <div style="flex:1;">
-                <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Essai (jours)</label>
-                <input type="number" class="form-input" id="field-trial" value="${currentModule.trial_days || 7}" oninput="updatePreview()" style="margin-top:6px;">
-              </div>
-            </div>
-
-            <!-- Visibilite -->
-            <div>
-              <label style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Visibilite</label>
-              <select class="form-select" id="field-visibility" onchange="selectedVisibility=this.value;updatePreview();" style="margin-top:6px;">
-                <option value="draft" ${selectedVisibility === 'draft' ? 'selected' : ''}>🔒 Brouillon</option>
-                <option value="beta" ${selectedVisibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
-                <option value="public" ${selectedVisibility === 'public' ? 'selected' : ''}>🌍 Public</option>
-              </select>
-            </div>
-
-            <!-- Stripe (collapsible) -->
-            <details style="margin-top:8px;">
-              <summary style="font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;">Avance (Stripe ID)</summary>
-              <input type="text" class="form-input" id="field-stripe" value="${currentModule.stripe_price_id || ''}" placeholder="price_xxx" style="margin-top:8px;font-size:12px;">
-            </details>
-
+          <!-- COULEURS -->
+          <div class="studio-section">
+            <div class="section-title">Couleur</div>
+            <div class="color-dots" id="color-dots"></div>
           </div>
+
+          <!-- CATEGORIES -->
+          <div class="studio-section">
+            <div class="section-title">Categories</div>
+            <div class="category-chips" id="category-chips"></div>
+          </div>
+
+          <!-- PARAMETRES -->
+          <div class="studio-section">
+            <div class="section-title">Parametres</div>
+            <div class="studio-footer">
+              <div class="footer-field">
+                <div class="footer-label">ID technique</div>
+                <input type="text" class="footer-input" id="field-slug" value="${slug}" placeholder="mon_module" ${!isNew ? 'disabled style="opacity:0.5;"' : ''}>
+              </div>
+              <div class="footer-field">
+                <div class="footer-label">Prix €/mois</div>
+                <input type="number" class="footer-input" id="field-price" value="${currentModule.price || 29}" oninput="updatePriceDisplay()">
+              </div>
+              <div class="footer-field">
+                <div class="footer-label">Essai (jours)</div>
+                <input type="number" class="footer-input" id="field-trial" value="${currentModule.trial_days || 7}" oninput="updateTrialDisplay()">
+              </div>
+              <div class="footer-field">
+                <div class="footer-label">Visibilite</div>
+                <select class="footer-input" id="field-visibility" onchange="selectedVisibility=this.value;">
+                  <option value="draft" ${selectedVisibility === 'draft' ? 'selected' : ''}>🔒 Brouillon</option>
+                  <option value="beta" ${selectedVisibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
+                  <option value="public" ${selectedVisibility === 'public' ? 'selected' : ''}>🌍 Public</option>
+                </select>
+              </div>
+              <div class="footer-field">
+                <div class="footer-label">Stripe Price ID</div>
+                <input type="text" class="footer-input" id="field-stripe" value="${currentModule.stripe_price_id || ''}" placeholder="price_xxx">
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden fields -->
+          <input type="hidden" id="field-name" value="${currentModule.name || ''}">
+          <input type="hidden" id="field-description" value="${currentModule.description || ''}">
         </div>
       `;
 
-      renderColorBar();
-      renderIconBar();
-      renderBadgeBar();
-      updatePreview();
+      renderColorDots();
+      renderCategoryChips();
+      updateStudioPreview();
     }
 
-    // Render compact color bar
-    function renderColorBar() {
-      const bar = document.getElementById('color-bar');
-      if (!bar) return;
-      bar.innerHTML = COLOR_PRESETS.map(c => `
-        <div onclick="selectColor('${c.color}')" style="width:24px;height:24px;border-radius:50%;background:${c.color};cursor:pointer;border:2px solid ${selectedColor === c.color ? 'white' : 'transparent'};transition:all 0.2s;${selectedColor === c.color ? 'transform:scale(1.2);' : ''}" title="${c.name}"></div>
+    // Sync contenteditable to hidden field
+    function syncName() {
+      const name = document.getElementById('preview-name').textContent.trim();
+      document.getElementById('field-name').value = name;
+      if (!currentModule.id) {
+        document.getElementById('field-slug').value = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+      }
+    }
+    function syncNameLive() { document.getElementById('field-name').value = document.getElementById('preview-name').textContent.trim(); }
+    function syncDesc() { document.getElementById('field-description').value = document.getElementById('preview-desc').innerHTML; }
+    function syncDescLive() { document.getElementById('field-description').value = document.getElementById('preview-desc').innerHTML; }
+
+    // Update displays
+    function updatePriceDisplay() { document.getElementById('preview-price-value').textContent = document.getElementById('field-price').value || '29'; }
+    function updateTrialDisplay() { document.getElementById('preview-trial-value').textContent = document.getElementById('field-trial').value || '7'; }
+
+    // Cycle badge on click
+    function cycleBadge() {
+      const badges = ['nouveau', 'populaire', 'promo', null];
+      const idx = badges.indexOf(selectedBadge);
+      selectedBadge = badges[(idx + 1) % badges.length];
+      updateStudioPreview();
+    }
+
+    // Color dots
+    function renderColorDots() {
+      const container = document.getElementById('color-dots');
+      if (!container) return;
+      container.innerHTML = COLOR_PRESETS.map(c => `
+        <div class="color-dot ${selectedColor === c.color ? 'active' : ''}" style="background:${c.color};" onclick="selectColorStudio('${c.color}')" title="${c.name}"></div>
       `).join('');
     }
+    function selectColorStudio(color) {
+      selectedColor = color;
+      renderColorDots();
+      updateStudioPreview();
+    }
 
-    // Render compact icon bar
-    function renderIconBar() {
-      const bar = document.getElementById('icon-bar');
-      if (!bar) return;
-      bar.innerHTML = ICON_TYPES.map(icon => `
-        <div onclick="selectIcon('${icon.id}')" style="width:40px;height:40px;border-radius:10px;background:${selectedIconType === icon.id ? 'rgba(255,107,53,0.2)' : 'rgba(255,255,255,0.04)'};border:1px solid ${selectedIconType === icon.id ? '#FF6B35' : 'rgba(255,255,255,0.08)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" title="${icon.name}">
-          ${getModuleIconMini(icon.id)}
+    // Category chips
+    function renderCategoryChips() {
+      const container = document.getElementById('category-chips');
+      if (!container) return;
+      container.innerHTML = CATEGORIES.map(c => `
+        <div class="category-chip ${selectedCategories.includes(c.id) ? 'active' : ''}" style="${selectedCategories.includes(c.id) ? 'color:' + c.color + ';border-color:' + c.color + ';background:' + c.color + '20;' : ''}" onclick="toggleCategory('${c.id}')">${c.label}</div>
+      `).join('');
+    }
+    function toggleCategory(id) {
+      if (selectedCategories.includes(id)) {
+        selectedCategories = selectedCategories.filter(c => c !== id);
+      } else {
+        selectedCategories.push(id);
+      }
+      renderCategoryChips();
+    }
+
+    // Icon picker (simple)
+    function openIconPicker() {
+      const icons = ICON_TYPES;
+      const html = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)this.remove()">
+          <div style="background:#111;border-radius:20px;padding:24px;max-width:400px;">
+            <div style="font-weight:600;margin-bottom:16px;">Choisis une icone</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+              ${icons.map(i => `
+                <div onclick="selectIconStudio('${i.id}');this.closest('[style*=fixed]').remove();" style="padding:20px;background:rgba(255,255,255,0.04);border:2px solid ${selectedIconType === i.id ? '#FF6B35' : 'rgba(255,255,255,0.08)'};border-radius:16px;cursor:pointer;text-align:center;">
+                  <div style="width:48px;height:48px;margin:0 auto 8px;background:${selectedColor};border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    ${getModuleIconMini(i.id)}
+                  </div>
+                  <div style="font-size:12px;color:rgba(255,255,255,0.6);">${i.name}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
         </div>
-      `).join('');
+      `;
+      document.body.insertAdjacentHTML('beforeend', html);
+    }
+    function selectIconStudio(iconType) {
+      selectedIconType = iconType;
+      updateStudioPreview();
     }
 
-    // Render badge bar
-    function renderBadgeBar() {
-      const bar = document.getElementById('badge-bar');
-      if (!bar) return;
-      const badges = [
-        { id: 'nouveau', label: '🆕 Nouveau', bg: 'rgba(34,197,94,0.15)', color: '#4ade80' },
-        { id: 'populaire', label: '🔥 Populaire', bg: 'rgba(245,158,11,0.15)', color: '#fbbf24' },
-        { id: 'promo', label: '💰 Promo', bg: 'rgba(239,68,68,0.15)', color: '#f87171' },
-        { id: null, label: 'Aucun', bg: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)' }
-      ];
-      bar.innerHTML = badges.map(b => `
-        <div onclick="selectBadge(${b.id ? `'${b.id}'` : 'null'})" style="padding:6px 12px;border-radius:20px;font-size:11px;cursor:pointer;background:${b.bg};color:${b.color};border:1px solid ${selectedBadge === b.id ? b.color : 'transparent'};transition:all 0.2s;">${b.label}</div>
+    // Update studio preview
+    function updateStudioPreview() {
+      const card = document.getElementById('preview-card');
+      if (!card) return;
+
+      card.style.background = `linear-gradient(145deg, ${selectedColor}30, ${selectedColor}10)`;
+      card.style.border = `2px solid ${selectedColor}40`;
+
+      const icon = document.getElementById('preview-icon');
+      if (icon) {
+        icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColorHex(selectedColor)})`;
+        icon.innerHTML = getModuleIcon(selectedIconType, 'white');
+      }
+
+      const badge = document.getElementById('preview-badge');
+      if (badge) {
+        if (selectedBadge) {
+          badge.style.display = 'block';
+          const styles = { nouveau: ['#22c55e', 'Nouveau'], populaire: ['#f59e0b', 'Populaire'], promo: ['#ef4444', 'Promo'] };
+          const [bg, text] = styles[selectedBadge] || ['#22c55e', 'Nouveau'];
+          badge.style.background = bg;
+          badge.style.color = 'white';
+          badge.textContent = text;
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }
+
+    // Generate full module with AI
+    async function generateFullModule() {
+      const btn = document.getElementById('btn-ai-full');
+      btn.classList.add('generating');
+      btn.textContent = '✨ Generation...';
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const prompt = document.getElementById('preview-name').textContent.trim() || 'un nouveau module';
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-ai-generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ type: 'module_full', prompt })
+        });
+        const data = await response.json();
+        if (data.result) {
+          if (data.result.name) document.getElementById('preview-name').textContent = data.result.name;
+          if (data.result.description) document.getElementById('preview-desc').innerHTML = data.result.description;
+          if (data.result.color) { selectedColor = data.result.color; renderColorDots(); }
+          if (data.result.icon_type) selectedIconType = data.result.icon_type;
+          if (data.result.price) document.getElementById('field-price').value = data.result.price;
+          syncName(); syncDesc(); updatePriceDisplay();
+          updateStudioPreview();
+          showToast('✨ Module genere !');
+        }
+      } catch (e) { showToast('Erreur: ' + e.message, 'error'); }
+
+      btn.classList.remove('generating');
+      btn.textContent = '✨ Generer tout avec l\'IA';
+    }
       `).join('');
     }
 
@@ -1323,43 +1553,45 @@
 
     // Generate description with AI
     async function generateDescriptionAI() {
-      const name = document.getElementById('field-name')?.value || '';
-      if (!name) { showToast('Donne un nom au module d\'abord', 'error'); return; }
+      const nameEl = document.getElementById('preview-name');
+      const name = nameEl?.textContent?.trim() || document.getElementById('field-name')?.value || '';
+      if (!name || name === 'Nom du module') { showToast('Donne un nom au module d\'abord', 'error'); return; }
 
-      const btn = document.getElementById('btn-gen-desc');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;"></div>';
-      btn.disabled = true;
+      const btn = document.getElementById('btn-ai-desc') || document.getElementById('btn-gen-desc');
+      const originalText = btn?.textContent;
+      if (btn) { btn.classList.add('generating'); btn.textContent = '✨ Generation...'; }
 
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
+        const currentDesc = document.getElementById('preview-desc')?.innerHTML || document.getElementById('field-description')?.value || '';
         const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-ai-generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
-          body: JSON.stringify({ type: 'description', name, currentDescription: document.getElementById('field-description')?.value || '', color: selectedColor })
+          body: JSON.stringify({ type: 'description', name, currentDescription: currentDesc, color: selectedColor })
         });
         const data = await response.json();
         if (data.result) {
-          document.getElementById('field-description').value = data.result;
-          updatePreview();
-          showToast('Description amelioree !');
+          const descEl = document.getElementById('preview-desc');
+          if (descEl) descEl.innerHTML = data.result;
+          const hiddenDesc = document.getElementById('field-description');
+          if (hiddenDesc) hiddenDesc.value = data.result;
+          showToast('✨ Texte regenere !');
         }
       } catch (e) { showToast('Erreur: ' + e.message, 'error'); }
 
-      btn.innerHTML = originalText;
-      btn.disabled = false;
+      if (btn) { btn.classList.remove('generating'); btn.textContent = originalText; }
     }
 
     // Suggest icon with AI
     async function suggestIconAI() {
-      const name = document.getElementById('field-name')?.value || '';
-      const desc = document.getElementById('field-description')?.value || '';
-      if (!name) { showToast('Donne un nom au module d\'abord', 'error'); return; }
+      const nameEl = document.getElementById('preview-name');
+      const name = nameEl?.textContent?.trim() || document.getElementById('field-name')?.value || '';
+      const desc = document.getElementById('preview-desc')?.innerHTML || document.getElementById('field-description')?.value || '';
+      if (!name || name === 'Nom du module') { showToast('Donne un nom au module d\'abord', 'error'); return; }
 
-      const btn = document.getElementById('btn-gen-icon');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;"></div>';
-      btn.disabled = true;
+      const btn = document.getElementById('btn-ai-icon') || document.getElementById('btn-gen-icon');
+      const originalText = btn?.textContent;
+      if (btn) { btn.classList.add('generating'); btn.textContent = '✨ Recherche...'; }
 
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1371,9 +1603,10 @@
         const data = await response.json();
         if (data.result && data.result.icon_type) {
           selectedIconType = data.result.icon_type;
-          renderIconGrid();
-          updatePreview();
-          showToast('Icone suggeree: ' + (ICON_TYPES.find(i => i.id === data.result.icon_type)?.name || data.result.icon_type));
+          if (typeof updateStudioPreview === 'function') updateStudioPreview();
+          if (typeof renderIconGrid === 'function') renderIconGrid();
+          if (typeof updatePreview === 'function') updatePreview();
+          showToast('✨ Icone: ' + (ICON_TYPES.find(i => i.id === data.result.icon_type)?.name || data.result.icon_type));
         }
       } catch (e) { showToast('Erreur: ' + e.message, 'error'); }
 
@@ -1691,28 +1924,44 @@
 
     async function saveModule() {
       const isNew = !currentModule.id;
-      const slug = document.getElementById('field-slug').value.trim();
-      const name = document.getElementById('field-name').value.trim();
+      const slug = document.getElementById('field-slug')?.value?.trim() || '';
+      // Get name from contenteditable or hidden field
+      const nameEl = document.getElementById('preview-name');
+      let name = nameEl?.textContent?.trim() || document.getElementById('field-name')?.value?.trim() || '';
+      if (name === 'Nom du module') name = '';
 
-      if (!name || !slug) {
-        showToast('Nom et ID requis', 'error');
+      // Auto-generate slug if empty
+      let finalSlug = slug;
+      if (!finalSlug && name) {
+        finalSlug = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+      }
+
+      if (!name || !finalSlug) {
+        showToast('Nom requis', 'error');
         return;
       }
 
+      // Get description from contenteditable or hidden field
+      const descEl = document.getElementById('preview-desc');
+      let description = descEl?.innerHTML || document.getElementById('field-description')?.value || '';
+      if (description === 'Clique pour ajouter une description...') description = '';
+
       const data = {
-        slug, name,
-        description: document.getElementById('field-description').value,
+        slug: finalSlug,
+        name,
+        description,
         color: selectedColor,
         icon_type: selectedIconType,
-        status: document.getElementById('field-status').value,
+        status: 'available',
         visibility: selectedVisibility,
         badge: selectedBadge,
-        price: document.getElementById('field-price').value || null,
-        trial_days: parseInt(document.getElementById('field-trial').value) || 7,
-        stripe_price_id: document.getElementById('field-stripe').value || null,
-        setup_url: `/${slug}/setup/`,
-        settings_url: `/?soldat=${slug}`,
-        setup_steps: currentSetupSteps
+        price: document.getElementById('field-price')?.value || null,
+        trial_days: parseInt(document.getElementById('field-trial')?.value) || 7,
+        stripe_price_id: document.getElementById('field-stripe')?.value || null,
+        setup_url: `/${finalSlug}/setup/`,
+        settings_url: `/?soldat=${finalSlug}`,
+        categories: selectedCategories.length > 0 ? selectedCategories : null,
+        setup_steps: currentSetupSteps || []
       };
 
       let error;
