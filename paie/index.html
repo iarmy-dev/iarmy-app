@@ -241,7 +241,7 @@
         return match ? decodeURIComponent(match[2]) : null;
       },
       setItem: (key, value) => {
-        document.cookie = `${key}=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Strict; Secure`;
+        document.cookie = `${key}=${encodeURIComponent(value)}; domain=.iarmy.fr; path=/; max-age=604800; SameSite=Lax; Secure`;
       },
       removeItem: (key) => {
         document.cookie = `${key}=; domain=.iarmy.fr; path=/; max-age=0`;
