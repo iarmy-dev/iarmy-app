@@ -461,7 +461,7 @@
     async function loadModules() {
       const container = document.getElementById('modules-list');
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('modules')
         .select('*')
         .order('sort_order', { ascending: true });
