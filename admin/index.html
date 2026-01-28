@@ -1447,27 +1447,27 @@
         if (data.error) throw new Error(data.error);
 
         const suggestion = data.result;
-        resultDiv.innerHTML = \`
+        resultDiv.innerHTML = `
           <div class="ai-suggestion-card">
             <div class="ai-suggestion-header">
-              <span style="font-size:24px;">\${suggestion.emoji || '🎯'}</span>
+              <span style="font-size:24px;">${suggestion.emoji || '🎯'}</span>
               <div>
-                <div style="font-weight:600;">\${suggestion.animation_name || 'Animation suggérée'}</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.5);">\${suggestion.animation_id || ''}</div>
+                <div style="font-weight:600;">${suggestion.animation_name || 'Animation suggérée'}</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.5);">${suggestion.animation_id || ''}</div>
               </div>
             </div>
-            <p style="margin:12px 0;color:rgba(255,255,255,0.7);font-size:14px;">\${suggestion.reason || ''}</p>
-            \${suggestion.animation_id && ICON_TYPES.some(i => i.id === suggestion.animation_id) ? \`
-              <button class="btn btn-primary" onclick="selectIconFromGallery('\${suggestion.animation_id}')" style="width:100%;">
+            <p style="margin:12px 0;color:rgba(255,255,255,0.7);font-size:14px;">${suggestion.reason || ''}</p>
+            ${suggestion.animation_id && ICON_TYPES.some(i => i.id === suggestion.animation_id) ? `
+              <button class="btn btn-primary" onclick="selectIconFromGallery('${suggestion.animation_id}')" style="width:100%;">
                 Utiliser cette animation
               </button>
-            \` : \`
+            ` : `
               <div style="padding:12px;background:rgba(255,107,53,0.1);border-radius:8px;font-size:13px;color:#FF6B35;">
                 💡 Animation personnalisée suggérée - contacte le dev pour la créer !
               </div>
-            \`}
+            `}
           </div>
-        \`;
+        `;
       } catch (e) {
         resultDiv.innerHTML = '<div style="color:#f87171;">Erreur: ' + e.message + '</div>';
       }
