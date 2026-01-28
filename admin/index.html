@@ -338,6 +338,17 @@
     .toggle-switch input:checked + .toggle-slider { background: #22c55e; }
     .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
 
+    /* Animation Gallery */
+    .animation-gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .animation-gallery-item { padding: 16px; background: rgba(255,255,255,0.02); border: 2px solid rgba(255,255,255,0.06); border-radius: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .animation-gallery-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+    .animation-gallery-item.selected { border-color: #FF6B35; background: rgba(255,107,53,0.1); }
+    .animation-gallery-preview { width: 60px; height: 60px; margin: 0 auto 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .animation-gallery-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .animation-gallery-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+    .ai-suggestion-card { padding: 16px; background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; }
+    .ai-suggestion-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+
     /* Toast */
     /* Notification Bell */
     .notif-bell { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); transition: all 0.2s; position: relative; }
@@ -523,12 +534,12 @@
     ];
 
     const ICON_TYPES = [
-      { id: 'telegram_sheets', name: 'Tableur' },
-      { id: 'bottles_count', name: 'Bouteilles' },
-      { id: 'people_pdf', name: 'Equipe' },
-      { id: 'calendar', name: 'Calendrier' },
-      { id: 'reservation', name: 'Check' },
-      { id: 'star', name: 'Etoile' }
+      { id: 'telegram_sheets', name: 'Tableur', desc: 'Cellules qui se remplissent - ideal pour données/sync' },
+      { id: 'bottles_count', name: 'Bouteilles', desc: 'Transfert de liquide - ideal pour inventaire/stock' },
+      { id: 'people_pdf', name: 'Equipe', desc: 'Personnes → Euro - ideal pour paie/RH' },
+      { id: 'calendar', name: 'Calendrier', desc: 'Calendrier simple - ideal pour planning' },
+      { id: 'reservation', name: 'Check', desc: 'Case cochée - ideal pour réservations/tâches' },
+      { id: 'star', name: 'Etoile', desc: 'Etoile simple - ideal pour fidélité/avis' }
     ];
 
     const BADGE_OPTIONS = [
@@ -1334,12 +1345,128 @@
           ? MINI_ICON_TEMPLATES[icon.id](selectedColor)
           : '📦';
         return `
-          <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')">
+          <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')" title="${icon.desc || ''}">
             <div class="icon-option-preview">${iconHtml}</div>
             <div class="icon-option-label">${icon.name}</div>
           </div>
         `;
-      }).join('');
+      }).join('') + `
+        <div class="icon-option" onclick="openAnimationGallery()" style="background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.3);">
+          <div class="icon-option-preview" style="font-size:24px;">✨</div>
+          <div class="icon-option-label" style="color:#a78bfa;">Galerie IA</div>
+        </div>
+      `;
+    }
+
+    function openAnimationGallery() {
+      const modalHtml = `
+        <div class="modal-overlay" id="animation-gallery-modal" onclick="if(event.target===this)closeAnimationGallery()" style="display:flex;">
+          <div class="modal-content" style="max-width:700px;">
+            <div class="modal-header">
+              <h3>🎨 Galerie d'Animations</h3>
+              <button class="modal-close" onclick="closeAnimationGallery()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="animation-gallery-section">
+                <h4 style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;">ANIMATIONS DISPONIBLES</h4>
+                <div class="animation-gallery-grid">
+                  ${ICON_TYPES.map(icon => {
+                    const iconHtml = typeof MINI_ICON_TEMPLATES !== 'undefined' && MINI_ICON_TEMPLATES[icon.id]
+                      ? MINI_ICON_TEMPLATES[icon.id](selectedColor)
+                      : '📦';
+                    return `
+                      <div class="animation-gallery-item ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIconFromGallery('${icon.id}')">
+                        <div class="animation-gallery-preview" style="background:${selectedColor}20;">${iconHtml}</div>
+                        <div class="animation-gallery-name">${icon.name}</div>
+                        <div class="animation-gallery-desc">${icon.desc || ''}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+
+              <div class="animation-gallery-section" style="margin-top:24px;">
+                <h4 style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;">✨ GENERER AVEC CLAUDE</h4>
+                <div class="ai-animation-generator">
+                  <textarea class="form-textarea" id="ai-animation-prompt" placeholder="Decris ton module... Ex: Un module pour gérer les réservations de tables au restaurant, avec un calendrier et des confirmations"></textarea>
+                  <button class="btn btn-ai" onclick="generateAnimationWithAI()" style="margin-top:12px;width:100%;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                    Suggerer une animation
+                  </button>
+                  <div id="ai-animation-result" style="margin-top:16px;display:none;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    function closeAnimationGallery() {
+      document.getElementById('animation-gallery-modal')?.remove();
+    }
+
+    function selectIconFromGallery(iconType) {
+      selectedIconType = iconType;
+      closeAnimationGallery();
+      renderIconGrid();
+      updatePreview();
+      showToast('Animation selectionnee: ' + ICON_TYPES.find(i => i.id === iconType)?.name);
+    }
+
+    async function generateAnimationWithAI() {
+      const prompt = document.getElementById('ai-animation-prompt').value.trim();
+      if (!prompt) { showToast('Decris ton module', 'error'); return; }
+
+      const resultDiv = document.getElementById('ai-animation-result');
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);"><div class="spinner" style="margin:0 auto 12px;"></div>Claude reflechit...</div>';
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            type: 'animation_suggestion',
+            prompt: prompt,
+            available_animations: ICON_TYPES.map(i => ({ id: i.id, name: i.name, desc: i.desc }))
+          })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+
+        const suggestion = data.result;
+        resultDiv.innerHTML = \`
+          <div class="ai-suggestion-card">
+            <div class="ai-suggestion-header">
+              <span style="font-size:24px;">\${suggestion.emoji || '🎯'}</span>
+              <div>
+                <div style="font-weight:600;">\${suggestion.animation_name || 'Animation suggérée'}</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.5);">\${suggestion.animation_id || ''}</div>
+              </div>
+            </div>
+            <p style="margin:12px 0;color:rgba(255,255,255,0.7);font-size:14px;">\${suggestion.reason || ''}</p>
+            \${suggestion.animation_id && ICON_TYPES.some(i => i.id === suggestion.animation_id) ? \`
+              <button class="btn btn-primary" onclick="selectIconFromGallery('\${suggestion.animation_id}')" style="width:100%;">
+                Utiliser cette animation
+              </button>
+            \` : \`
+              <div style="padding:12px;background:rgba(255,107,53,0.1);border-radius:8px;font-size:13px;color:#FF6B35;">
+                💡 Animation personnalisée suggérée - contacte le dev pour la créer !
+              </div>
+            \`}
+          </div>
+        \`;
+      } catch (e) {
+        resultDiv.innerHTML = '<div style="color:#f87171;">Erreur: ' + e.message + '</div>';
+      }
     }
 
     function renderBadgeGrid() {
