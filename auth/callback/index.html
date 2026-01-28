@@ -27,8 +27,24 @@
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
 
-    // Initialiser Supabase - il va automatiquement detecter les tokens dans le hash
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Cookie storage - DOIT etre identique aux autres pages
+    const cookieStorage = {
+      getItem: (key) => {
+        const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : null;
+      },
+      setItem: (key, value) => {
+        document.cookie = key + '=' + encodeURIComponent(value) + '; path=/; max-age=31536000; SameSite=Lax; Secure';
+      },
+      removeItem: (key) => {
+        document.cookie = key + '=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
+    };
+
+    // Initialiser Supabase avec le MEME storage que les autres pages
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { storage: cookieStorage, storageKey: 'sb-auth-token' }
+    });
 
     function showError(message) {
       document.getElementById('error-container').style.display = 'block';
@@ -40,9 +56,49 @@
       try {
         console.log('[CALLBACK] Traitement du callback...');
         console.log('[CALLBACK] Hash:', window.location.hash ? 'present' : 'absent');
+        console.log('[CALLBACK] Search:', window.location.search ? 'present' : 'absent');
 
-        // Supabase detecte automatiquement les tokens dans le hash URL
-        // et etablit la session dans localStorage
+        // Verifier si code dans query string (PKCE flow)
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+          console.log('[CALLBACK] Code PKCE detecte, echange...');
+          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+          if (error) {
+            console.error('[CALLBACK] Erreur exchangeCode:', error);
+            showError('Erreur: ' + error.message);
+            return;
+          }
+          if (data.session) {
+            await finishLogin(data.session);
+            return;
+          }
+        }
+
+        // Sinon essayer avec le hash (implicit flow)
+        if (window.location.hash) {
+          console.log('[CALLBACK] Hash detecte, attente auth...');
+
+          // Ecouter le changement de session
+          const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            console.log('[CALLBACK] Auth event:', event);
+            if (event === 'SIGNED_IN' && session) {
+              subscription.unsubscribe();
+              await finishLogin(session);
+            }
+          });
+
+          // Timeout apres 5 secondes
+          setTimeout(() => {
+            subscription.unsubscribe();
+            showError('Timeout - session non etablie. Reessayez.');
+          }, 5000);
+          return;
+        }
+
+        // Fallback: verifier session existante
+        console.log('[CALLBACK] Verification session existante...');
         const { data, error } = await supabaseClient.auth.getSession();
 
         if (error) {
@@ -51,41 +107,33 @@
           return;
         }
 
-        if (!data.session) {
-          // Peut-etre que le hash n'a pas encore ete traite, attendre un peu
-          console.log('[CALLBACK] Pas de session, attente...');
-          await new Promise(resolve => setTimeout(resolve, 500));
-
-          const { data: data2, error: error2 } = await supabaseClient.auth.getSession();
-
-          if (error2 || !data2.session) {
-            console.error('[CALLBACK] Toujours pas de session');
-            showError('Aucune session trouvee. Reessayez.');
-            return;
-          }
-
-          data.session = data2.session;
+        if (data.session) {
+          await finishLogin(data.session);
+          return;
         }
 
-        const session = data.session;
-        console.log('[CALLBACK] Session etablie:', session.user.email);
-
-        // Nettoyer l'URL (enlever le hash)
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        // Creer profil si necessaire
-        await createProfileIfNeeded(session.user, session.access_token);
-
-        // Redirection vers la page d'origine ou accueil
-        const redirectUrl = sessionStorage.getItem('auth_redirect');
-        sessionStorage.removeItem('auth_redirect');
-        console.log('[CALLBACK] Redirection vers:', redirectUrl || '/');
-        window.location.href = redirectUrl || '/';
+        showError('Aucune session trouvee. Reessayez.');
 
       } catch (err) {
         console.error('[CALLBACK] Erreur:', err);
         showError('Erreur: ' + err.message);
       }
+    }
+
+    async function finishLogin(session) {
+      console.log('[CALLBACK] Session etablie:', session.user.email);
+
+      // Nettoyer l'URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Creer profil si necessaire
+      await createProfileIfNeeded(session.user, session.access_token);
+
+      // Redirection vers la page d'origine ou accueil
+      const redirectUrl = sessionStorage.getItem('auth_redirect');
+      sessionStorage.removeItem('auth_redirect');
+      console.log('[CALLBACK] Redirection vers:', redirectUrl || '/');
+      window.location.href = redirectUrl || '/';
     }
 
     async function createProfileIfNeeded(user, accessToken) {
