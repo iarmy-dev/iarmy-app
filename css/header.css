@@ -51,27 +51,27 @@ nav {
   object-fit: contain !important;
 }
 
-/* Animation idle - le soldat entier balance doucement */
+/* Animation idle - le soldat balance bien visible */
 .logo-i svg {
-  animation: soldierIdle 3s ease-in-out infinite !important;
+  animation: soldierIdle 2.5s ease-in-out infinite !important;
 }
 
 @keyframes soldierIdle {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(-1.5deg) scale(1.02); }
-  75% { transform: rotate(1.5deg) scale(1.02); }
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-3deg); }
+  70% { transform: rotate(3deg); }
 }
 
-/* Le casque bouge un peu plus que le reste */
+/* Le casque bouge encore plus */
 .logo-i #i-helmet {
   transform-origin: 70px 60px !important;
-  animation: helmetWatch 3s ease-in-out infinite !important;
+  animation: helmetWatch 2.5s ease-in-out infinite !important;
 }
 
 @keyframes helmetWatch {
   0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-2deg); }
-  75% { transform: rotate(2deg); }
+  30% { transform: rotate(-4deg); }
+  70% { transform: rotate(4deg); }
 }
 
 /* Animation au hover - salut militaire */
