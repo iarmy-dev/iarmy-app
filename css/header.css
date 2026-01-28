@@ -74,23 +74,30 @@ nav {
   75% { transform: rotate(8deg) translateX(1px); }
 }
 
-/* Animation au hover - salut militaire */
+/* Animation au hover - casque manque de tomber puis garde-à-vous */
 .logo-i:hover svg {
-  animation: soldierSalute 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
+  animation: soldierSurprise 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
 }
 
 .logo-i:hover #i-helmet {
-  animation: helmetSalute 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important;
+  animation: helmetWobble 0.8s ease-out forwards !important;
 }
 
-@keyframes soldierSalute {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(-3deg) scale(1.05); }
+@keyframes soldierSurprise {
+  0% { transform: rotate(0deg) scale(1); }
+  15% { transform: rotate(3deg) scale(0.98); }
+  30% { transform: rotate(-2deg) scale(1.02); }
+  100% { transform: rotate(0deg) scale(1); }
 }
 
-@keyframes helmetSalute {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-5deg) translateY(-2px); }
+@keyframes helmetWobble {
+  0% { transform: rotate(0deg) translateY(0); }
+  15% { transform: rotate(15deg) translateY(2px); }
+  30% { transform: rotate(-10deg) translateY(1px); }
+  45% { transform: rotate(8deg) translateY(0); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(2deg); }
+  100% { transform: rotate(0deg) translateY(0); }
 }
 
 /* Petit brillant sur le casque au hover */
