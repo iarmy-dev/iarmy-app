@@ -1009,7 +1009,7 @@
               ${modules.slice(0, 5).map(m => `
                 <div class="module-list-item" onclick="switchTab('modules');selectModule('${m.id}');">
                   <div class="module-list-color" style="background:${m.color};">
-                    ${typeof MINI_ICON_TEMPLATES !== 'undefined' && MINI_ICON_TEMPLATES[m.icon_type] ? MINI_ICON_TEMPLATES[m.icon_type](m.color) : ''}
+                    ${getModuleIcon(m.icon_type, 'white')}
                   </div>
                   <div class="module-list-info">
                     <div class="module-list-name">${m.name}</div>
@@ -1051,7 +1051,7 @@
             return `
               <div class="module-list-item" onclick="selectModule('${m.id}')">
                 <div class="module-list-color" style="background:${m.color};">
-                  ${typeof MINI_ICON_TEMPLATES !== 'undefined' && MINI_ICON_TEMPLATES[m.icon_type] ? MINI_ICON_TEMPLATES[m.icon_type](m.color) : ''}
+                  ${getModuleIcon(m.icon_type, 'white')}
                 </div>
                 <div class="module-list-info">
                   <div class="module-list-name">${m.name} ${badge ? `<span style="font-size:12px;">${badge}</span>` : ''}</div>
@@ -1349,9 +1349,7 @@
       const grid = document.getElementById('icon-grid');
       if (!grid) return;
       grid.innerHTML = ICON_TYPES.map(icon => {
-        const iconHtml = typeof MINI_ICON_TEMPLATES !== 'undefined' && MINI_ICON_TEMPLATES[icon.id]
-          ? MINI_ICON_TEMPLATES[icon.id](selectedColor)
-          : '📦';
+        const iconHtml = getModuleIcon(icon.id, 'white');
         return `
           <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')" title="${icon.desc || ''}">
             <div class="icon-option-preview">${iconHtml}</div>
@@ -1379,9 +1377,7 @@
                 <h4 style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;">ANIMATIONS DISPONIBLES</h4>
                 <div class="animation-gallery-grid">
                   ${ICON_TYPES.map(icon => {
-                    const iconHtml = typeof MINI_ICON_TEMPLATES !== 'undefined' && MINI_ICON_TEMPLATES[icon.id]
-                      ? MINI_ICON_TEMPLATES[icon.id](selectedColor)
-                      : '📦';
+                    const iconHtml = getModuleIcon(icon.id, 'white');
                     return `
                       <div class="animation-gallery-item ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIconFromGallery('${icon.id}')">
                         <div class="animation-gallery-preview" style="background:${selectedColor}20;">${iconHtml}</div>
@@ -1503,9 +1499,7 @@
 
       const icon = document.getElementById('preview-icon');
       icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColorHex(selectedColor)})`;
-      icon.innerHTML = typeof MINI_ICON_TEMPLATES !== 'undefined' && MINI_ICON_TEMPLATES[selectedIconType]
-        ? MINI_ICON_TEMPLATES[selectedIconType](selectedColor)
-        : '📦';
+      icon.innerHTML = getModuleIcon(selectedIconType, 'white');
 
       document.getElementById('preview-name').textContent = name;
       document.getElementById('preview-desc').textContent = desc.substring(0, 30) + (desc.length > 30 ? '...' : '');

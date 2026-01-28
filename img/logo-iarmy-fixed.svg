@@ -5,7 +5,7 @@
       .logo-body { fill: #fff; stroke: #fff; stroke-miterlimit: 10; }
       .logo-shadow { fill: #cecdd1; stroke-miterlimit: 10; }
       .logo-shadow-stroke { fill: #cecdd1; stroke: #cecdd1; stroke-miterlimit: 10; }
-      .logo-helmet-band { fill: #47330f; stroke: #47330f; stroke-miterlimit: 10; }
+      .logo-helmet-band { fill: #FF6B35; stroke: #FF6B35; stroke-miterlimit: 10; }
     </style>
   </defs>
 

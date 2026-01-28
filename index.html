@@ -11,6 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
+  <script src="/js/icons.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
@@ -981,75 +982,8 @@
     let MODULES_DATA = []; // Charge depuis Supabase
     let MODULES_CONFIG = {}; // Genere a partir de MODULES_DATA
 
-    // Templates d'icones mini animees par icon_type
-    const MINI_ICON_TEMPLATES = {
-      telegram_sheets: (color) => `
-        <div class="mini-sheet">
-          <div class="mini-sheet-row">
-            <div class="mini-sheet-cell fill fill-1"></div>
-            <div class="mini-sheet-cell fill fill-2"></div>
-          </div>
-          <div class="mini-sheet-row">
-            <div class="mini-sheet-cell fill fill-3"></div>
-            <div class="mini-sheet-cell fill fill-4"></div>
-          </div>
-          <div class="mini-sheet-row">
-            <div class="mini-sheet-cell fill fill-5"></div>
-            <div class="mini-sheet-cell fill fill-6"></div>
-          </div>
-        </div>`,
-      bottles_count: (color) => `
-        <div class="mini-stock" style="transform: scale(0.8);">
-          <div class="mini-bottle mini-bottle-1">
-            <div class="mini-bottle-cap"></div>
-            <div class="mini-bottle-neck"></div>
-            <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
-          </div>
-          <div class="mini-bottle mini-bottle-2">
-            <div class="mini-bottle-cap"></div>
-            <div class="mini-bottle-neck"></div>
-            <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
-          </div>
-          <div class="mini-stock-count">12</div>
-        </div>`,
-      people_pdf: (color) => `
-        <div class="mini-paie">
-          <div class="mini-paie-people">
-            <div class="mini-paie-person mini-paie-person-1">
-              <div class="mini-paie-head"></div>
-              <div class="mini-paie-body"></div>
-            </div>
-            <div class="mini-paie-person mini-paie-person-2">
-              <div class="mini-paie-head"></div>
-              <div class="mini-paie-body"></div>
-            </div>
-            <div class="mini-paie-person mini-paie-person-3">
-              <div class="mini-paie-head"></div>
-              <div class="mini-paie-body"></div>
-            </div>
-          </div>
-          <div class="mini-paie-euro">€</div>
-        </div>`,
-      calendar: (color) => `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>`,
-      reservation: (color) => `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-        </svg>`,
-      star: (color) => `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-        </svg>`,
-      custom: (color) => `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-        </svg>`
-    };
+    // Les templates d'icônes sont dans /js/module-icons.js (source unique)
+    // Utiliser getModuleIcon(iconType, color) ou getModuleIconWithBg(iconType, color, size)
 
     // Emails admin qui voient tous les modules
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
@@ -1171,9 +1105,8 @@
         const status = userModuleStatuses[mod.slug];
         if (!status || !status.installed) return; // Ne montrer que les modules installes
 
-        const iconHtml = MINI_ICON_TEMPLATES[mod.icon_type]
-          ? MINI_ICON_TEMPLATES[mod.icon_type](mod.color)
-          : MINI_ICON_TEMPLATES.custom(mod.color);
+        // Utiliser le système d'icônes centralisé
+        const iconHtml = getModuleIconWithBg(mod.icon_type, mod.color, 44);
 
         const card = document.createElement('div');
         card.className = 'module-card';
@@ -2417,13 +2350,8 @@
             price: 0
           };
 
-          // Générer icône simple basée sur le nom du module
-          const moduleIcons = {
-            compta: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>',
-            stock: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
-            paie: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
-          };
-          const moduleIcon = moduleIcons[mod.module_name] || '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
+          // Icône dynamique basée sur icon_type du module (depuis module-icons.js)
+          const moduleIcon = getModuleIcon(config.icon_type || 'custom', config.color, 20);
 
           const isTester = mod.is_tester || mod.status === 'tester';
           const isActive = mod.status === 'active';
