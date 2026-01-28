@@ -628,77 +628,8 @@
 
     <!-- Modules -->
     <div class="section-title">Mes soldats</div>
-    <div class="modules-grid">
-      <!-- Compta -->
-      <div class="module-card compta" id="module-compta" onclick="goToModule()" style="display: none;">
-        <span class="module-badge active" id="compta-badge" style="display:none;">Actif</span>
-        <div class="module-icon" style="background: linear-gradient(180deg, #22c55e, #16a34a);">
-          <div class="mini-sheet">
-            <div class="mini-sheet-row">
-              <div class="mini-sheet-cell fill fill-1"></div>
-              <div class="mini-sheet-cell fill fill-2"></div>
-            </div>
-            <div class="mini-sheet-row">
-              <div class="mini-sheet-cell fill fill-3"></div>
-              <div class="mini-sheet-cell fill fill-4"></div>
-            </div>
-            <div class="mini-sheet-row">
-              <div class="mini-sheet-cell fill fill-5"></div>
-              <div class="mini-sheet-cell fill fill-6"></div>
-            </div>
-          </div>
-        </div>
-        <div class="module-name">Compta</div>
-        <div class="module-status" id="module-status">Chargement...</div>
-      </div>
-
-      <!-- Stock -->
-      <div class="module-card stock" id="module-stock" onclick="goToStockModule()" style="display: none;">
-        <span class="module-badge active" id="stock-badge" style="display:none;">Actif</span>
-        <div class="module-icon" style="background: linear-gradient(180deg, #22D3EE, #06B6D4);">
-          <div class="mini-stock" style="transform: scale(0.8);">
-            <div class="mini-bottle mini-bottle-1">
-              <div class="mini-bottle-cap"></div>
-              <div class="mini-bottle-neck"></div>
-              <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
-            </div>
-            <div class="mini-bottle mini-bottle-2">
-              <div class="mini-bottle-cap"></div>
-              <div class="mini-bottle-neck"></div>
-              <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
-            </div>
-            <div class="mini-stock-count">12</div>
-          </div>
-        </div>
-        <div class="module-name">Stock</div>
-        <div class="module-status" id="stock-status">Chargement...</div>
-      </div>
-
-      <!-- Paie -->
-      <div class="module-card paie" id="module-paie" onclick="goToPaieModule()" style="display: none;">
-        <span class="module-badge active" id="paie-badge" style="display:none;">Actif</span>
-        <div class="module-icon" style="background: linear-gradient(180deg, #fbbf24, #f59e0b);">
-          <div class="mini-paie">
-            <div class="mini-paie-people">
-              <div class="mini-paie-person mini-paie-person-1">
-                <div class="mini-paie-head"></div>
-                <div class="mini-paie-body"></div>
-              </div>
-              <div class="mini-paie-person mini-paie-person-2">
-                <div class="mini-paie-head"></div>
-                <div class="mini-paie-body"></div>
-              </div>
-              <div class="mini-paie-person mini-paie-person-3">
-                <div class="mini-paie-head"></div>
-                <div class="mini-paie-body"></div>
-              </div>
-            </div>
-            <div class="mini-paie-euro">€</div>
-          </div>
-        </div>
-        <div class="module-name">Paie</div>
-        <div class="module-status" id="paie-status">Chargement...</div>
-      </div>
+    <div class="modules-grid" id="modules-container">
+      <!-- Les modules sont chargés dynamiquement depuis Supabase -->
 
       <!-- Add more modules -->
       <div class="module-card add-module" onclick="goToSoldats()">
@@ -1136,39 +1067,217 @@
     let currentModuleView = null; // ?soldat= parameter value
 
     // ========================================
-    // CONFIG MODULES - Ajouter ici les nouveaux modules
+    // MODULES - Charges dynamiquement depuis Supabase
     // ========================================
-    const MODULES_CONFIG = {
-      compta: {
-        name: 'Compta',
-        color: '#22c55e',
-        colorLight: 'rgba(34,197,94,0.15)',
-        price: 29,
-        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>`
-      },
-      stock: {
-        name: 'Stock',
-        color: '#06B6D4',
-        colorLight: 'rgba(6,182,212,0.15)',
-        price: 19,
-        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/></svg>`
-      },
-      paie: {
-        name: 'Paie',
-        color: '#f59e0b',
-        colorLight: 'rgba(245,158,11,0.15)',
-        price: 39,
-        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`
-      }
-      // Pour ajouter un nouveau module:
-      // nouveau_module: {
-      //   name: 'Nom Affiche',
-      //   color: '#HEXCOLOR',
-      //   colorLight: 'rgba(r,g,b,0.15)',
-      //   price: XX,
-      //   icon: `<svg>...</svg>`
-      // }
+    let MODULES_DATA = []; // Charge depuis Supabase
+    let MODULES_CONFIG = {}; // Genere a partir de MODULES_DATA
+
+    // Templates d'icones mini animees par icon_type
+    const MINI_ICON_TEMPLATES = {
+      telegram_sheets: (color) => `
+        <div class="mini-sheet">
+          <div class="mini-sheet-row">
+            <div class="mini-sheet-cell fill fill-1"></div>
+            <div class="mini-sheet-cell fill fill-2"></div>
+          </div>
+          <div class="mini-sheet-row">
+            <div class="mini-sheet-cell fill fill-3"></div>
+            <div class="mini-sheet-cell fill fill-4"></div>
+          </div>
+          <div class="mini-sheet-row">
+            <div class="mini-sheet-cell fill fill-5"></div>
+            <div class="mini-sheet-cell fill fill-6"></div>
+          </div>
+        </div>`,
+      bottles_count: (color) => `
+        <div class="mini-stock" style="transform: scale(0.8);">
+          <div class="mini-bottle mini-bottle-1">
+            <div class="mini-bottle-cap"></div>
+            <div class="mini-bottle-neck"></div>
+            <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
+          </div>
+          <div class="mini-bottle mini-bottle-2">
+            <div class="mini-bottle-cap"></div>
+            <div class="mini-bottle-neck"></div>
+            <div class="mini-bottle-body"><div class="mini-bottle-fill"></div></div>
+          </div>
+          <div class="mini-stock-count">12</div>
+        </div>`,
+      people_pdf: (color) => `
+        <div class="mini-paie">
+          <div class="mini-paie-people">
+            <div class="mini-paie-person mini-paie-person-1">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
+            </div>
+            <div class="mini-paie-person mini-paie-person-2">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
+            </div>
+            <div class="mini-paie-person mini-paie-person-3">
+              <div class="mini-paie-head"></div>
+              <div class="mini-paie-body"></div>
+            </div>
+          </div>
+          <div class="mini-paie-euro">€</div>
+        </div>`,
+      calendar: (color) => `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>`,
+      reservation: (color) => `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>`,
+      star: (color) => `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>`,
+      custom: (color) => `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+        </svg>`
     };
+
+    // Charger les modules depuis Supabase
+    async function loadModulesFromDB() {
+      try {
+        // Determiner si l'utilisateur est testeur
+        let isTester = false;
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user?.id) {
+          const { data: sub } = await supabaseClient
+            .from('subscriptions')
+            .select('is_tester')
+            .eq('user_id', session.user.id)
+            .eq('is_tester', true)
+            .limit(1)
+            .maybeSingle();
+          isTester = !!sub;
+        }
+
+        // Charger les modules visibles
+        let query = supabaseClient
+          .from('modules')
+          .select('*')
+          .in('status', ['available', 'beta'])
+          .order('created_at', { ascending: true });
+
+        // Filtrer par visibilite
+        if (isTester) {
+          query = query.in('visibility', ['public', 'beta']);
+        } else {
+          query = query.eq('visibility', 'public');
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        MODULES_DATA = data || [];
+
+        // Generer MODULES_CONFIG pour compatibilite
+        MODULES_CONFIG = {};
+        MODULES_DATA.forEach(m => {
+          MODULES_CONFIG[m.slug] = {
+            name: m.name,
+            color: m.color,
+            colorLight: hexToRgba(m.color, 0.15),
+            price: parseFloat(m.price) || 0,
+            icon_type: m.icon_type,
+            setup_url: m.setup_url,
+            settings_url: m.settings_url
+          };
+        });
+
+        console.log('[Modules] Loaded', MODULES_DATA.length, 'modules from Supabase');
+      } catch (err) {
+        console.error('[Modules] Error loading:', err);
+        MODULES_DATA = [];
+        MODULES_CONFIG = {};
+      }
+    }
+
+    // Convertir hex en rgba
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    // Calculer la couleur du gradient (plus sombre)
+    function darkenColor(hex, percent = 20) {
+      const r = Math.max(0, parseInt(hex.slice(1, 3), 16) - percent);
+      const g = Math.max(0, parseInt(hex.slice(3, 5), 16) - percent);
+      const b = Math.max(0, parseInt(hex.slice(5, 7), 16) - percent);
+      return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+    }
+
+    // Rendre les cartes de modules
+    function renderModuleCards(userModuleStatuses) {
+      const container = document.getElementById('modules-container');
+      const addButton = container.querySelector('.add-module');
+
+      // Vider le conteneur sauf le bouton +
+      container.innerHTML = '';
+
+      // Generer une carte pour chaque module installe
+      MODULES_DATA.forEach(mod => {
+        const status = userModuleStatuses[mod.slug];
+        if (!status || !status.installed) return; // Ne montrer que les modules installes
+
+        const iconHtml = MINI_ICON_TEMPLATES[mod.icon_type]
+          ? MINI_ICON_TEMPLATES[mod.icon_type](mod.color)
+          : MINI_ICON_TEMPLATES.custom(mod.color);
+
+        const card = document.createElement('div');
+        card.className = `module-card ${mod.slug}`;
+        card.id = `module-${mod.slug}`;
+        card.setAttribute('data-module', mod.slug);
+        card.onclick = () => goToModuleDynamic(mod.slug);
+        card.innerHTML = `
+          <span class="module-badge active" style="display:${status.active ? 'block' : 'none'};">Actif</span>
+          <div class="module-icon" style="background: linear-gradient(180deg, ${mod.color}, ${darkenColor(mod.color)});">
+            ${iconHtml}
+          </div>
+          <div class="module-name">${mod.name}</div>
+          <div class="module-status" data-status="${mod.slug}">${status.statusText || 'Chargement...'}</div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Remettre le bouton +
+      if (addButton) {
+        container.appendChild(addButton);
+      } else {
+        const newAddBtn = document.createElement('div');
+        newAddBtn.className = 'module-card add-module';
+        newAddBtn.onclick = goToSoldats;
+        newAddBtn.innerHTML = `
+          <div class="module-icon" style="background: rgba(255,255,255,0.06);">
+            <span style="font-size: 28px; color: rgba(255,255,255,0.4);">+</span>
+          </div>
+          <div class="module-name" style="color: rgba(255,255,255,0.4);">Ajouter</div>
+          <div class="module-status" style="color: rgba(255,255,255,0.3);">un soldat</div>
+        `;
+        container.appendChild(newAddBtn);
+      }
+    }
+
+    // Navigation dynamique vers un module
+    function goToModuleDynamic(slug) {
+      const mod = MODULES_CONFIG[slug];
+      if (!mod) return;
+
+      if (isTelegramMode) {
+        window.location.href = `/?soldat=${slug}&tg=1&tguid=${telegramUserId}`;
+      } else {
+        window.location.href = `/?soldat=${slug}`;
+      }
+    }
 
     // ========================================
     // MODULE SETTINGS VIEW FUNCTIONS
@@ -1786,45 +1895,17 @@
           }
         }
 
-        // Module config - only show modules user has
-        moduleConfig = authData.moduleConfig;
-        console.log('[TG] moduleConfig from telegram-auth:', JSON.stringify(moduleConfig));
-        if (moduleConfig?.sheetId) {
-          document.getElementById('module-compta').style.display = 'flex';
-          document.getElementById('module-status').textContent = 'Actif';
-          document.getElementById('conn-sheets').classList.add('connected');
-          document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
-          document.getElementById('sheets-status').classList.add('ok');
-        }
-
-        // Stock module - load products count
-        const { count: prodCount } = await supabaseClient
-          .from('stock_products')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', authData.userId);
-
-        stockProductCount = prodCount || 0;
-        if (stockProductCount > 0) {
-          document.getElementById('module-stock').style.display = 'flex';
-          document.getElementById('stock-status').textContent = stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '');
-        }
-
-        // Paie employees
-        const { count: paieEmpCount } = await supabaseClient
-          .from('employees')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', authData.userId);
-
-        paieEmployeeCount = paieEmpCount || 0;
-        if (paieEmployeeCount > 0) {
-          document.getElementById('module-paie').style.display = 'flex';
-          document.getElementById('paie-status').textContent = paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '');
-        }
+        // Charger les modules depuis Supabase
+        await loadModulesFromDB();
 
         // Telegram est forcement connecte
         document.getElementById('conn-telegram').classList.add('connected');
         document.getElementById('telegram-status').innerHTML = '<span class="dot"></span> Connecte';
         document.getElementById('telegram-status').classList.add('ok');
+
+        // Module config - charger dynamiquement
+        moduleConfig = authData.moduleConfig;
+        await loadModuleDataForTelegram(authData.userId);
 
         // Verifier si mode module settings (?soldat=)
         const soldatParam = urlParams.get('soldat');
@@ -1878,6 +1959,9 @@
         `;
         return;
       }
+
+      // Charger les modules depuis Supabase
+      await loadModulesFromDB();
 
       // Detecter le parametre ?soldat= pour afficher la vue module
       const soldatParam = urlParams.get('soldat');
@@ -1943,7 +2027,7 @@
       }
 
       // Load data
-      await loadModuleData();
+      await loadModuleDataDynamic();
       await loadUserStatus();
       await checkPendingDeletion();
 
@@ -1983,40 +2067,106 @@
       }
     }
 
+    // Ancienne fonction gardee pour compatibilite
     async function loadModuleData() {
-      try {
-        const { data: config } = await supabaseClient
-          .from('module_configs')
-          .select('sheet_id, config, last_entry_at')
-          .eq('user_id', currentUser.id)
-          .eq('module_name', 'compta')
-          .single();
+      return loadModuleDataDynamic();
+    }
 
+    // Version Telegram de loadModuleData
+    async function loadModuleDataForTelegram(userId) {
+      const userModuleStatuses = {};
+
+      try {
+        // 1. Charger toutes les configs de modules de l'utilisateur
+        const { data: configs } = await supabaseClient
+          .from('module_configs')
+          .select('module_name, sheet_id, config, last_entry_at')
+          .eq('user_id', userId);
+
+        // 2. Traiter chaque module configure
+        if (configs) {
+          for (const config of configs) {
+            const slug = config.module_name;
+            let statusText = 'Actif';
+            if (config.last_entry_at) {
+              statusText += ' · ' + formatRelativeTime(config.last_entry_at);
+            }
+
+            userModuleStatuses[slug] = {
+              installed: true,
+              active: true,
+              statusText: statusText,
+              config: config
+            };
+
+            // Garder moduleConfig pour compta (compatibilite)
+            if (slug === 'compta' && config.sheet_id) {
+              moduleConfig = config;
+              document.getElementById('conn-sheets').classList.add('connected');
+              document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
+              document.getElementById('sheets-status').classList.add('ok');
+            }
+          }
+        }
+
+        // 3. Stock - verifier les produits
+        const { count: stockCount } = await supabaseClient
+          .from('stock_products')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        stockProductCount = stockCount || 0;
+        if (stockProductCount > 0) {
+          userModuleStatuses['stock'] = {
+            installed: true,
+            active: true,
+            statusText: stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '')
+          };
+        }
+
+        // 4. Paie - verifier les employes
+        const { count: paieCount } = await supabaseClient
+          .from('employees')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        paieEmployeeCount = paieCount || 0;
+        if (paieEmployeeCount > 0) {
+          userModuleStatuses['paie'] = {
+            installed: true,
+            active: true,
+            statusText: paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '')
+          };
+        }
+
+        // 5. Rendre les cartes de modules dynamiquement
+        renderModuleCards(userModuleStatuses);
+
+      } catch (err) {
+        console.error('[Modules TG] Error loading user data:', err);
+        renderModuleCards({});
+      }
+    }
+
+    // Nouvelle fonction dynamique pour charger les modules
+    async function loadModuleDataDynamic() {
+      const userModuleStatuses = {};
+
+      try {
+        // 1. Charger toutes les configs de modules de l'utilisateur
+        const { data: configs } = await supabaseClient
+          .from('module_configs')
+          .select('module_name, sheet_id, config, last_entry_at')
+          .eq('user_id', currentUser.id);
+
+        // 2. Charger le lien Telegram
         const { data: telegramLink } = await supabaseClient
           .from('telegram_links')
           .select('telegram_user_id, telegram_username')
           .eq('user_id', currentUser.id)
           .maybeSingle();
 
-        moduleConfig = config;
-
-        // Module status
-        if (config?.sheet_id) {
-          let statusText = 'Actif';
-          if (config.last_entry_at) {
-            statusText += ' · ' + formatRelativeTime(config.last_entry_at);
-          }
-          const settingsIcon = '<svg style="display:inline;vertical-align:middle;margin-left:6px;opacity:0.4" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
-          document.getElementById('module-compta').style.display = 'flex';
-          document.getElementById('module-status').innerHTML = statusText + settingsIcon;
-          document.getElementById('conn-sheets').classList.add('connected');
-          document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
-          document.getElementById('sheets-status').classList.add('ok');
-          document.getElementById('conn-sheets').style.cursor = 'pointer';
-          document.getElementById('conn-sheets').onclick = () => window.open('https://docs.google.com/spreadsheets/d/' + config.sheet_id + '/edit', '_blank');
-        }
-
-        // Telegram
+        // Telegram connection status
         if (telegramLink?.telegram_user_id) {
           document.getElementById('conn-telegram').classList.add('connected');
           const username = telegramLink.telegram_username ? '@' + telegramLink.telegram_username : 'Connecte';
@@ -2024,11 +2174,35 @@
           document.getElementById('telegram-status').classList.add('ok');
         }
 
-        // Stats - ne pas afficher si pas de donnees
-        // TODO: Load real stats from edge function quand disponible
-        // document.getElementById('stats-section').style.display = 'block';
+        // 3. Traiter chaque module configure
+        if (configs) {
+          for (const config of configs) {
+            const slug = config.module_name;
+            let statusText = 'Actif';
+            if (config.last_entry_at) {
+              statusText += ' · ' + formatRelativeTime(config.last_entry_at);
+            }
 
-        // Stock module - check for products
+            userModuleStatuses[slug] = {
+              installed: true,
+              active: true,
+              statusText: statusText,
+              config: config
+            };
+
+            // Garder moduleConfig pour compta (compatibilite)
+            if (slug === 'compta' && config.sheet_id) {
+              moduleConfig = config;
+              document.getElementById('conn-sheets').classList.add('connected');
+              document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
+              document.getElementById('sheets-status').classList.add('ok');
+              document.getElementById('conn-sheets').style.cursor = 'pointer';
+              document.getElementById('conn-sheets').onclick = () => window.open('https://docs.google.com/spreadsheets/d/' + config.sheet_id + '/edit', '_blank');
+            }
+          }
+        }
+
+        // 4. Stock - verifier les produits
         const { count: stockCount } = await supabaseClient
           .from('stock_products')
           .select('id', { count: 'exact', head: true })
@@ -2036,11 +2210,14 @@
 
         stockProductCount = stockCount || 0;
         if (stockProductCount > 0) {
-          document.getElementById('module-stock').style.display = 'flex';
-          document.getElementById('stock-status').textContent = stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '');
+          userModuleStatuses['stock'] = {
+            installed: true,
+            active: true,
+            statusText: stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '')
+          };
         }
 
-        // Paie employees
+        // 5. Paie - verifier les employes
         const { count: paieCount } = await supabaseClient
           .from('employees')
           .select('id', { count: 'exact', head: true })
@@ -2048,13 +2225,19 @@
 
         paieEmployeeCount = paieCount || 0;
         if (paieEmployeeCount > 0) {
-          document.getElementById('module-paie').style.display = 'flex';
-          document.getElementById('paie-status').textContent = paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '');
+          userModuleStatuses['paie'] = {
+            installed: true,
+            active: true,
+            statusText: paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '')
+          };
         }
 
+        // 6. Rendre les cartes de modules dynamiquement
+        renderModuleCards(userModuleStatuses);
+
       } catch (err) {
-        console.log('No config');
-        // Modules stay hidden if no config
+        console.error('[Modules] Error loading user data:', err);
+        renderModuleCards({});
       }
     }
 
