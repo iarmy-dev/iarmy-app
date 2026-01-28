@@ -22,7 +22,7 @@
     <div class="error" id="error"></div>
   </div>
   <script>
-    const supabase = window.supabase.createClient('https://byqfnpdcnifauhwgetcq.supabase.co', 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT');
+    const supabaseClient = window.supabase.createClient('https://byqfnpdcnifauhwgetcq.supabase.co', 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT');
     function showError(msg) {
       document.getElementById('error').innerHTML = msg + '<br><a href="/" class="btn">Retour</a>';
       document.getElementById('error').style.display = 'block';
@@ -30,7 +30,7 @@
     }
     async function handleCallback() {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
         if (error) { showError('Erreur: ' + error.message); return; }
         if (session) {
           const redirect = sessionStorage.getItem('auth_redirect') || '/';
@@ -38,7 +38,7 @@
           window.location.href = redirect;
           return;
         }
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
           if (event === 'SIGNED_IN' && session) {
             subscription.unsubscribe();
             const redirect = sessionStorage.getItem('auth_redirect') || '/';
