@@ -121,9 +121,12 @@
     .module-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
     .module-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
     .module-status { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .module-badge { position: absolute; top: 10px; right: 10px; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; }
+    .module-badge { position: absolute; top: 10px; right: 10px; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; text-transform: uppercase; }
     .module-badge.active { background: rgba(34,197,94,0.2); color: #4ade80; }
     .module-badge.setup { background: rgba(255,107,53,0.2); color: #FF8B5E; }
+    .module-badge.nouveau { background: linear-gradient(135deg, rgba(34,197,94,0.25), rgba(74,222,128,0.25)); color: #4ade80; }
+    .module-badge.populaire { background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.25)); color: #fbbf24; }
+    .module-badge.promo { background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(248,113,113,0.25)); color: #f87171; }
 
     /* Mini spreadsheet animation */
     .mini-sheet { width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
@@ -1199,6 +1202,26 @@
       return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
     }
 
+    // Determiner le badge a afficher pour un module
+    function getModuleBadge(mod) {
+      // Badge force "none" = pas de badge
+      if (mod.badge === 'none') return null;
+
+      // Badge force (nouveau, populaire, promo)
+      if (mod.badge === 'nouveau') return { class: 'nouveau', text: '🆕 Nouveau' };
+      if (mod.badge === 'populaire') return { class: 'populaire', text: '🔥 Populaire' };
+      if (mod.badge === 'promo') return { class: 'promo', text: '💰 Promo' };
+
+      // Badge auto: "nouveau" si cree il y a moins de 14 jours
+      if (!mod.badge && mod.created_at) {
+        const created = new Date(mod.created_at);
+        const daysSince = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSince < 14) return { class: 'nouveau', text: '🆕 Nouveau' };
+      }
+
+      return null;
+    }
+
     // Rendre les cartes de modules
     function renderModuleCards(userModuleStatuses) {
       const container = document.getElementById('modules-container');
@@ -1226,8 +1249,17 @@
         card.onmouseenter = () => { card.style.borderColor = `${mod.color}99`; card.style.boxShadow = `0 0 30px ${mod.color}33`; };
         card.onmouseleave = () => { card.style.borderColor = `${mod.color}66`; card.style.boxShadow = 'none'; };
         card.onclick = () => goToModuleDynamic(mod.slug);
+        // Determiner le badge a afficher
+        let badgeHtml = '';
+        const moduleBadge = getModuleBadge(mod);
+        if (moduleBadge) {
+          badgeHtml = `<span class="module-badge ${moduleBadge.class}">${moduleBadge.text}</span>`;
+        } else if (status.active) {
+          badgeHtml = `<span class="module-badge active">Actif</span>`;
+        }
+
         card.innerHTML = `
-          <span class="module-badge active" style="display:${status.active ? 'block' : 'none'};">Actif</span>
+          ${badgeHtml}
           <div class="module-icon" style="background: linear-gradient(180deg, ${mod.color}, ${darkenColor(mod.color)});">
             ${iconHtml}
           </div>
