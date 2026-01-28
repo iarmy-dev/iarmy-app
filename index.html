@@ -974,6 +974,7 @@
     let isTelegramMode = false;
     let telegramUserId = null;
     let telegramSubscription = null;
+    let telegramAuthData = null; // Donnees completes de telegram-auth
     let currentModuleView = null; // ?soldat= parameter value
 
     // ========================================
@@ -1801,15 +1802,21 @@
           editContainer.insertBefore(img, editContainer.firstChild);
         }
 
-        // Stocker et afficher le statut subscription
-        telegramSubscription = authData.subscription;
-        if (telegramSubscription) {
-          const badge = document.getElementById('user-badge');
+        // Stocker les donnees de telegram-auth (nouvelle structure)
+        telegramAuthData = authData; // Stocker pour utilisation dans loadModuleDataForTelegram
+        telegramSubscription = authData.subscriptions || {};
+
+        // Afficher le badge testeur si applicable
+        const badge = document.getElementById('user-badge');
+        if (authData.user?.isTester) {
           badge.style.display = 'inline-block';
-          if (telegramSubscription.isTester) {
-            badge.textContent = 'Testeur';
-            badge.className = 'badge tester';
-          } else if (telegramSubscription.status === 'active') {
+          badge.textContent = 'Testeur';
+          badge.className = 'badge tester';
+        } else {
+          // Verifier s'il y a un abonnement actif
+          const hasActiveSubscription = Object.values(telegramSubscription).some(s => s.status === 'active');
+          if (hasActiveSubscription) {
+            badge.style.display = 'inline-block';
             badge.textContent = 'Pro';
             badge.className = 'badge active';
           }
@@ -1823,9 +1830,9 @@
         document.getElementById('telegram-status').innerHTML = '<span class="dot"></span> Connecte';
         document.getElementById('telegram-status').classList.add('ok');
 
-        // Module config - charger dynamiquement
-        moduleConfig = authData.moduleConfig;
-        await loadModuleDataForTelegram(authData.userId);
+        // Module config - utiliser les donnees de telegram-auth (pas de query directe)
+        moduleConfig = authData.moduleConfigs?.compta || authData.moduleConfig || null;
+        await loadModuleDataForTelegram(authData);
 
         // Verifier si mode module settings (?soldat=)
         const soldatParam = urlParams.get('soldat');
@@ -1996,50 +2003,53 @@
       return loadModuleDataDynamic();
     }
 
-    // Version Telegram de loadModuleData
-    async function loadModuleDataForTelegram(userId) {
+    // Version Telegram de loadModuleData - utilise les donnees de telegram-auth
+    async function loadModuleDataForTelegram(authData) {
       const userModuleStatuses = {};
 
       try {
-        // 1. Charger toutes les configs de modules de l'utilisateur
-        const { data: configs } = await supabaseClient
-          .from('module_configs')
-          .select('module_name, sheet_id, config, last_entry_at')
-          .eq('user_id', userId);
+        // Utiliser les donnees de telegram-auth (pas de query directe - evite les problemes RLS)
+        const moduleConfigs = authData.moduleConfigs || {};
+        const stockCount = authData.stockProductCount || 0;
+        const paieCount = authData.employeesCount || 0;
 
-        // 2. Traiter chaque module configure
-        if (configs) {
-          for (const config of configs) {
-            const slug = config.module_name;
-            let statusText = 'Actif';
-            if (config.last_entry_at) {
-              statusText += ' · ' + formatRelativeTime(config.last_entry_at);
+        console.log('[TG] Module configs from auth:', Object.keys(moduleConfigs));
+
+        // Traiter chaque module configure
+        for (const [slug, config] of Object.entries(moduleConfigs)) {
+          let statusText = 'Actif';
+          if (config.lastEntryAt) {
+            statusText += ' · ' + formatRelativeTime(config.lastEntryAt);
+          }
+
+          userModuleStatuses[slug] = {
+            installed: true,
+            active: true,
+            statusText: statusText,
+            config: {
+              module_name: slug,
+              sheet_id: config.sheetId,
+              config: config.config,
+              last_entry_at: config.lastEntryAt
             }
+          };
 
-            userModuleStatuses[slug] = {
-              installed: true,
-              active: true,
-              statusText: statusText,
-              config: config
+          // Garder moduleConfig pour compta (compatibilite)
+          if (slug === 'compta' && config.sheetId) {
+            moduleConfig = {
+              module_name: 'compta',
+              sheet_id: config.sheetId,
+              config: config.config,
+              sheetId: config.sheetId // alias pour compatibilite
             };
-
-            // Garder moduleConfig pour compta (compatibilite)
-            if (slug === 'compta' && config.sheet_id) {
-              moduleConfig = config;
-              document.getElementById('conn-sheets').classList.add('connected');
-              document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
-              document.getElementById('sheets-status').classList.add('ok');
-            }
+            document.getElementById('conn-sheets').classList.add('connected');
+            document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
+            document.getElementById('sheets-status').classList.add('ok');
           }
         }
 
-        // 3. Stock - verifier les produits
-        const { count: stockCount } = await supabaseClient
-          .from('stock_products')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', userId);
-
-        stockProductCount = stockCount || 0;
+        // Stock - utiliser le count de telegram-auth
+        stockProductCount = stockCount;
         if (stockProductCount > 0) {
           userModuleStatuses['stock'] = {
             installed: true,
@@ -2048,13 +2058,8 @@
           };
         }
 
-        // 4. Paie - verifier les employes
-        const { count: paieCount } = await supabaseClient
-          .from('employees')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', userId);
-
-        paieEmployeeCount = paieCount || 0;
+        // Paie - utiliser le count de telegram-auth
+        paieEmployeeCount = paieCount;
         if (paieEmployeeCount > 0) {
           userModuleStatuses['paie'] = {
             installed: true,
@@ -2063,7 +2068,9 @@
           };
         }
 
-        // 5. Rendre les cartes de modules dynamiquement
+        console.log('[TG] User module statuses:', Object.keys(userModuleStatuses));
+
+        // Rendre les cartes de modules dynamiquement
         renderModuleCards(userModuleStatuses);
 
       } catch (err) {
