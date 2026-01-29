@@ -449,7 +449,17 @@
           </div>
           <div class="form-group">
             <label class="form-label">Description courte</label>
-            <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ce soldat en une phrase..."></textarea>
+            <div class="ai-input-group">
+              <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ce soldat..." style="margin-bottom:8px;"></textarea>
+              <div class="ai-desc-preview" id="ai-desc-preview" style="display:none; padding:12px; background:rgba(0,0,0,0.3); border-radius:10px; margin-bottom:8px;"></div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="ai-btn" onclick="generateDescription()" style="padding:8px 14px; font-size:12px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Générer avec IA
+                </button>
+                <span style="font-size:11px; color:rgba(255,255,255,0.4);">L'IA ajoute les mots en couleur automatiquement</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -462,36 +472,49 @@
         <!-- Icon Type -->
         <div class="form-section">
           <div class="form-section-title">Icône</div>
+
+          <!-- Preset icons (quick select) -->
+          <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:12px;">Icônes prédéfinies (clic rapide) :</p>
           <div class="icon-grid" id="icon-grid"></div>
 
-          <!-- AI Generator -->
-          <div class="ai-generator">
+          <!-- AI Generator (main) -->
+          <div class="ai-generator" style="margin-top:20px;">
             <div class="ai-generator-header">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              Générer avec l'IA
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Ou génère une icône custom avec l'IA
             </div>
-            <textarea class="ai-generator-input" id="ai-prompt" rows="2" placeholder="Décris ton idée d'icône... ex: une bouteille de vin qui se vide, un calendrier avec horloge, des personnes en équipe..."></textarea>
+            <textarea class="ai-generator-input" id="ai-prompt" rows="3" placeholder="Décris l'icône que tu veux...
+
+Exemples :
+• un tableau avec des cellules qui se remplissent une par une, animé
+• deux bouteilles de vin, une qui se vide et l'autre qui se remplit
+• un calendrier avec une horloge qui tourne
+• des personnes qui se transforment en symbole euro"></textarea>
             <div class="ai-generator-actions">
-              <button class="ai-btn" id="ai-generate-btn" onclick="generateIcon()">
+              <button type="button" class="ai-btn" id="ai-generate-btn" onclick="generateIcon()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                Générer
+                Générer l'icône
               </button>
               <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:rgba(255,255,255,0.5); cursor:pointer;">
-                <input type="checkbox" id="ai-animated" style="accent-color:#FF6B35;"> Animée
+                <input type="checkbox" id="ai-animated" checked style="accent-color:#FF6B35;"> Avec animation
               </label>
             </div>
+
+            <!-- AI Preview -->
             <div class="ai-preview" id="ai-preview">
               <div class="ai-preview-icon" id="ai-preview-icon"></div>
               <div style="flex:1;">
-                <p id="ai-preview-desc" style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:10px;"></p>
+                <p id="ai-preview-desc" style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:12px;"></p>
                 <div class="ai-preview-actions">
-                  <button class="ai-preview-btn use" onclick="useGeneratedIcon()">Utiliser</button>
-                  <button class="ai-preview-btn" onclick="generateIcon()">Régénérer</button>
-                  <button class="ai-preview-btn" onclick="copyIconSvg()">Copier SVG</button>
+                  <button type="button" class="ai-preview-btn use" onclick="useGeneratedIcon()">✓ Utiliser cette icône</button>
+                  <button type="button" class="ai-preview-btn" onclick="generateIcon()">↻ Régénérer</button>
                 </div>
-                <div style="margin-top:10px; display:flex; gap:6px;">
-                  <input type="text" id="ai-modify-input" class="form-input" style="flex:1; padding:8px 12px; font-size:12px;" placeholder="Modifier: plus grande, ajouter...">
-                  <button class="ai-btn secondary" onclick="modifyIcon()" style="padding:8px 12px; font-size:11px;">Modifier</button>
+                <div style="margin-top:12px;">
+                  <p style="font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:6px;">Modifier l'icône :</p>
+                  <div style="display:flex; gap:6px;">
+                    <input type="text" id="ai-modify-input" class="form-input" style="flex:1; padding:10px 12px; font-size:13px;" placeholder="Ex: rends-la plus grosse, ajoute des étoiles, change l'animation...">
+                    <button type="button" class="ai-btn" onclick="modifyIcon()" style="padding:10px 16px;">Modifier</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -738,7 +761,21 @@
         document.getElementById('field-name').value = currentModule.name || '';
         document.getElementById('field-slug').value = currentModule.slug || '';
         document.getElementById('field-slug').disabled = true;
-        document.getElementById('field-description').value = stripHtml(currentModule.description || '');
+        const descField = document.getElementById('field-description');
+        descField.value = stripHtml(currentModule.description || '');
+        // Stocker le HTML original pour la sauvegarde
+        if (currentModule.description && currentModule.description.includes('<')) {
+          descField.dataset.htmlValue = currentModule.description;
+          // Afficher l'aperçu HTML
+          const preview = document.getElementById('ai-desc-preview');
+          if (preview) {
+            preview.innerHTML = `
+              <div style="margin-bottom:8px; font-size:11px; color:rgba(255,255,255,0.4);">Description actuelle (HTML) :</div>
+              <div>${currentModule.description}</div>
+            `;
+            preview.style.display = 'block';
+          }
+        }
         document.getElementById('field-status').value = currentModule.status || 'available';
         document.getElementById('field-visibility').value = currentModule.visibility || 'public';
         document.getElementById('field-price').value = currentModule.price || '';
@@ -945,6 +982,95 @@
       });
     }
 
+    // ==================
+    // AI DESCRIPTION GENERATOR
+    // ==================
+    let generatedDescriptionHtml = null;
+
+    async function generateDescription() {
+      const descField = document.getElementById('field-description');
+      const descText = descField?.value.trim();
+      const preview = document.getElementById('ai-desc-preview');
+      const btn = descField?.parentElement.querySelector('.ai-btn');
+      const moduleColor = selectedColor;
+
+      if (!descText) {
+        alert('Écris d\'abord une description de ce que fait le soldat');
+        return;
+      }
+
+      // Loading state
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<div class="ai-spinner"></div> Génération...';
+      }
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            type: 'description',
+            name: document.getElementById('field-name')?.value || 'Module',
+            currentDescription: descText,
+            color: moduleColor
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          alert('Erreur: ' + data.error);
+          return;
+        }
+
+        // La réponse est directement le texte avec HTML pour le type "description"
+        generatedDescriptionHtml = data.result;
+
+        // Afficher la preview
+        if (preview) {
+          preview.innerHTML = `
+            <div style="margin-bottom:12px;">${generatedDescriptionHtml}</div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" onclick="useGeneratedDescription()" style="padding:8px 12px; background:#22c55e; border:none; border-radius:8px; color:white; font-size:11px; cursor:pointer;">✓ Utiliser</button>
+              <button type="button" onclick="generateDescription()" style="padding:8px 12px; background:rgba(255,255,255,0.1); border:none; border-radius:8px; color:white; font-size:11px; cursor:pointer;">↻ Régénérer</button>
+              <button type="button" onclick="hideDescriptionPreview()" style="padding:8px 12px; background:rgba(255,255,255,0.1); border:none; border-radius:8px; color:white; font-size:11px; cursor:pointer;">✕ Fermer</button>
+            </div>
+          `;
+          preview.style.display = 'block';
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('Erreur de génération: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec IA`;
+        }
+      }
+    }
+
+    function useGeneratedDescription() {
+      if (!generatedDescriptionHtml) return;
+      const descField = document.getElementById('field-description');
+      // Stocker le HTML dans un attribut data pour la sauvegarde
+      descField.dataset.htmlValue = generatedDescriptionHtml;
+      // Afficher la version texte dans le textarea
+      descField.value = stripHtml(generatedDescriptionHtml);
+      hideDescriptionPreview();
+      updatePreview();
+    }
+
+    function hideDescriptionPreview() {
+      const preview = document.getElementById('ai-desc-preview');
+      if (preview) preview.style.display = 'none';
+    }
+
     function updateColorSelection() {
       document.querySelectorAll('.color-option').forEach(el => {
         el.classList.toggle('selected', el.style.background === selectedColor || rgbToHex(el.style.background) === selectedColor);
@@ -976,7 +1102,14 @@
           }
         });
       }
-      if (descField) descField.addEventListener('input', updatePreview);
+      if (descField) {
+        descField.addEventListener('input', () => {
+          // Effacer le HTML généré si l'utilisateur modifie manuellement
+          delete descField.dataset.htmlValue;
+          hideDescriptionPreview();
+          updatePreview();
+        });
+      }
     }
 
     function updatePreview() {
@@ -1009,7 +1142,9 @@
     async function save() {
       const slug = document.getElementById('field-slug').value.trim();
       const name = document.getElementById('field-name').value.trim();
-      const description = document.getElementById('field-description').value;
+      const descField = document.getElementById('field-description');
+      // Utiliser la description HTML si générée par l'IA, sinon le texte brut
+      const description = descField.dataset.htmlValue || descField.value;
       const status = document.getElementById('field-status').value;
       const visibility = document.getElementById('field-visibility').value;
       const price = document.getElementById('field-price').value;
