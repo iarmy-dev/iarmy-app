@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testeurs - Admin iArmy</title>
+  <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0a; color: white; min-height: 100vh; padding: 20px; }
+
+    .container { max-width: 800px; margin: 0 auto; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .back-link { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 20px; }
+    .back-link:hover { color: white; }
+    .title { font-size: 24px; font-weight: 700; }
+
+    /* Add form */
+    .add-section {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .add-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: rgba(255,255,255,0.6); }
+    .add-form { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .form-group { flex: 1; min-width: 200px; }
+    .form-label { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+    }
+    .form-input:focus, .form-select:focus { outline: none; border-color: rgba(255,107,53,0.5); }
+    .form-input::placeholder { color: rgba(255,255,255,0.3); }
+
+    .btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255,107,53,0.3); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-small { padding: 8px 16px; font-size: 12px; }
+    .btn-danger { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); }
+    .btn-danger:hover { background: rgba(239,68,68,0.3); box-shadow: none; }
+
+    /* Testers list */
+    .testers-list { display: flex; flex-direction: column; gap: 12px; }
+    .tester-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .tester-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .tester-info { flex: 1; }
+    .tester-name { font-weight: 600; margin-bottom: 4px; }
+    .tester-email { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .tester-modules { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .module-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .tester-actions { display: flex; gap: 8px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255,255,255,0.4);
+    }
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+
+    .loading { text-align: center; padding: 40px; color: rgba(255,255,255,0.4); }
+
+    /* Auth */
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .auth-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    .auth-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .auth-subtitle { color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 32px; }
+    .auth-btn {
+      width: 100%;
+      padding: 16px 24px;
+      background: white;
+      border: none;
+      border-radius: 14px;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .auth-error { color: #ef4444; margin-top: 16px; font-size: 13px; display: none; }
+  </style>
+</head>
+<body>
+  <!-- Auth Screen -->
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-box">
+      <h2 class="auth-title">Admin iArmy</h2>
+      <p class="auth-subtitle">Connexion reservee aux administrateurs</p>
+      <button class="auth-btn" onclick="signInWithGoogle()">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Connexion avec Google
+      </button>
+      <p class="auth-error" id="auth-error"></p>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="container" id="main-app" style="display:none;">
+    <div class="header">
+      <div class="header-left">
+        <a href="/admin/modules/" class="back-link">←</a>
+        <h1 class="title">🧪 Testeurs</h1>
+      </div>
+    </div>
+
+    <!-- Add tester form -->
+    <div class="add-section">
+      <div class="add-title">Ajouter un testeur</div>
+      <div class="add-form">
+        <div class="form-group">
+          <label class="form-label">Email ou @username Telegram</label>
+          <input type="text" class="form-input" id="input-user" placeholder="email@exemple.com ou @username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modules</label>
+          <select class="form-select" id="input-module">
+            <option value="all">Tous les modules</option>
+          </select>
+        </div>
+        <button class="btn" onclick="addTester()">Ajouter</button>
+      </div>
+    </div>
+
+    <!-- Testers list -->
+    <div id="testers-container">
+      <div class="loading">Chargement...</div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const ADMIN_EMAILS = ['ludovikh@gmail.com'];
+
+    let modules = [];
+    let testers = [];
+
+    // Auth
+    async function signInWithGoogle() {
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/auth/callback' }
+      });
+      if (error) {
+        document.getElementById('auth-error').textContent = error.message;
+        document.getElementById('auth-error').style.display = 'block';
+      }
+    }
+
+    async function checkAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session && ADMIN_EMAILS.includes(session.user.email)) {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        init();
+        return true;
+      } else if (session) {
+        document.getElementById('auth-error').textContent = 'Email non autorise';
+        document.getElementById('auth-error').style.display = 'block';
+        await supabaseClient.auth.signOut();
+      }
+      return false;
+    }
+
+    checkAuth();
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') checkAuth();
+    });
+
+    // Init
+    async function init() {
+      await Promise.all([loadModules(), loadTesters()]);
+      renderModuleSelect();
+      renderTesters();
+    }
+
+    async function loadModules() {
+      const { data } = await supabaseClient
+        .from('modules')
+        .select('slug, name, color')
+        .order('sort_order');
+      modules = data || [];
+    }
+
+    async function loadTesters() {
+      // Charger les subscriptions avec is_tester = true
+      const { data } = await supabaseClient
+        .from('subscriptions')
+        .select(`
+          id,
+          user_id,
+          module_name,
+          is_tester,
+          profiles:user_id (email, full_name),
+          telegram_links:user_id (telegram_username)
+        `)
+        .eq('is_tester', true);
+
+      // Grouper par user
+      const grouped = {};
+      (data || []).forEach(sub => {
+        const userId = sub.user_id;
+        if (!grouped[userId]) {
+          grouped[userId] = {
+            user_id: userId,
+            email: sub.profiles?.email || 'Email inconnu',
+            name: sub.profiles?.full_name || '',
+            telegram: sub.telegram_links?.telegram_username || '',
+            modules: []
+          };
+        }
+        grouped[userId].modules.push(sub.module_name);
+      });
+
+      testers = Object.values(grouped);
+    }
+
+    function renderModuleSelect() {
+      const select = document.getElementById('input-module');
+      select.innerHTML = '<option value="all">Tous les modules</option>' +
+        modules.map(m => `<option value="${m.slug}">${m.name}</option>`).join('');
+    }
+
+    function renderTesters() {
+      const container = document.getElementById('testers-container');
+
+      if (testers.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🧪</div>
+            <p>Aucun testeur pour le moment</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="testers-list">
+          ${testers.map(t => {
+            const displayName = t.name || t.email.split('@')[0];
+            const initials = displayName.substring(0, 2).toUpperCase();
+            const moduleBadges = t.modules.map(slug => {
+              const mod = modules.find(m => m.slug === slug);
+              const color = mod?.color || '#666';
+              return `<span class="module-badge" style="background:${color}20; color:${color};">${mod?.name || slug}</span>`;
+            }).join('');
+
+            return `
+              <div class="tester-card">
+                <div class="tester-avatar">${initials}</div>
+                <div class="tester-info">
+                  <div class="tester-name">${displayName} ${t.telegram ? '@' + t.telegram : ''}</div>
+                  <div class="tester-email">${t.email}</div>
+                  <div class="tester-modules">${moduleBadges}</div>
+                </div>
+                <div class="tester-actions">
+                  <button class="btn btn-small btn-danger" onclick="removeTester('${t.user_id}')">Retirer</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    async function addTester() {
+      const input = document.getElementById('input-user').value.trim();
+      const moduleSlug = document.getElementById('input-module').value;
+
+      if (!input) {
+        alert('Entre un email ou @username');
+        return;
+      }
+
+      // Trouver l'utilisateur
+      let userId = null;
+
+      if (input.startsWith('@')) {
+        // Chercher par telegram username
+        const username = input.replace('@', '');
+        const { data: link } = await supabaseClient
+          .from('telegram_links')
+          .select('user_id')
+          .eq('telegram_username', username)
+          .maybeSingle();
+        userId = link?.user_id;
+      } else {
+        // Chercher par email
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('id')
+          .eq('email', input)
+          .maybeSingle();
+        userId = profile?.id;
+      }
+
+      if (!userId) {
+        alert('Utilisateur non trouvé. Il doit d\'abord se connecter à iArmy.');
+        return;
+      }
+
+      // Ajouter comme testeur
+      const modulesToAdd = moduleSlug === 'all' ? modules.map(m => m.slug) : [moduleSlug];
+
+      for (const slug of modulesToAdd) {
+        // Upsert subscription avec is_tester = true
+        await supabaseClient
+          .from('subscriptions')
+          .upsert({
+            user_id: userId,
+            module_name: slug,
+            is_tester: true,
+            status: 'tester'
+          }, { onConflict: 'user_id,module_name' });
+      }
+
+      document.getElementById('input-user').value = '';
+      await loadTesters();
+      renderTesters();
+      alert('Testeur ajouté !');
+    }
+
+    async function removeTester(userId) {
+      if (!confirm('Retirer ce testeur ?')) return;
+
+      // Mettre is_tester = false pour toutes ses subscriptions
+      await supabaseClient
+        .from('subscriptions')
+        .update({ is_tester: false })
+        .eq('user_id', userId)
+        .eq('is_tester', true);
+
+      await loadTesters();
+      renderTesters();
+    }
+  </script>
+</body>
+</html>
