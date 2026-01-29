@@ -386,6 +386,7 @@
 
     // Auth
     async function signIn() {
+      sessionStorage.setItem('auth_redirect', window.location.href);
       await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback' }});
     }
 
