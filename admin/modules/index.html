@@ -7,327 +7,134 @@
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/icons.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0a; color: white; min-height: 100vh; }
 
-    .app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
-    @media (max-width: 800px) { .app { grid-template-columns: 1fr; } }
+    .app { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+    @media (max-width: 900px) { .app { grid-template-columns: 1fr; } .sidebar { display: none; } }
 
     /* Sidebar */
-    .sidebar {
-      background: #0f0f0f;
-      border-right: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar-header {
-      padding: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .sidebar-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-    .sidebar-title a { color: rgba(255,255,255,0.4); text-decoration: none; }
-
-    .modules-list { flex: 1; overflow-y: auto; padding: 12px; }
-    .module-item {
-      padding: 12px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 4px;
-      transition: background 0.15s;
-    }
+    .sidebar { background: #0f0f0f; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
+    .sidebar-header a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 18px; }
+    .sidebar-title { font-size: 14px; font-weight: 600; }
+    .modules-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .module-item { padding: 10px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 2px; transition: background 0.15s; }
     .module-item:hover { background: rgba(255,255,255,0.04); }
     .module-item.active { background: rgba(255,107,53,0.15); }
-    .module-item-color { width: 28px; height: 28px; border-radius: 8px; }
-    .module-item-name { font-size: 14px; font-weight: 500; }
-
-    .btn-new {
-      margin: 12px;
-      padding: 14px;
-      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .module-item-color { width: 8px; height: 8px; border-radius: 50%; }
+    .module-item-name { font-size: 13px; font-weight: 500; flex: 1; }
+    .module-item-badges { display: flex; gap: 4px; }
+    .module-item-badge { font-size: 9px; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,0.1); }
+    .btn-new { margin: 12px; padding: 12px; background: linear-gradient(135deg, #FF6B35, #FF8B5E); border: none; border-radius: 10px; color: white; font-weight: 600; font-size: 13px; cursor: pointer; }
 
     /* Main */
-    .main { padding: 40px; overflow-y: auto; }
-    .main-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.3); }
+    .main { padding: 32px; overflow-y: auto; }
+    .main-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.3); gap: 16px; }
 
-    /* Editor */
-    .editor { max-width: 600px; margin: 0 auto; }
+    /* Editor Layout */
+    .editor { display: grid; grid-template-columns: 1fr 320px; gap: 32px; max-width: 1000px; margin: 0 auto; }
+    @media (max-width: 800px) { .editor { grid-template-columns: 1fr; } }
 
-    .editor-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-    .editor-title { font-size: 20px; font-weight: 700; }
-    .editor-actions { display: flex; gap: 10px; }
-
-    .btn {
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s;
-    }
-    .btn-save { background: linear-gradient(135deg, #FF6B35, #FF8B5E); color: white; }
-    .btn-save:hover { transform: translateY(-1px); }
-    .btn-delete { background: transparent; color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
-    .btn-delete:hover { background: rgba(239,68,68,0.1); }
-
-    /* Card Preview */
-    .card-preview {
+    /* Preview Card - EXACT comme la home */
+    .preview-section { position: sticky; top: 32px; }
+    .preview-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .preview-card {
       border-radius: 20px;
-      padding: 32px 24px;
-      text-align: center;
-      margin-bottom: 32px;
-      transition: all 0.2s;
-    }
-
-    .card-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      margin: 0 auto 16px;
+      padding: 20px 16px;
+      aspect-ratio: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: transform 0.2s;
+      text-align: center;
+      border: 1px solid transparent;
       position: relative;
+      transition: all 0.3s;
     }
-    .card-icon:hover { transform: scale(1.1); }
-    .card-icon::after {
-      content: '✏️';
-      position: absolute;
-      bottom: -4px;
-      right: -4px;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    .card-icon:hover::after { opacity: 1; }
+    .preview-card:hover { transform: translateY(-2px); }
+    .preview-badge { position: absolute; top: 10px; right: 10px; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; text-transform: uppercase; }
+    .preview-badge.nouveau { background: linear-gradient(135deg, rgba(34,197,94,0.25), rgba(74,222,128,0.25)); color: #4ade80; }
+    .preview-badge.populaire { background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.25)); color: #fbbf24; }
+    .preview-badge.promo { background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(248,113,113,0.25)); color: #f87171; }
+    .preview-badge.beta { background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(167,139,250,0.25)); color: #a78bfa; }
+    .preview-badge.soon { background: linear-gradient(135deg, rgba(100,116,139,0.25), rgba(148,163,184,0.25)); color: #94a3b8; }
+    .preview-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .preview-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .preview-desc { font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.7); }
+    .preview-categories { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+    .preview-cat { font-size: 9px; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
 
-    .card-name {
-      font-size: 22px;
-      font-weight: 700;
-      background: transparent;
-      border: none;
-      color: white;
-      text-align: center;
-      width: 100%;
-      margin-bottom: 12px;
-      padding: 4px;
-      border-radius: 8px;
-    }
-    .card-name:focus { outline: none; background: rgba(255,255,255,0.05); }
-    .card-name::placeholder { color: rgba(255,255,255,0.3); }
-
-    .card-desc {
-      font-size: 14px;
-      line-height: 1.6;
-      color: rgba(255,255,255,0.7);
-      margin-bottom: 16px;
-      min-height: 50px;
-    }
-    .card-desc-preview { margin-bottom: 12px; }
-    .card-desc-edit {
-      width: 100%;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      color: white;
-      font-size: 14px;
-      padding: 12px;
-      resize: none;
-      text-align: center;
-      line-height: 1.6;
-    }
-    .card-desc-edit:focus { outline: none; border-color: rgba(255,255,255,0.2); }
-    .card-desc-edit::placeholder { color: rgba(255,255,255,0.3); }
-
-    .btn-improve {
-      padding: 10px 24px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 20px;
-      color: white;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-improve:hover { background: rgba(255,255,255,0.12); }
-    .btn-improve:disabled { opacity: 0.5; }
-
-    /* Icon Generator - inline */
-    .icon-generator {
-      display: none;
-      margin-top: 16px;
-      padding: 16px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 12px;
-    }
-    .icon-generator.show { display: block; }
-    .icon-generator textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      color: white;
-      font-size: 13px;
-      padding: 12px;
-      resize: none;
-      margin-bottom: 12px;
-    }
-    .icon-generator textarea:focus { outline: none; border-color: rgba(255,255,255,0.2); }
-    .icon-generator textarea::placeholder { color: rgba(255,255,255,0.4); }
-    .icon-generator-btns { display: flex; gap: 8px; justify-content: center; }
-    .icon-result {
-      display: none;
-      margin-top: 16px;
-      padding: 16px;
-      background: rgba(34,197,94,0.1);
-      border: 1px solid rgba(34,197,94,0.2);
-      border-radius: 12px;
-      text-align: center;
-    }
-    .icon-result.show { display: block; }
-    .icon-result-preview {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      margin: 0 auto 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .icon-result-btns { display: flex; gap: 8px; justify-content: center; }
-
-    /* Sections */
-    .section {
-      margin-bottom: 24px;
-    }
-    .section-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.4);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
+    /* Form */
+    .form-section { margin-bottom: 24px; }
+    .form-section:last-child { margin-bottom: 0; }
+    .form-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+    .form-input { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: white; font-size: 14px; }
+    .form-input:focus { outline: none; border-color: rgba(255,107,53,0.5); }
+    .form-input::placeholder { color: rgba(255,255,255,0.25); }
+    textarea.form-input { resize: none; line-height: 1.6; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     /* Colors */
-    .colors {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .color-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      border: 3px solid transparent;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
+    .colors { display: flex; gap: 6px; flex-wrap: wrap; }
+    .color-btn { width: 32px; height: 32px; border-radius: 8px; border: 3px solid transparent; cursor: pointer; transition: all 0.15s; }
     .color-btn:hover { transform: scale(1.1); }
     .color-btn.active { border-color: white; }
 
-    /* Categories */
-    .categories {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .cat-btn {
-      padding: 8px 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      color: rgba(255,255,255,0.6);
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .cat-btn:hover { border-color: rgba(255,255,255,0.2); }
-    .cat-btn.active { background: rgba(255,107,53,0.15); border-color: #FF6B35; color: white; }
+    /* Icons */
+    .icons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .icon-btn { width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .icon-btn:hover { background: rgba(255,255,255,0.08); }
+    .icon-btn.active { border-color: #FF6B35; background: rgba(255,107,53,0.1); }
 
-    /* Params */
-    .params {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
-    }
-    .param label {
-      display: block;
-      font-size: 11px;
-      color: rgba(255,255,255,0.4);
-      margin-bottom: 6px;
-    }
-    .param input, .param select {
-      width: 100%;
-      padding: 10px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      color: white;
-      font-size: 13px;
-    }
-    .param input:focus, .param select:focus { outline: none; border-color: rgba(255,255,255,0.2); }
+    /* Badges */
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+    .badge-btn { padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+    .badge-btn.nouveau { background: rgba(34,197,94,0.1); color: #4ade80; border-color: rgba(34,197,94,0.2); }
+    .badge-btn.nouveau.active { background: rgba(34,197,94,0.25); border-color: #4ade80; }
+    .badge-btn.populaire { background: rgba(245,158,11,0.1); color: #fbbf24; border-color: rgba(245,158,11,0.2); }
+    .badge-btn.populaire.active { background: rgba(245,158,11,0.25); border-color: #fbbf24; }
+    .badge-btn.promo { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.2); }
+    .badge-btn.promo.active { background: rgba(239,68,68,0.25); border-color: #f87171; }
+    .badge-btn.beta { background: rgba(139,92,246,0.1); color: #a78bfa; border-color: rgba(139,92,246,0.2); }
+    .badge-btn.beta.active { background: rgba(139,92,246,0.25); border-color: #a78bfa; }
+    .badge-btn.soon { background: rgba(100,116,139,0.1); color: #94a3b8; border-color: rgba(100,116,139,0.2); }
+    .badge-btn.soon.active { background: rgba(100,116,139,0.25); border-color: #94a3b8; }
+
+    /* Categories */
+    .categories { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cat-btn { padding: 6px 12px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.15s; }
+    .cat-btn:hover { border-color: rgba(255,255,255,0.15); }
+    .cat-btn.active { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3); color: white; }
+
+    /* Actions */
+    .actions { display: flex; gap: 10px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 24px; }
+    .btn { padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-save { background: linear-gradient(135deg, #FF6B35, #FF8B5E); color: white; flex: 1; }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,53,0.3); }
+    .btn-delete { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+    .btn-delete:hover { background: rgba(239,68,68,0.2); }
+    .btn-ai { background: rgba(139,92,246,0.1); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+    .btn-ai:hover { background: rgba(139,92,246,0.2); }
 
     /* Auth */
-    .auth-screen {
-      position: fixed;
-      inset: 0;
-      background: #0a0a0a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    .auth-box {
-      text-align: center;
-      padding: 40px;
-    }
-    .auth-title { font-size: 20px; margin-bottom: 24px; }
-    .auth-btn {
-      padding: 14px 32px;
-      background: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .auth-screen { position: fixed; inset: 0; background: #0a0a0a; display: flex; align-items: center; justify-content: center; z-index: 100; }
+    .auth-box { text-align: center; padding: 40px; }
+    .auth-title { font-size: 18px; margin-bottom: 20px; color: rgba(255,255,255,0.7); }
+    .auth-btn { padding: 12px 24px; background: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; }
     .auth-error { color: #f87171; margin-top: 16px; font-size: 13px; display: none; }
 
     /* Spinner */
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      display: inline-block;
-    }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Visibility selector */
+    .visibility { display: flex; gap: 6px; }
+    .vis-btn { padding: 8px 14px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.15s; }
+    .vis-btn:hover { border-color: rgba(255,255,255,0.15); }
+    .vis-btn.active { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3); color: white; }
   </style>
 </head>
 <body>
@@ -347,42 +154,50 @@
   <div class="app" id="app" style="display:none;">
     <div class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">
-          <a href="/">←</a> Modules
-        </div>
-        <a href="/admin/testeurs/" style="font-size:11px; color:rgba(255,255,255,0.4); text-decoration:none;">🧪 Testeurs</a>
+        <a href="/">←</a>
+        <span class="sidebar-title">Modules</span>
+        <a href="/admin/testeurs/" style="margin-left:auto; font-size:11px; color:rgba(255,255,255,0.4); text-decoration:none;">🧪</a>
       </div>
       <div class="modules-list" id="modules-list"></div>
       <button class="btn-new" onclick="createModule()">+ Nouveau module</button>
     </div>
 
     <div class="main" id="main">
-      <div class="main-empty">Sélectionne un module</div>
+      <div class="main-empty">
+        <span style="font-size:32px;">📦</span>
+        <span>Sélectionne un module</span>
+      </div>
     </div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwMDk3NTMsImV4cCI6MjA1MzU4NTc1M30.OOcZ1oXqPVne6QaIZzrKSWJEZKSBlK9jPz-b2EKfCt4';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
 
-    const COLORS = ['#22c55e','#06b6d4','#f59e0b','#8b5cf6','#ec4899','#eab308','#3b82f6','#ef4444','#6366f1','#10b981','#d946ef','#84cc16'];
+    const COLORS = ['#22c55e','#06b6d4','#f59e0b','#8b5cf6','#ec4899','#3b82f6','#ef4444','#10b981','#eab308','#6366f1'];
+    const BADGES = [
+      { id: 'nouveau', label: '✨ Nouveau' },
+      { id: 'populaire', label: '🔥 Populaire' },
+      { id: 'promo', label: '💰 Promo' },
+      { id: 'beta', label: '🧪 Beta' },
+      { id: 'soon', label: '⏳ Bientôt' }
+    ];
     const CATEGORIES = [
-      { id: 'restaurant', name: '🍽️ Restaurant' },
-      { id: 'bar', name: '🍸 Bar' },
-      { id: 'hotel', name: '🏨 Hotel' },
-      { id: 'commerce', name: '🏪 Commerce' },
-      { id: 'service', name: '🔧 Service' }
+      { id: 'restaurant', label: '🍽️ Restaurant' },
+      { id: 'bar', label: '🍸 Bar' },
+      { id: 'hotel', label: '🏨 Hotel' },
+      { id: 'commerce', label: '🏪 Commerce' },
+      { id: 'service', label: '🔧 Service' }
     ];
 
     let modules = [];
     let current = null;
-    let color = COLORS[0];
-    let categories = [];
-    let iconType = 'telegram_sheets';
-    let descHtml = '';
-    let generatedSvg = null;
+    let formData = {};
+
+    // Injecter CSS icônes animées
+    if (typeof injectAnimatedIconsCSS === 'function') injectAnimatedIconsCSS();
 
     // Auth
     async function signIn() {
@@ -401,11 +216,10 @@
           loadModules();
         }
       } else if (session) {
-        document.getElementById('auth-error').textContent = 'Non autorisé';
+        document.getElementById('auth-error').textContent = 'Email non autorisé: ' + session.user.email;
         document.getElementById('auth-error').style.display = 'block';
-        supabaseClient.auth.signOut();
+        await supabaseClient.auth.signOut();
       }
-      // Si pas de session, on reste sur l'écran de login
     }
     checkAuth();
     supabaseClient.auth.onAuthStateChange((event) => {
@@ -425,28 +239,47 @@
         <div class="module-item ${current?.id === m.id ? 'active' : ''}" onclick="selectModule('${m.id}')">
           <div class="module-item-color" style="background:${m.color}"></div>
           <div class="module-item-name">${m.name || 'Sans nom'}</div>
+          <div class="module-item-badges">
+            ${(m.badges || []).map(b => `<span class="module-item-badge">${b}</span>`).join('')}
+          </div>
         </div>
-      `).join('') || '<div style="padding:20px;color:rgba(255,255,255,0.3);text-align:center;">Aucun module</div>';
+      `).join('') || '<div style="padding:20px;color:rgba(255,255,255,0.3);text-align:center;font-size:13px;">Aucun module</div>';
     }
 
     function selectModule(id) {
       current = modules.find(m => m.id === id);
-      color = current?.color || COLORS[0];
-      categories = current?.categories || [];
-      iconType = current?.icon_type || 'telegram_sheets';
-      descHtml = current?.description || '';
-      generatedSvg = null;
+      formData = {
+        name: current?.name || '',
+        slug: current?.slug || '',
+        description: current?.description || '',
+        color: current?.color || COLORS[0],
+        icon_type: current?.icon_type || 'telegram_sheets',
+        badges: current?.badges || [],
+        categories: current?.categories || [],
+        visibility: current?.visibility || 'draft',
+        price: current?.price || '',
+        trial_days: current?.trial_days || 7,
+        stripe_price_id: current?.stripe_price_id || ''
+      };
       renderList();
       renderEditor();
     }
 
     function createModule() {
       current = null;
-      color = COLORS[0];
-      categories = [];
-      iconType = 'telegram_sheets';
-      descHtml = '';
-      generatedSvg = null;
+      formData = {
+        name: '',
+        slug: '',
+        description: '',
+        color: COLORS[0],
+        icon_type: 'telegram_sheets',
+        badges: ['nouveau'],
+        categories: [],
+        visibility: 'draft',
+        price: '',
+        trial_days: 7,
+        stripe_price_id: ''
+      };
       renderList();
       renderEditor();
     }
@@ -457,223 +290,262 @@
 
       main.innerHTML = `
         <div class="editor">
-          <div class="editor-header">
-            <div class="editor-title">${isNew ? 'Nouveau module' : current.name}</div>
-            <div class="editor-actions">
+          <!-- Form -->
+          <div class="form">
+            <div class="form-section">
+              <label class="form-label">Nom du module</label>
+              <input type="text" class="form-input" id="input-name" placeholder="Ex: Compta Express" value="${formData.name}" oninput="updateForm('name', this.value)">
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" id="input-desc" rows="3" placeholder="Décris ce que fait ce module..." oninput="updateForm('description', this.value)">${stripHtml(formData.description)}</textarea>
+              <button class="btn btn-ai" style="margin-top:8px;width:100%;" onclick="improveText()">✨ Améliorer avec Claude</button>
+            </div>
+
+            <div class="form-section form-row">
+              <div>
+                <label class="form-label">ID technique</label>
+                <input type="text" class="form-input" id="input-slug" value="${formData.slug}" placeholder="compta" ${current ? 'disabled style="opacity:0.5"' : ''} oninput="updateForm('slug', this.value)">
+              </div>
+              <div>
+                <label class="form-label">Prix €/mois</label>
+                <input type="text" class="form-input" id="input-price" value="${formData.price}" placeholder="9.99" oninput="updateForm('price', this.value)">
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Couleur</label>
+              <div class="colors">
+                ${COLORS.map(c => `<div class="color-btn ${c === formData.color ? 'active' : ''}" style="background:${c}" onclick="setColor('${c}')"></div>`).join('')}
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Icône animée</label>
+              <div class="icons" id="icons-grid"></div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Badges (cumulables)</label>
+              <div class="badges">
+                ${BADGES.map(b => `<div class="badge-btn ${b.id} ${formData.badges.includes(b.id) ? 'active' : ''}" onclick="toggleBadge('${b.id}')">${b.label}</div>`).join('')}
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Catégories</label>
+              <div class="categories">
+                ${CATEGORIES.map(c => `<div class="cat-btn ${formData.categories.includes(c.id) ? 'active' : ''}" onclick="toggleCategory('${c.id}')">${c.label}</div>`).join('')}
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Visibilité</label>
+              <div class="visibility">
+                <div class="vis-btn ${formData.visibility === 'draft' ? 'active' : ''}" onclick="setVisibility('draft')">🔒 Privé</div>
+                <div class="vis-btn ${formData.visibility === 'beta' ? 'active' : ''}" onclick="setVisibility('beta')">🧪 Beta</div>
+                <div class="vis-btn ${formData.visibility === 'public' ? 'active' : ''}" onclick="setVisibility('public')">🌍 Public</div>
+              </div>
+            </div>
+
+            <div class="form-section form-row">
+              <div>
+                <label class="form-label">Jours d'essai</label>
+                <input type="number" class="form-input" value="${formData.trial_days}" oninput="updateForm('trial_days', this.value)">
+              </div>
+              <div>
+                <label class="form-label">Stripe Price ID</label>
+                <input type="text" class="form-input" value="${formData.stripe_price_id}" placeholder="price_xxx" oninput="updateForm('stripe_price_id', this.value)">
+              </div>
+            </div>
+
+            <div class="actions">
               ${!isNew ? '<button class="btn btn-delete" onclick="deleteModule()">Supprimer</button>' : ''}
-              <button class="btn btn-save" onclick="save()">Enregistrer</button>
+              <button class="btn btn-save" onclick="save()">${isNew ? 'Créer le module' : 'Enregistrer'}</button>
             </div>
           </div>
 
-          <!-- Card Preview -->
-          <div class="card-preview" id="card-preview" style="background:linear-gradient(145deg, ${color}30, ${color}15); border:2px solid ${color}40;">
-            <div class="card-icon" id="card-icon" onclick="toggleIconGenerator()" style="background:linear-gradient(180deg, ${color}, ${darken(color)})">
-              ${getModuleIcon(iconType, 'white')}
-            </div>
-
-            <input type="text" class="card-name" id="input-name" placeholder="Nom du module" value="${current?.name || ''}" oninput="updatePreview()">
-
-            <div class="card-desc">
-              <div class="card-desc-preview" id="desc-preview">${descHtml || '<span style="color:rgba(255,255,255,0.3)">Description...</span>'}</div>
-              <textarea class="card-desc-edit" id="input-desc" rows="2" placeholder="Décris ce que fait ce module...">${stripHtml(descHtml)}</textarea>
-            </div>
-
-            <button class="btn-improve" id="btn-improve" onclick="improveText()">✨ Améliorer le texte</button>
-
-            <!-- Icon Generator (inline) -->
-            <div class="icon-generator" id="icon-generator">
-              <textarea id="icon-prompt" rows="3" placeholder="Décris l'icône que tu veux...&#10;Ex: un calendrier avec une horloge qui tourne"></textarea>
-              <div class="icon-generator-btns">
-                <button class="btn-improve" onclick="generateIcon()">✨ Générer l'icône</button>
-                <button class="btn-improve" onclick="toggleIconGenerator()" style="background:transparent;">Annuler</button>
-              </div>
-              <div class="icon-result" id="icon-result">
-                <div class="icon-result-preview" id="icon-result-preview"></div>
-                <div class="icon-result-btns">
-                  <button class="btn-improve" onclick="useIcon()" style="background:rgba(34,197,94,0.2);border-color:rgba(34,197,94,0.4);">✓ Utiliser</button>
-                  <button class="btn-improve" onclick="generateIcon()">↻ Autre</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Colors -->
-          <div class="section">
-            <div class="section-title">Couleur</div>
-            <div class="colors" id="colors">
-              ${COLORS.map(c => `<div class="color-btn ${c === color ? 'active' : ''}" style="background:${c}" onclick="setColor('${c}')"></div>`).join('')}
-            </div>
-          </div>
-
-          <!-- Categories -->
-          <div class="section">
-            <div class="section-title">Catégories</div>
-            <div class="categories" id="categories">
-              ${CATEGORIES.map(c => `<div class="cat-btn ${categories.includes(c.id) ? 'active' : ''}" onclick="toggleCat('${c.id}')">${c.name}</div>`).join('')}
-            </div>
-          </div>
-
-          <!-- Params -->
-          <div class="section">
-            <div class="section-title">Paramètres</div>
-            <div class="params">
-              <div class="param">
-                <label>ID technique</label>
-                <input type="text" id="input-slug" value="${current?.slug || ''}" placeholder="compta" ${current ? 'disabled' : ''}>
-              </div>
-              <div class="param">
-                <label>Prix €/mois</label>
-                <input type="text" id="input-price" value="${current?.price || ''}" placeholder="9.99">
-              </div>
-              <div class="param">
-                <label>Essai (jours)</label>
-                <input type="number" id="input-trial" value="${current?.trial_days || 7}">
-              </div>
-              <div class="param">
-                <label>Visibilité</label>
-                <select id="input-visibility">
-                  <option value="draft" ${current?.visibility === 'draft' ? 'selected' : ''}>🔒 Privé</option>
-                  <option value="beta" ${current?.visibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
-                  <option value="public" ${current?.visibility === 'public' ? 'selected' : ''}>🌍 Public</option>
-                </select>
-              </div>
-              <div class="param">
-                <label>Stripe Price ID</label>
-                <input type="text" id="input-stripe" value="${current?.stripe_price_id || ''}" placeholder="price_xxx">
-              </div>
+          <!-- Preview -->
+          <div class="preview-section">
+            <div class="preview-label">Aperçu (comme sur la home)</div>
+            <div class="preview-card" id="preview-card" style="background:linear-gradient(145deg, ${formData.color}30, ${formData.color}15); border-color:${formData.color}40;">
+              ${formData.badges.length ? `<div class="preview-badge ${formData.badges[0]}">${BADGES.find(b=>b.id===formData.badges[0])?.label.split(' ')[1] || ''}</div>` : ''}
+              <div class="preview-icon" id="preview-icon" style="background:linear-gradient(180deg, ${formData.color}, ${darkenColor(formData.color, 30)})"></div>
+              <div class="preview-name">${formData.name || 'Nom du module'}</div>
+              <div class="preview-desc">${formData.description ? formatDesc(formData.description) : 'Description...'}</div>
+              ${formData.categories.length ? `<div class="preview-categories">${formData.categories.map(c => `<span class="preview-cat">${CATEGORIES.find(x=>x.id===c)?.label || c}</span>`).join('')}</div>` : ''}
             </div>
           </div>
         </div>
       `;
+
+      // Render icons grid with animated preview
+      renderIconsGrid();
+      updatePreviewIcon();
     }
 
-    function updatePreview() {
-      const name = document.getElementById('input-name')?.value || 'Module';
-      document.querySelector('.editor-title').textContent = name;
+    function renderIconsGrid() {
+      const grid = document.getElementById('icons-grid');
+      if (!grid) return;
+      const types = MODULE_ICON_TYPES || [
+        { id: 'telegram_sheets', name: 'Tableau' },
+        { id: 'bottles_count', name: 'Stock' },
+        { id: 'people_pdf', name: 'Equipe' },
+        { id: 'calendar', name: 'Calendrier' },
+        { id: 'reservation', name: 'Check' },
+        { id: 'star', name: 'Etoile' }
+      ];
+      grid.innerHTML = types.map(t => `
+        <div class="icon-btn ${formData.icon_type === t.id ? 'active' : ''}" onclick="setIconType('${t.id}')" title="${t.name}">
+          ${getModuleIcon(t.id, formData.color, 24)}
+        </div>
+      `).join('');
+    }
+
+    function updatePreviewIcon() {
+      const el = document.getElementById('preview-icon');
+      if (!el) return;
+      if (typeof getAnimatedIcon === 'function') {
+        el.innerHTML = getAnimatedIcon(formData.icon_type, 'white');
+      } else {
+        el.innerHTML = getModuleIcon(formData.icon_type, 'white', 24);
+      }
+    }
+
+    function updateForm(key, value) {
+      formData[key] = value;
+      // Update preview in real-time
+      if (key === 'name') {
+        const el = document.querySelector('.preview-name');
+        if (el) el.textContent = value || 'Nom du module';
+      }
+      if (key === 'description') {
+        const el = document.querySelector('.preview-desc');
+        if (el) el.innerHTML = value ? formatDesc(value) : 'Description...';
+      }
     }
 
     function setColor(c) {
-      color = c;
+      formData.color = c;
       renderEditor();
     }
 
-    function toggleCat(id) {
-      if (categories.includes(id)) {
-        categories = categories.filter(c => c !== id);
+    function setIconType(type) {
+      formData.icon_type = type;
+      renderIconsGrid();
+      updatePreviewIcon();
+      document.querySelectorAll('.icon-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+
+    function toggleBadge(id) {
+      if (formData.badges.includes(id)) {
+        formData.badges = formData.badges.filter(b => b !== id);
       } else {
-        categories.push(id);
+        formData.badges.push(id);
+      }
+      // Update UI
+      document.querySelectorAll('.badge-btn').forEach(btn => {
+        const badgeId = [...btn.classList].find(c => BADGES.some(b => b.id === c));
+        if (badgeId) btn.classList.toggle('active', formData.badges.includes(badgeId));
+      });
+      // Update preview badge
+      const previewCard = document.getElementById('preview-card');
+      const existingBadge = previewCard.querySelector('.preview-badge');
+      if (existingBadge) existingBadge.remove();
+      if (formData.badges.length) {
+        const badgeEl = document.createElement('div');
+        badgeEl.className = `preview-badge ${formData.badges[0]}`;
+        badgeEl.textContent = BADGES.find(b=>b.id===formData.badges[0])?.label.split(' ')[1] || '';
+        previewCard.insertBefore(badgeEl, previewCard.firstChild);
+      }
+    }
+
+    function toggleCategory(id) {
+      if (formData.categories.includes(id)) {
+        formData.categories = formData.categories.filter(c => c !== id);
+      } else {
+        formData.categories.push(id);
       }
       document.querySelectorAll('.cat-btn').forEach(btn => {
-        const catId = btn.onclick.toString().match(/'([^']+)'/)?.[1];
-        btn.classList.toggle('active', categories.includes(catId));
+        const text = btn.textContent;
+        const cat = CATEGORIES.find(c => text.includes(c.label.split(' ')[1]));
+        if (cat) btn.classList.toggle('active', formData.categories.includes(cat.id));
       });
+      // Update preview
+      let catsEl = document.querySelector('.preview-categories');
+      if (formData.categories.length) {
+        if (!catsEl) {
+          catsEl = document.createElement('div');
+          catsEl.className = 'preview-categories';
+          document.querySelector('.preview-card').appendChild(catsEl);
+        }
+        catsEl.innerHTML = formData.categories.map(c => `<span class="preview-cat">${CATEGORIES.find(x=>x.id===c)?.label || c}</span>`).join('');
+      } else if (catsEl) {
+        catsEl.remove();
+      }
     }
 
-    function toggleIconGenerator() {
-      document.getElementById('icon-generator').classList.toggle('show');
-      document.getElementById('icon-result').classList.remove('show');
+    function setVisibility(v) {
+      formData.visibility = v;
+      document.querySelectorAll('.vis-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
     }
 
-    // Improve text with AI
+    // AI improve
     async function improveText() {
-      const btn = document.getElementById('btn-improve');
+      const btn = event.currentTarget;
       const textarea = document.getElementById('input-desc');
       const text = textarea.value.trim();
 
-      if (!text) {
-        textarea.focus();
-        return;
-      }
+      if (!text) { textarea.focus(); return; }
 
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Amélioration...';
+      btn.innerHTML = '<span class="spinner"></span> Claude réfléchit...';
 
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         const res = await fetch(SUPABASE_URL + '/functions/v1/admin-ai-generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-          body: JSON.stringify({ type: 'description', name: document.getElementById('input-name').value, currentDescription: text, color })
+          body: JSON.stringify({ type: 'description', name: formData.name, currentDescription: text, color: formData.color })
         });
         const data = await res.json();
         if (data.result) {
-          descHtml = data.result;
-          document.getElementById('desc-preview').innerHTML = descHtml;
-          textarea.value = stripHtml(descHtml);
+          formData.description = data.result;
+          textarea.value = stripHtml(data.result);
+          document.querySelector('.preview-desc').innerHTML = formatDesc(data.result);
         }
       } catch (e) {
         alert('Erreur: ' + e.message);
       }
 
       btn.disabled = false;
-      btn.textContent = '✨ Améliorer le texte';
-    }
-
-    // Generate icon with AI
-    async function generateIcon() {
-      const prompt = document.getElementById('icon-prompt').value.trim();
-      if (!prompt) return;
-
-      const btn = document.querySelector('#icon-generator .btn-improve');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>';
-
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const res = await fetch(SUPABASE_URL + '/functions/v1/admin-ai-generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-          body: JSON.stringify({ type: 'generate_svg', prompt, animated: true })
-        });
-        const data = await res.json();
-        if (data.result?.svg) {
-          generatedSvg = data.result.svg;
-          const preview = document.getElementById('icon-result-preview');
-          preview.style.background = `linear-gradient(180deg, ${color}, ${darken(color)})`;
-          preview.innerHTML = generatedSvg.replace(/currentColor/g, 'white');
-          document.getElementById('icon-result').classList.add('show');
-        }
-      } catch (e) {
-        alert('Erreur: ' + e.message);
-      }
-
-      btn.disabled = false;
-      btn.textContent = '✨ Générer l\'icône';
-    }
-
-    function useIcon() {
-      if (!generatedSvg) return;
-      iconType = 'custom';
-      if (typeof MODULE_ICON_TEMPLATES !== 'undefined') {
-        MODULE_ICON_TEMPLATES.custom = () => generatedSvg;
-      }
-      document.getElementById('card-icon').innerHTML = generatedSvg.replace(/currentColor/g, 'white');
-      toggleIconGenerator();
+      btn.innerHTML = '✨ Améliorer avec Claude';
     }
 
     // Save
     async function save() {
-      const slug = document.getElementById('input-slug').value.trim();
-      const name = document.getElementById('input-name').value.trim();
-
-      if (!name || !slug) {
-        alert('Nom et ID requis');
+      if (!formData.name || !formData.slug) {
+        alert('Nom et ID technique requis');
         return;
       }
 
       const moduleData = {
-        slug,
-        name,
-        description: descHtml || document.getElementById('input-desc').value,
-        color,
-        icon_type: iconType,
-        categories: categories.length ? categories : null,
-        price: document.getElementById('input-price').value || null,
-        trial_days: parseInt(document.getElementById('input-trial').value) || 7,
-        visibility: document.getElementById('input-visibility').value,
-        stripe_price_id: document.getElementById('input-stripe').value || null,
+        slug: formData.slug,
+        name: formData.name,
+        description: formData.description,
+        color: formData.color,
+        icon_type: formData.icon_type,
+        badges: formData.badges.length ? formData.badges : null,
+        categories: formData.categories.length ? formData.categories : null,
+        visibility: formData.visibility,
+        price: formData.price || null,
+        trial_days: parseInt(formData.trial_days) || 7,
+        stripe_price_id: formData.stripe_price_id || null,
         status: 'available',
-        setup_url: '/' + slug + '/setup/'
+        setup_url: '/' + formData.slug + '/setup/'
       };
 
       let error;
@@ -692,7 +564,7 @@
       }
 
       await loadModules();
-      const saved = modules.find(m => m.slug === slug);
+      const saved = modules.find(m => m.slug === formData.slug);
       if (saved) selectModule(saved.id);
     }
 
@@ -701,21 +573,27 @@
       await supabaseClient.from('modules').delete().eq('id', current.id);
       current = null;
       await loadModules();
-      document.getElementById('main').innerHTML = '<div class="main-empty">Sélectionne un module</div>';
+      document.getElementById('main').innerHTML = '<div class="main-empty"><span style="font-size:32px;">📦</span><span>Sélectionne un module</span></div>';
     }
 
     // Utils
     function stripHtml(html) {
       const div = document.createElement('div');
-      div.innerHTML = html;
+      div.innerHTML = html || '';
       return div.textContent || '';
     }
 
-    function darken(hex) {
+    function formatDesc(desc) {
+      // Keep HTML tags for preview
+      return desc || '';
+    }
+
+    function darkenColor(hex, amount = 40) {
+      if (!hex || hex.length < 7) return hex;
       const num = parseInt(hex.replace('#', ''), 16);
-      const r = Math.max(0, (num >> 16) - 40);
-      const g = Math.max(0, ((num >> 8) & 0xFF) - 40);
-      const b = Math.max(0, (num & 0xFF) - 40);
+      const r = Math.max(0, (num >> 16) - amount);
+      const g = Math.max(0, ((num >> 8) & 0xFF) - amount);
+      const b = Math.max(0, (num & 0xFF) - amount);
       return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
     }
   </script>
