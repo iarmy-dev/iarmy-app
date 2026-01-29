@@ -12,9 +12,8 @@
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0a; color: white; min-height: 100vh; }
 
-    /* Layout */
-    .app { display: grid; grid-template-columns: 380px 1fr; min-height: 100vh; }
-    @media (max-width: 900px) { .app { grid-template-columns: 1fr; } }
+    .app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+    @media (max-width: 800px) { .app { grid-template-columns: 1fr; } }
 
     /* Sidebar */
     .sidebar {
@@ -22,7 +21,6 @@
       border-right: 1px solid rgba(255,255,255,0.06);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
     .sidebar-header {
       padding: 20px;
@@ -31,32 +29,24 @@
       align-items: center;
       justify-content: space-between;
     }
-    .sidebar-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .sidebar-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
     .sidebar-title a { color: rgba(255,255,255,0.4); text-decoration: none; }
-    .sidebar-title a:hover { color: white; }
 
-    /* Modules List */
     .modules-list { flex: 1; overflow-y: auto; padding: 12px; }
     .module-item {
-      padding: 14px 16px;
-      border-radius: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 4px;
+      transition: background 0.15s;
     }
     .module-item:hover { background: rgba(255,255,255,0.04); }
-    .module-item.active { background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); }
-    .module-item-color { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; }
-    .module-item-info { flex: 1; min-width: 0; }
-    .module-item-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
-    .module-item-meta { font-size: 11px; color: rgba(255,255,255,0.4); display: flex; gap: 8px; }
-    .module-item-badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; text-transform: uppercase; }
-    .module-item-badge.draft { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
-    .module-item-badge.beta { background: rgba(168,85,247,0.15); color: #c084fc; }
-    .module-item-badge.public { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .module-item.active { background: rgba(255,107,53,0.15); }
+    .module-item-color { width: 28px; height: 28px; border-radius: 8px; }
+    .module-item-name { font-size: 14px; font-weight: 500; }
 
     .btn-new {
       margin: 12px;
@@ -66,249 +56,240 @@
       border-radius: 12px;
       color: white;
       font-weight: 600;
-      font-size: 14px;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .btn-new:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,53,0.3); }
 
-    /* Main Content */
-    .main { padding: 32px; overflow-y: auto; }
+    /* Main */
+    .main { padding: 40px; overflow-y: auto; }
     .main-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.3); }
 
     /* Editor */
-    .editor { max-width: 800px; margin: 0 auto; }
-    .editor-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
-    .editor-title { font-size: 24px; font-weight: 700; }
-    .editor-actions { display: flex; gap: 12px; }
-    .btn { padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; border: none; }
-    .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8B5E); color: white; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,107,53,0.3); }
-    .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; }
-    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-    .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
-    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .editor { max-width: 600px; margin: 0 auto; }
 
-    /* Preview Section */
-    .preview-section {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 24px;
-      padding: 32px;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-    .preview-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
-
-    /* Preview Card - Exactement comme sur le site */
-    .preview-card {
-      width: 180px;
-      height: 180px;
-      border-radius: 20px;
-      padding: 20px 16px;
+    .editor-header {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .editor-title { font-size: 20px; font-weight: 700; }
+    .editor-actions { display: flex; gap: 10px; }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-save { background: linear-gradient(135deg, #FF6B35, #FF8B5E); color: white; }
+    .btn-save:hover { transform: translateY(-1px); }
+    .btn-delete { background: transparent; color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .btn-delete:hover { background: rgba(239,68,68,0.1); }
+
+    /* Card Preview */
+    .card-preview {
+      border-radius: 20px;
+      padding: 32px 24px;
+      text-align: center;
+      margin-bottom: 32px;
+      transition: all 0.2s;
+    }
+
+    .card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      margin: 0 auto;
-      transition: all 0.3s;
-      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s;
+      position: relative;
     }
-    .preview-card:hover { transform: translateY(-4px); }
-    .preview-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-    .preview-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-    .preview-status { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .card-icon:hover { transform: scale(1.1); }
+    .card-icon::after {
+      content: '✏️';
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .card-icon:hover::after { opacity: 1; }
 
-    /* Mini icon animations - copied from home page */
-    .mini-sheet { width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
-    .mini-sheet-row { display: flex; height: 8px; }
-    .mini-sheet-cell { flex: 1; background: rgba(255,255,255,0.1); margin: 1px; border-radius: 1px; }
-    .mini-sheet-cell.fill { animation: cellFill 2s ease-in-out infinite; }
-    .mini-sheet-cell.fill-1 { animation-delay: 0s; }
-    .mini-sheet-cell.fill-2 { animation-delay: 0.3s; }
-    .mini-sheet-cell.fill-3 { animation-delay: 0.6s; }
-    .mini-sheet-cell.fill-4 { animation-delay: 0.9s; }
-    .mini-sheet-cell.fill-5 { animation-delay: 1.2s; }
-    .mini-sheet-cell.fill-6 { animation-delay: 1.5s; }
-    @keyframes cellFill { 0%, 40% { background: rgba(255,255,255,0.1); } 50%, 90% { background: #4ade80; } 100% { background: rgba(255,255,255,0.1); } }
-
-    .mini-stock { width: 36px; height: 28px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; position: relative; }
-    .mini-bottle { position: relative; width: 12px; height: 24px; }
-    .mini-bottle-body { position: absolute; bottom: 0; width: 12px; height: 16px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-radius: 2px 2px 3px 3px; overflow: hidden; }
-    .mini-bottle-neck { position: absolute; bottom: 15px; left: 3px; width: 6px; height: 6px; background: rgba(6,182,212,0.15); border: 1.5px solid #06B6D4; border-bottom: none; border-radius: 2px 2px 0 0; }
-    .mini-bottle-cap { position: absolute; bottom: 20px; left: 2px; width: 8px; height: 3px; background: #06B6D4; border-radius: 1px; }
-    .mini-bottle-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #22D3EE, #06B6D4); border-radius: 0 0 2px 2px; }
-    .mini-bottle-1 .mini-bottle-fill { animation: bottleEmpty 3s ease-in-out infinite; }
-    .mini-bottle-2 .mini-bottle-fill { animation: bottleFill 3s ease-in-out infinite; }
-    @keyframes bottleEmpty { 0%, 10% { height: 75%; } 45%, 55% { height: 15%; } 90%, 100% { height: 75%; } }
-    @keyframes bottleFill { 0%, 10% { height: 15%; } 45%, 55% { height: 75%; } 90%, 100% { height: 15%; } }
-    .mini-stock-count { position: absolute; top: 0; right: -2px; width: 12px; height: 12px; background: #06B6D4; border-radius: 50%; font-size: 7px; font-weight: 700; color: #083344; display: flex; align-items: center; justify-content: center; animation: countPop 3s ease-in-out infinite; }
-    @keyframes countPop { 0%, 35% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 60%, 80% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(0.8); } }
-
-    .mini-paie { width: 32px; height: 28px; display: flex; align-items: center; justify-content: center; position: relative; }
-    .mini-paie-people { display: flex; align-items: flex-end; gap: 1px; position: absolute; animation: paiePeopleToEuro 3.5s ease-in-out infinite; }
-    .mini-paie-person { display: flex; flex-direction: column; align-items: center; }
-    .mini-paie-head { width: 5px; height: 5px; border-radius: 50%; background: white; margin-bottom: 1px; }
-    .mini-paie-body { width: 7px; height: 7px; background: white; border-radius: 2px 2px 1px 1px; }
-    @keyframes paiePeopleToEuro { 0%, 50% { opacity: 1; } 60%, 90% { opacity: 0; } 100% { opacity: 1; } }
-    .mini-paie-euro { position: absolute; font-size: 18px; font-weight: 800; color: white; opacity: 0; animation: paieEuroAppear 3.5s ease-in-out infinite; }
-    @keyframes paieEuroAppear { 0%, 50% { opacity: 0; transform: scale(0.5); } 65% { opacity: 1; transform: scale(1.1); } 75%, 85% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(0.8); } }
-
-    /* Form */
-    .form-section { margin-bottom: 28px; }
-    .form-section-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
-    .form-input, .form-select, .form-textarea {
+    .card-name {
+      font-size: 22px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      color: white;
+      text-align: center;
       width: 100%;
-      padding: 14px 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 12px;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .card-name:focus { outline: none; background: rgba(255,255,255,0.05); }
+    .card-name::placeholder { color: rgba(255,255,255,0.3); }
+
+    .card-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 16px;
+      min-height: 50px;
+    }
+    .card-desc-preview { margin-bottom: 12px; }
+    .card-desc-edit {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
       color: white;
       font-size: 14px;
-      transition: all 0.2s;
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus {
-      outline: none;
-      border-color: rgba(255,107,53,0.5);
-      background: rgba(255,255,255,0.06);
-    }
-    .form-textarea { min-height: 80px; resize: vertical; }
-    .form-hint { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 6px; }
-
-    /* Color Picker */
-    .color-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-    .color-option {
-      aspect-ratio: 1;
-      border-radius: 12px;
-      cursor: pointer;
-      border: 3px solid transparent;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .color-option:hover { transform: scale(1.1); }
-    .color-option.selected { border-color: white; box-shadow: 0 0 20px currentColor; }
-    .color-option svg { opacity: 0; }
-    .color-option.selected svg { opacity: 1; }
-
-    /* Icon Type */
-    .icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .icon-option {
-      padding: 16px;
-      background: rgba(255,255,255,0.02);
-      border: 2px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
+      padding: 12px;
+      resize: none;
       text-align: center;
+      line-height: 1.6;
     }
-    .icon-option:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.15); }
-    .icon-option.selected { border-color: #FF6B35; background: rgba(255,107,53,0.1); }
-    .icon-option-preview { height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-    .icon-option-label { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .card-desc-edit:focus { outline: none; border-color: rgba(255,255,255,0.2); }
+    .card-desc-edit::placeholder { color: rgba(255,255,255,0.3); }
 
-    /* AI Icon Generator */
-    .ai-generator {
+    .btn-improve {
+      padding: 10px 24px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-improve:hover { background: rgba(255,255,255,0.12); }
+    .btn-improve:disabled { opacity: 0.5; }
+
+    /* Icon Generator - inline */
+    .icon-generator {
+      display: none;
       margin-top: 16px;
       padding: 16px;
-      background: rgba(255,107,53,0.05);
-      border: 1px dashed rgba(255,107,53,0.3);
-      border-radius: 16px;
-    }
-    .ai-generator-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      color: #FF6B35;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .ai-generator-input {
-      width: 100%;
-      padding: 12px;
       background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+    }
+    .icon-generator.show { display: block; }
+    .icon-generator textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px;
       color: white;
       font-size: 13px;
+      padding: 12px;
       resize: none;
       margin-bottom: 12px;
     }
-    .ai-generator-input::placeholder { color: rgba(255,255,255,0.3); }
-    .ai-generator-input:focus { outline: none; border-color: #FF6B35; }
-    .ai-generator-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .ai-btn {
-      padding: 10px 16px;
-      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ai-btn:hover { transform: scale(1.02); box-shadow: 0 4px 15px rgba(255,107,53,0.3); }
-    .ai-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .ai-btn.secondary { background: rgba(255,255,255,0.1); }
-    .ai-preview {
-      margin-top: 12px;
-      padding: 16px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 12px;
+    .icon-generator textarea:focus { outline: none; border-color: rgba(255,255,255,0.2); }
+    .icon-generator textarea::placeholder { color: rgba(255,255,255,0.4); }
+    .icon-generator-btns { display: flex; gap: 8px; justify-content: center; }
+    .icon-result {
       display: none;
-      align-items: center;
-      gap: 16px;
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 12px;
+      text-align: center;
     }
-    .ai-preview.show { display: flex; }
-    .ai-preview-icon {
+    .icon-result.show { display: block; }
+    .icon-result-preview {
       width: 56px;
       height: 56px;
       border-radius: 50%;
+      margin: 0 auto 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
     }
-    .ai-preview-icon svg { width: 28px; height: 28px; }
-    .ai-preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .ai-preview-btn {
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .ai-preview-btn:hover { background: rgba(255,255,255,0.15); }
-    .ai-preview-btn.use { background: #22c55e; }
-    .ai-spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .icon-result-btns { display: flex; gap: 8px; justify-content: center; }
 
-    /* Auth Screen */
+    /* Sections */
+    .section {
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    /* Colors */
+    .colors {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .color-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .color-btn:hover { transform: scale(1.1); }
+    .color-btn.active { border-color: white; }
+
+    /* Categories */
+    .categories {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .cat-btn {
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .cat-btn:hover { border-color: rgba(255,255,255,0.2); }
+    .cat-btn.active { background: rgba(255,107,53,0.15); border-color: #FF6B35; color: white; }
+
+    /* Params */
+    .params {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+    }
+    .param label {
+      display: block;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 6px;
+    }
+    .param input, .param select {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: white;
+      font-size: 13px;
+    }
+    .param input:focus, .param select:focus { outline: none; border-color: rgba(255,255,255,0.2); }
+
+    /* Auth */
     .auth-screen {
       position: fixed;
       inset: 0;
@@ -316,1304 +297,385 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 100;
     }
     .auth-box {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 48px;
-      max-width: 400px;
-      width: 90%;
       text-align: center;
+      padding: 40px;
     }
-    .auth-icon {
-      width: 64px;
-      height: 64px;
-      background: linear-gradient(135deg, #FF6B35, #FF8B5E);
-      border-radius: 18px;
-      margin: 0 auto 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .auth-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-    .auth-subtitle { color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 32px; }
+    .auth-title { font-size: 20px; margin-bottom: 24px; }
     .auth-btn {
-      width: 100%;
-      padding: 16px 24px;
+      padding: 14px 32px;
       background: white;
       border: none;
-      border-radius: 14px;
-      color: #333;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      transition: all 0.2s;
-    }
-    .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,0.2); }
-    .auth-error { color: #ef4444; margin-top: 16px; font-size: 13px; display: none; }
-    .auth-loading { color: rgba(255,255,255,0.5); margin-top: 16px; font-size: 13px; display: none; }
-
-    /* Delete confirmation */
-    .delete-confirm { display: none; padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; margin-top: 24px; }
-    .delete-confirm.active { display: block; }
-    .delete-confirm p { margin-bottom: 12px; font-size: 13px; color: #f87171; }
-    .delete-confirm-actions { display: flex; gap: 12px; }
-
-    /* New Preview Card - Large */
-    .preview-card-large {
-      width: 220px;
-      min-height: 200px;
-      border-radius: 24px;
-      padding: 24px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      margin: 0 auto 20px;
-      transition: all 0.3s;
-      border: 2px solid rgba(255,255,255,0.15);
-    }
-    .preview-icon-large {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-    }
-    .preview-name-input {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 20px;
-      font-weight: 700;
-      text-align: center;
-      width: 100%;
-      margin-bottom: 8px;
-      outline: none;
-    }
-    .preview-name-input::placeholder { color: rgba(255,255,255,0.3); }
-    .preview-desc-textarea {
-      width: 100%;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      color: white;
-      font-size: 13px;
-      line-height: 1.5;
-      padding: 12px;
-      resize: none;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-    .preview-desc-textarea::placeholder { color: rgba(255,255,255,0.3); }
-    .preview-desc-textarea:focus { outline: none; border-color: rgba(255,255,255,0.3); }
-
-    .improve-btn {
-      padding: 10px 20px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 20px;
-      color: white;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .improve-btn:hover {
-      background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
-      border-color: rgba(255,255,255,0.3);
-    }
-    .improve-btn:disabled { opacity: 0.5; cursor: wait; }
-
-    .preview-icon-large { cursor: pointer; transition: transform 0.2s; }
-    .preview-icon-large:hover { transform: scale(1.1); }
-
-    /* Price display */
-    .preview-price {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .price-amount {
-      font-size: 36px;
-      font-weight: 800;
-      color: white;
-    }
-    .price-period {
-      font-size: 18px;
-      color: rgba(255,255,255,0.5);
-    }
-    .price-trial {
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
-      margin-top: 4px;
-    }
-
-    /* AI Action buttons row */
-    .ai-actions-row {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-    }
-    .ai-action-btn {
-      padding: 12px 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 20px;
-      color: white;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .ai-action-btn:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.25);
-    }
-
-    /* Category chips */
-    .category-chips {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .category-chip {
-      padding: 10px 16px;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.6);
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .category-chip:hover { border-color: rgba(255,255,255,0.2); }
-    .category-chip.selected {
-      background: rgba(255,107,53,0.15);
-      border-color: #FF6B35;
-      color: white;
-    }
-
-    /* Params grid */
-    .params-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 16px;
-    }
-    @media (max-width: 900px) {
-      .params-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 600px) {
-      .params-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    .param-item { }
-    .param-label {
-      display: block;
-      font-size: 11px;
-      color: rgba(255,255,255,0.4);
-      margin-bottom: 6px;
-    }
-    .param-input, .param-select {
-      width: 100%;
-      padding: 12px 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
-      color: white;
-      font-size: 14px;
-    }
-    .param-input:focus, .param-select:focus {
-      outline: none;
-      border-color: rgba(255,107,53,0.5);
-    }
-
-    /* Modal */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-box {
-      background: #1a1a1a;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-header {
-      padding: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .modal-header h3 { font-size: 16px; font-weight: 600; }
-    .modal-close {
-      width: 32px;
-      height: 32px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 50%;
-      color: white;
-      font-size: 18px;
+      font-weight: 600;
       cursor: pointer;
-    }
-    .modal-body { padding: 20px; }
-    .modal-footer {
-      padding: 16px 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
       display: flex;
+      align-items: center;
       gap: 10px;
-      justify-content: flex-end;
     }
-    .ai-btn.use { background: #22c55e; }
-    .ai-btn.secondary { background: rgba(255,255,255,0.1); }
+    .auth-error { color: #f87171; margin-top: 16px; font-size: 13px; display: none; }
+
+    /* Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <!-- Auth Screen -->
+  <!-- Auth -->
   <div class="auth-screen" id="auth-screen">
     <div class="auth-box">
-      <div class="auth-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-      </div>
-      <h2 class="auth-title">Admin iArmy</h2>
-      <p class="auth-subtitle">Connexion reservee aux administrateurs</p>
-      <button class="auth-btn" onclick="signInWithGoogle()">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Connexion avec Google
+      <div class="auth-title">Admin iArmy</div>
+      <button class="auth-btn" onclick="signIn()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Connexion Google
       </button>
       <p class="auth-error" id="auth-error"></p>
-      <p class="auth-loading" id="auth-loading">Verification...</p>
     </div>
   </div>
 
-  <!-- Main App -->
-  <div class="app" id="main-app" style="display: none;">
-    <!-- Sidebar -->
+  <!-- App -->
+  <div class="app" id="app" style="display:none;">
     <div class="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-title">
-          <a href="/">←</a>
-          Modules
+          <a href="/">←</a> Modules
         </div>
-        <a href="/admin/testeurs/" style="font-size:12px; color:rgba(255,255,255,0.5); text-decoration:none;">🧪 Testeurs</a>
+        <a href="/admin/testeurs/" style="font-size:11px; color:rgba(255,255,255,0.4); text-decoration:none;">🧪 Testeurs</a>
       </div>
-      <div class="modules-list" id="modules-list">
-        <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.3);">Chargement...</div>
-      </div>
-      <button class="btn-new" onclick="createNew()">+ Nouveau Soldat</button>
+      <div class="modules-list" id="modules-list"></div>
+      <button class="btn-new" onclick="createModule()">+ Nouveau module</button>
     </div>
 
-    <!-- Main Content -->
-    <div class="main" id="main-content">
-      <div class="main-empty">
-        <p>Selectionne un module ou cree-en un nouveau</p>
-      </div>
+    <div class="main" id="main">
+      <div class="main-empty">Sélectionne un module</div>
     </div>
   </div>
 
-  <!-- Editor Template (hidden) -->
-  <template id="editor-template">
-    <div class="editor">
-      <div class="editor-header">
-        <h1 class="editor-title" id="editor-title">Nouveau Soldat</h1>
-        <div class="editor-actions">
-          <button class="btn btn-danger" onclick="confirmDelete()" id="btn-delete" style="display: none;">Supprimer</button>
-          <button class="btn btn-primary" onclick="save()">Enregistrer</button>
-        </div>
-      </div>
-
-      <form id="module-form" onsubmit="return false;">
-        <input type="hidden" id="field-id">
-
-        <!-- Live Preview Card - Editable -->
-        <div class="preview-section">
-          <div class="preview-card-large" id="preview-card">
-            <!-- Icon - clickable to generate -->
-            <div class="preview-icon-large" id="preview-icon" onclick="openIconGenerator()" title="Clique pour créer une icône"></div>
-
-            <!-- Name - editable -->
-            <input type="text" class="preview-name-input" id="field-name" placeholder="Nom du soldat" required>
-
-            <!-- Description - editable textarea -->
-            <textarea class="preview-desc-textarea" id="field-description-edit" placeholder="Décris ce que fait ce module..." rows="3"></textarea>
-
-            <!-- Improve button -->
-            <button type="button" class="improve-btn" onclick="improveText()">
-              ✨ Améliorer le texte
-            </button>
-          </div>
-
-          <!-- Price display -->
-          <div class="preview-price">
-            <span class="price-amount" id="preview-price">0€</span><span class="price-period">/mois</span>
-            <div class="price-trial" id="preview-trial">7 jours d'essai gratuit</div>
-          </div>
-        </div>
-
-        <!-- Color Grid -->
-        <div class="form-section">
-          <div class="form-section-title">COULEUR</div>
-          <div class="color-grid" id="color-grid"></div>
-        </div>
-
-        <!-- Categories -->
-        <div class="form-section">
-          <div class="form-section-title">CATEGORIES</div>
-          <div class="category-chips" id="category-chips"></div>
-        </div>
-
-        <!-- Parameters Row -->
-        <div class="form-section">
-          <div class="form-section-title">PARAMETRES</div>
-          <div class="params-grid">
-            <div class="param-item">
-              <label class="param-label">ID technique</label>
-              <input type="text" class="param-input" id="field-slug" placeholder="compta" pattern="[a-z_]+">
-            </div>
-            <div class="param-item">
-              <label class="param-label">Prix €/mois</label>
-              <input type="text" class="param-input" id="field-price" placeholder="9,99">
-            </div>
-            <div class="param-item">
-              <label class="param-label">Essai (jours)</label>
-              <input type="number" class="param-input" id="field-trial-days" placeholder="7" value="7">
-            </div>
-            <div class="param-item">
-              <label class="param-label">Visibilité</label>
-              <select class="param-select" id="field-visibility">
-                <option value="draft">🔒 Privé (moi seul)</option>
-                <option value="beta">🧪 Beta (testeurs)</option>
-                <option value="public">🌍 Public (tout le monde)</option>
-              </select>
-            </div>
-            <div class="param-item">
-              <label class="param-label">Stripe Price ID</label>
-              <input type="text" class="param-input" id="field-stripe-price-id" placeholder="price_xxx">
-            </div>
-          </div>
-        </div>
-
-        <!-- Hidden fields -->
-        <input type="hidden" id="field-description">
-        <input type="hidden" id="field-status" value="available">
-        <input type="hidden" id="field-setup-url">
-        <input type="hidden" id="field-badge">
-        <input type="hidden" id="field-badge-until">
-
-        <!-- Delete Confirmation -->
-        <div class="delete-confirm" id="delete-confirm">
-          <p>⚠️ Supprimer définitivement ce module ? Cette action est irréversible.</p>
-          <div class="delete-confirm-actions">
-            <button type="button" class="btn btn-secondary" onclick="cancelDelete()">Annuler</button>
-            <button type="button" class="btn btn-danger" onclick="deleteModule()">Supprimer</button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <!-- Icon Generator Modal -->
-    <div class="modal-overlay" id="modal-icon">
-      <div class="modal-box">
-        <div class="modal-header">
-          <h3>Créer une icône avec l'IA</h3>
-          <button class="modal-close" onclick="closeModal('icon')">×</button>
-        </div>
-        <div class="modal-body">
-          <textarea class="ai-generator-input" id="ai-prompt" rows="4" placeholder="Décris l'icône que tu veux...
-
-Exemples :
-• un tableau avec des cellules qui se remplissent une par une, animé
-• deux bouteilles de vin, une qui se vide et l'autre qui se remplit
-• des personnes qui se transforment en symbole euro"></textarea>
-          <label style="display:flex; align-items:center; gap:8px; margin:12px 0; font-size:13px; color:rgba(255,255,255,0.6); cursor:pointer;">
-            <input type="checkbox" id="ai-animated" checked style="accent-color:#FF6B35;"> Avec animation
-          </label>
-          <div class="ai-preview" id="ai-preview" style="display:none;">
-            <div class="ai-preview-icon" id="ai-preview-icon"></div>
-            <div style="flex:1;">
-              <p id="ai-preview-desc" style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:8px;"></p>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button type="button" class="ai-btn use" onclick="useGeneratedIcon()" style="background:#22c55e;">✓ Utiliser</button>
-                <button type="button" class="ai-btn secondary" onclick="generateIcon()">↻ Régénérer</button>
-              </div>
-              <div style="margin-top:12px;">
-                <input type="text" id="ai-modify-input" class="form-input" style="width:100%; padding:10px; font-size:13px; margin-bottom:8px;" placeholder="Modifier: rends-la plus grosse, ajoute des étoiles...">
-                <button type="button" class="ai-btn secondary" onclick="modifyIcon()" style="width:100%;">Appliquer modification</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="ai-btn" id="ai-generate-btn" onclick="generateIcon()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            Générer l'icône
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Description Editor Modal -->
-    <div class="modal-overlay" id="modal-description">
-      <div class="modal-box">
-        <div class="modal-header">
-          <h3>Description du module</h3>
-          <button class="modal-close" onclick="closeModal('description')">×</button>
-        </div>
-        <div class="modal-body">
-          <textarea class="ai-generator-input" id="desc-editor" rows="4" placeholder="Décris ce que fait ce soldat..."></textarea>
-          <div class="ai-desc-preview" id="ai-desc-preview" style="display:none; padding:12px; background:rgba(0,0,0,0.3); border-radius:10px; margin-top:12px;"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="ai-btn secondary" onclick="closeModal('description')">Annuler</button>
-          <button type="button" class="ai-btn" onclick="generateDescriptionFromModal()">✨ Générer avec IA</button>
-          <button type="button" class="ai-btn" onclick="saveDescription()" style="background:#22c55e;">Valider</button>
-        </div>
-      </div>
-    </div>
-  </template>
-
   <script>
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    const SUPABASE_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
 
-    // Color presets
-    const COLOR_PRESETS = [
-      { name: 'Vert', color: '#22c55e' },
-      { name: 'Cyan', color: '#06b6d4' },
-      { name: 'Orange', color: '#f59e0b' },
-      { name: 'Violet', color: '#8b5cf6' },
-      { name: 'Rose', color: '#ec4899' },
-      { name: 'Jaune', color: '#eab308' },
-      { name: 'Bleu', color: '#3b82f6' },
-      { name: 'Rouge', color: '#ef4444' },
-      { name: 'Indigo', color: '#6366f1' },
-      { name: 'Emeraude', color: '#10b981' },
-      { name: 'Fuchsia', color: '#d946ef' },
-      { name: 'Lime', color: '#84cc16' }
-    ];
-
-    // Icon types with preview
-    const ICON_TYPES = [
-      { id: 'telegram_sheets', name: 'Tableur', desc: 'Cellules qui se remplissent' },
-      { id: 'bottles_count', name: 'Bouteilles', desc: 'Stock qui change' },
-      { id: 'people_pdf', name: 'Equipe', desc: 'Personnes → Euro' },
-      { id: 'calendar', name: 'Calendrier', desc: 'Planning' },
-      { id: 'reservation', name: 'Reservation', desc: 'Check liste' },
-      { id: 'star', name: 'Fidelite', desc: 'Etoile coeur' }
-    ];
-
-    // Categories disponibles
+    const COLORS = ['#22c55e','#06b6d4','#f59e0b','#8b5cf6','#ec4899','#eab308','#3b82f6','#ef4444','#6366f1','#10b981','#d946ef','#84cc16'];
     const CATEGORIES = [
-      { id: 'restaurant', name: 'Restaurant', emoji: '🍽️' },
-      { id: 'bar', name: 'Bar', emoji: '🍸' },
-      { id: 'hotel', name: 'Hotel', emoji: '🏨' },
-      { id: 'commerce', name: 'Commerce', emoji: '🏪' },
-      { id: 'service', name: 'Service', emoji: '🔧' }
+      { id: 'restaurant', name: '🍽️ Restaurant' },
+      { id: 'bar', name: '🍸 Bar' },
+      { id: 'hotel', name: '🏨 Hotel' },
+      { id: 'commerce', name: '🏪 Commerce' },
+      { id: 'service', name: '🔧 Service' }
     ];
-
-    // Icon templates - utilise le système centralisé de /js/icons.js
-    // MINI_ICON_TEMPLATES est défini dans icons.js
 
     let modules = [];
-    let currentModule = null;
-    let selectedColor = COLOR_PRESETS[0].color;
-    let selectedIconType = 'telegram_sheets';
-    let selectedCategories = [];
-    let currentDescription = '';
-    let currentDescriptionHtml = '';
+    let current = null;
+    let color = COLORS[0];
+    let categories = [];
+    let iconType = 'telegram_sheets';
+    let descHtml = '';
+    let generatedSvg = null;
 
-    // ==================
-    // AUTH
-    // ==================
-    async function signInWithGoogle() {
-      document.getElementById('auth-loading').style.display = 'block';
-      document.getElementById('auth-error').style.display = 'none';
-      sessionStorage.setItem('auth_redirect', window.location.href);
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + '/auth/callback' }
-      });
-      if (error) {
-        document.getElementById('auth-loading').style.display = 'none';
-        document.getElementById('auth-error').textContent = error.message;
-        document.getElementById('auth-error').style.display = 'block';
-      }
+    // Auth
+    async function signIn() {
+      await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback' }});
     }
 
     async function checkAuth() {
-      document.getElementById('auth-loading').style.display = 'block';
-      const { data: { session } } = await supabaseClient.auth.getSession();
-
-      if (session && ADMIN_EMAILS.includes(session.user.email)) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
         document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'grid';
-        init();
-        return true;
+        document.getElementById('app').style.display = 'grid';
+        loadModules();
       } else if (session) {
-        document.getElementById('auth-error').textContent = 'Email non autorise: ' + session.user.email;
+        document.getElementById('auth-error').textContent = 'Non autorisé';
         document.getElementById('auth-error').style.display = 'block';
-        document.getElementById('auth-loading').style.display = 'none';
-        await supabaseClient.auth.signOut();
-        return false;
+        supabase.auth.signOut();
       }
-      document.getElementById('auth-loading').style.display = 'none';
-      return false;
     }
-
     checkAuth();
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) checkAuth();
-    });
+    supabase.auth.onAuthStateChange(() => checkAuth());
 
-    // ==================
-    // INIT
-    // ==================
-    async function init() {
-      await loadModules();
-      setupColorGrid();
-      setupIconGrid();
-    }
-
-    // ==================
-    // MODULES LIST
-    // ==================
+    // Load modules
     async function loadModules() {
-      const { data, error } = await supabaseClient
-        .from('modules')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (error) {
-        console.error('Error:', error);
-        return;
-      }
-
+      const { data } = await supabase.from('modules').select('*').order('sort_order');
       modules = data || [];
-      renderModulesList();
+      renderList();
     }
 
-    function renderModulesList() {
-      const container = document.getElementById('modules-list');
-      if (modules.length === 0) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.3);">Aucun module</div>';
-        return;
-      }
+    function renderList() {
+      const el = document.getElementById('modules-list');
+      el.innerHTML = modules.map(m => `
+        <div class="module-item ${current?.id === m.id ? 'active' : ''}" onclick="selectModule('${m.id}')">
+          <div class="module-item-color" style="background:${m.color}"></div>
+          <div class="module-item-name">${m.name || 'Sans nom'}</div>
+        </div>
+      `).join('') || '<div style="padding:20px;color:rgba(255,255,255,0.3);text-align:center;">Aucun module</div>';
+    }
 
-      container.innerHTML = modules.map(m => `
-        <div class="module-item ${currentModule?.id === m.id ? 'active' : ''}" onclick="selectModule('${m.id}')">
-          <div class="module-item-color" style="background: ${m.color};"></div>
-          <div class="module-item-info">
-            <div class="module-item-name">${m.name}</div>
-            <div class="module-item-meta">
-              <span class="module-item-badge ${m.visibility || 'public'}">${m.visibility === 'draft' ? '🔒' : m.visibility === 'beta' ? '🧪' : '🌍'}</span>
-              <span>${m.price || '0'}€</span>
+    function selectModule(id) {
+      current = modules.find(m => m.id === id);
+      color = current?.color || COLORS[0];
+      categories = current?.categories || [];
+      iconType = current?.icon_type || 'telegram_sheets';
+      descHtml = current?.description || '';
+      generatedSvg = null;
+      renderList();
+      renderEditor();
+    }
+
+    function createModule() {
+      current = null;
+      color = COLORS[0];
+      categories = [];
+      iconType = 'telegram_sheets';
+      descHtml = '';
+      generatedSvg = null;
+      renderList();
+      renderEditor();
+    }
+
+    function renderEditor() {
+      const main = document.getElementById('main');
+      const isNew = !current;
+
+      main.innerHTML = `
+        <div class="editor">
+          <div class="editor-header">
+            <div class="editor-title">${isNew ? 'Nouveau module' : current.name}</div>
+            <div class="editor-actions">
+              ${!isNew ? '<button class="btn btn-delete" onclick="deleteModule()">Supprimer</button>' : ''}
+              <button class="btn btn-save" onclick="save()">Enregistrer</button>
+            </div>
+          </div>
+
+          <!-- Card Preview -->
+          <div class="card-preview" id="card-preview" style="background:linear-gradient(145deg, ${color}30, ${color}15); border:2px solid ${color}40;">
+            <div class="card-icon" id="card-icon" onclick="toggleIconGenerator()" style="background:linear-gradient(180deg, ${color}, ${darken(color)})">
+              ${getModuleIcon(iconType, 'white')}
+            </div>
+
+            <input type="text" class="card-name" id="input-name" placeholder="Nom du module" value="${current?.name || ''}" oninput="updatePreview()">
+
+            <div class="card-desc">
+              <div class="card-desc-preview" id="desc-preview">${descHtml || '<span style="color:rgba(255,255,255,0.3)">Description...</span>'}</div>
+              <textarea class="card-desc-edit" id="input-desc" rows="2" placeholder="Décris ce que fait ce module...">${stripHtml(descHtml)}</textarea>
+            </div>
+
+            <button class="btn-improve" id="btn-improve" onclick="improveText()">✨ Améliorer le texte</button>
+
+            <!-- Icon Generator (inline) -->
+            <div class="icon-generator" id="icon-generator">
+              <textarea id="icon-prompt" rows="3" placeholder="Décris l'icône que tu veux...&#10;Ex: un calendrier avec une horloge qui tourne"></textarea>
+              <div class="icon-generator-btns">
+                <button class="btn-improve" onclick="generateIcon()">✨ Générer l'icône</button>
+                <button class="btn-improve" onclick="toggleIconGenerator()" style="background:transparent;">Annuler</button>
+              </div>
+              <div class="icon-result" id="icon-result">
+                <div class="icon-result-preview" id="icon-result-preview"></div>
+                <div class="icon-result-btns">
+                  <button class="btn-improve" onclick="useIcon()" style="background:rgba(34,197,94,0.2);border-color:rgba(34,197,94,0.4);">✓ Utiliser</button>
+                  <button class="btn-improve" onclick="generateIcon()">↻ Autre</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colors -->
+          <div class="section">
+            <div class="section-title">Couleur</div>
+            <div class="colors" id="colors">
+              ${COLORS.map(c => `<div class="color-btn ${c === color ? 'active' : ''}" style="background:${c}" onclick="setColor('${c}')"></div>`).join('')}
+            </div>
+          </div>
+
+          <!-- Categories -->
+          <div class="section">
+            <div class="section-title">Catégories</div>
+            <div class="categories" id="categories">
+              ${CATEGORIES.map(c => `<div class="cat-btn ${categories.includes(c.id) ? 'active' : ''}" onclick="toggleCat('${c.id}')">${c.name}</div>`).join('')}
+            </div>
+          </div>
+
+          <!-- Params -->
+          <div class="section">
+            <div class="section-title">Paramètres</div>
+            <div class="params">
+              <div class="param">
+                <label>ID technique</label>
+                <input type="text" id="input-slug" value="${current?.slug || ''}" placeholder="compta" ${current ? 'disabled' : ''}>
+              </div>
+              <div class="param">
+                <label>Prix €/mois</label>
+                <input type="text" id="input-price" value="${current?.price || ''}" placeholder="9.99">
+              </div>
+              <div class="param">
+                <label>Essai (jours)</label>
+                <input type="number" id="input-trial" value="${current?.trial_days || 7}">
+              </div>
+              <div class="param">
+                <label>Visibilité</label>
+                <select id="input-visibility">
+                  <option value="draft" ${current?.visibility === 'draft' ? 'selected' : ''}>🔒 Privé</option>
+                  <option value="beta" ${current?.visibility === 'beta' ? 'selected' : ''}>🧪 Beta</option>
+                  <option value="public" ${current?.visibility === 'public' ? 'selected' : ''}>🌍 Public</option>
+                </select>
+              </div>
+              <div class="param">
+                <label>Stripe Price ID</label>
+                <input type="text" id="input-stripe" value="${current?.stripe_price_id || ''}" placeholder="price_xxx">
+              </div>
             </div>
           </div>
         </div>
-      `).join('');
-    }
-
-    // ==================
-    // SELECT MODULE
-    // ==================
-    function selectModule(id) {
-      currentModule = modules.find(m => m.id === id) || null;
-      renderModulesList();
-      showEditor();
-    }
-
-    function createNew() {
-      currentModule = null;
-      selectedColor = COLOR_PRESETS[0].color;
-      selectedIconType = 'telegram_sheets';
-      showEditor();
-    }
-
-    // ==================
-    // EDITOR
-    // ==================
-    function showEditor() {
-      const main = document.getElementById('main-content');
-      const template = document.getElementById('editor-template');
-      main.innerHTML = template.innerHTML;
-
-      // Setup grids
-      setupColorGrid();
-      setupCategoryChips();
-      setupFormListeners();
-
-      // Fill form if editing
-      if (currentModule) {
-        document.getElementById('editor-title').textContent = currentModule.name || 'Module';
-        document.getElementById('field-id').value = currentModule.id;
-        document.getElementById('field-name').value = currentModule.name || '';
-        document.getElementById('field-slug').value = currentModule.slug || '';
-        document.getElementById('field-slug').disabled = true;
-
-        // Description
-        currentDescription = stripHtml(currentModule.description || '');
-        currentDescriptionHtml = currentModule.description || '';
-        document.getElementById('field-description').value = currentDescriptionHtml;
-        const descEdit = document.getElementById('field-description-edit');
-        if (descEdit) descEdit.value = currentDescription;
-
-        // Other fields
-        document.getElementById('field-visibility').value = currentModule.visibility || 'public';
-        document.getElementById('field-visibility').dataset.initialValue = currentModule.visibility || 'public';
-        document.getElementById('field-price').value = currentModule.price || '';
-        document.getElementById('field-stripe-price-id').value = currentModule.stripe_price_id || '';
-        document.getElementById('field-trial-days').value = currentModule.trial_days || 7;
-        document.getElementById('field-setup-url').value = currentModule.setup_url || '';
-        document.getElementById('field-badge').value = currentModule.badge || '';
-        document.getElementById('field-badge-until').value = currentModule.badge_until ? currentModule.badge_until.split('T')[0] : '';
-        document.getElementById('btn-delete').style.display = 'block';
-
-        selectedColor = currentModule.color || COLOR_PRESETS[0].color;
-        selectedIconType = currentModule.icon_type || 'telegram_sheets';
-        selectedCategories = currentModule.categories || [];
-      } else {
-        document.getElementById('editor-title').textContent = 'Nouveau Soldat';
-        document.getElementById('field-slug').disabled = false;
-        document.getElementById('btn-delete').style.display = 'none';
-        document.getElementById('field-trial-days').value = 7;
-        currentDescription = '';
-        currentDescriptionHtml = '';
-        selectedCategories = [];
-      }
-
-      // Update UI
-      updateColorSelection();
-      updateCategorySelection();
-      updatePreview();
-    }
-
-    function setupColorGrid() {
-      const grid = document.getElementById('color-grid');
-      if (!grid) return;
-
-      grid.innerHTML = COLOR_PRESETS.map(c => `
-        <div class="color-option ${selectedColor === c.color ? 'selected' : ''}"
-             style="background: ${c.color};"
-             onclick="selectColor('${c.color}')"
-             title="${c.name}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-      `).join('');
-    }
-
-    function setupCategoryChips() {
-      const container = document.getElementById('category-chips');
-      if (!container) return;
-
-      container.innerHTML = CATEGORIES.map(cat => `
-        <div class="category-chip ${selectedCategories.includes(cat.id) ? 'selected' : ''}"
-             onclick="toggleCategory('${cat.id}')">
-          ${cat.emoji} ${cat.name}
-        </div>
-      `).join('');
-    }
-
-    function toggleCategory(catId) {
-      if (selectedCategories.includes(catId)) {
-        selectedCategories = selectedCategories.filter(c => c !== catId);
-      } else {
-        selectedCategories.push(catId);
-      }
-      updateCategorySelection();
-    }
-
-    function updateCategorySelection() {
-      document.querySelectorAll('.category-chip').forEach(chip => {
-        const catId = chip.onclick.toString().match(/'([^']+)'/)?.[1];
-        if (catId) {
-          chip.classList.toggle('selected', selectedCategories.includes(catId));
-        }
-      });
-    }
-
-    function selectColor(color) {
-      selectedColor = color;
-      updateColorSelection();
-      updatePreview();
-    }
-
-    function selectIcon(iconType) {
-      selectedIconType = iconType;
-      updatePreview();
-    }
-
-    // ==================
-    // AI ICON GENERATOR
-    // ==================
-    let generatedSvg = null;
-    let generatedIconDescription = null;
-
-    async function generateIcon() {
-      const prompt = document.getElementById('ai-prompt')?.value.trim();
-      const animated = document.getElementById('ai-animated')?.checked ?? true;
-      const btn = document.getElementById('ai-generate-btn');
-      const preview = document.getElementById('ai-preview');
-      const previewIcon = document.getElementById('ai-preview-icon');
-      const previewDesc = document.getElementById('ai-preview-desc');
-
-      if (!prompt) {
-        alert('Décris l\'icône que tu veux générer');
-        return;
-      }
-
-      // Loading state
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<div class="ai-spinner"></div> Génération...';
-      }
-      if (preview) preview.style.display = 'none';
-
-      try {
-        // Utiliser admin-ai-generate avec le type generate_svg
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({ type: 'generate_svg', prompt, animated })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          alert('Erreur: ' + data.error);
-          return;
-        }
-
-        generatedSvg = data.result?.svg;
-        generatedIconDescription = data.result?.description;
-
-        if (!generatedSvg) {
-          alert('Pas de SVG généré');
-          return;
-        }
-
-        // Show preview with current color
-        if (previewIcon) {
-          previewIcon.style.background = `linear-gradient(135deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
-          previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
-        }
-        if (previewDesc) previewDesc.textContent = generatedIconDescription || '';
-        if (preview) preview.style.display = 'flex';
-
-      } catch (err) {
-        console.error(err);
-        alert('Erreur de génération: ' + err.message);
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer l'icône`;
-        }
-      }
-    }
-
-    async function modifyIcon() {
-      const modifyInput = document.getElementById('ai-modify-input');
-      const modification = modifyInput?.value.trim();
-      const preview = document.getElementById('ai-preview');
-      const previewIcon = document.getElementById('ai-preview-icon');
-      const previewDesc = document.getElementById('ai-preview-desc');
-
-      if (!generatedSvg) {
-        alert('Génère d\'abord une icône');
-        return;
-      }
-      if (!modification) {
-        alert('Décris la modification souhaitée');
-        return;
-      }
-
-      modifyInput.disabled = true;
-
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({ type: 'modify_svg', currentSvg: generatedSvg, modification })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          alert('Erreur: ' + data.error);
-          return;
-        }
-
-        generatedSvg = data.result?.svg;
-        generatedIconDescription = data.result?.description;
-
-        // Update preview
-        if (previewIcon) previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
-        if (previewDesc) previewDesc.textContent = generatedIconDescription || '';
-        if (modifyInput) modifyInput.value = '';
-
-      } catch (err) {
-        console.error(err);
-        alert('Erreur de modification');
-      } finally {
-        modifyInput.disabled = false;
-      }
-    }
-
-    function useGeneratedIcon() {
-      if (!generatedSvg) return;
-
-      // Add the generated icon to MODULE_ICON_TEMPLATES as 'custom'
-      const customTemplate = (color) => generatedSvg.replace(/stroke="currentColor"/g, `stroke="${color}"`);
-      if (typeof MODULE_ICON_TEMPLATES !== 'undefined') {
-        MODULE_ICON_TEMPLATES.custom = customTemplate;
-      }
-
-      selectedIconType = 'custom';
-      updatePreview();
-      closeModal('icon');
-    }
-
-    function copyIconSvg() {
-      if (!generatedSvg) return;
-      navigator.clipboard.writeText(generatedSvg).then(() => {
-        alert('SVG copié !');
-      });
-    }
-
-    // ==================
-    // Améliorer le texte - reformule + met en couleur
-    async function improveText() {
-      const textarea = document.getElementById('field-description-edit');
-      const btn = document.querySelector('.improve-btn');
-      const text = textarea?.value.trim();
-
-      if (!text) {
-        alert('Écris d\'abord une description à améliorer');
-        textarea?.focus();
-        return;
-      }
-
-      // Loading
-      btn.disabled = true;
-      btn.textContent = '⏳ Amélioration...';
-
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({
-            type: 'description',
-            name: document.getElementById('field-name')?.value || 'Module',
-            currentDescription: text,
-            color: selectedColor
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          alert('Erreur: ' + data.error);
-          return;
-        }
-
-        // Mettre à jour avec le texte amélioré (contient déjà le HTML avec couleurs)
-        currentDescriptionHtml = data.result;
-        currentDescription = stripHtml(data.result);
-
-        // Afficher dans le textarea (version texte)
-        textarea.value = currentDescription;
-
-        // Mettre à jour le champ caché avec le HTML
-        document.getElementById('field-description').value = currentDescriptionHtml;
-
-        // Afficher un aperçu du résultat formaté
-        showImprovedPreview(currentDescriptionHtml);
-
-      } catch (err) {
-        console.error(err);
-        alert('Erreur: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '✨ Améliorer le texte';
-      }
-    }
-
-    function showImprovedPreview(html) {
-      // Créer ou mettre à jour l'aperçu
-      let preview = document.getElementById('improved-preview');
-      if (!preview) {
-        preview = document.createElement('div');
-        preview.id = 'improved-preview';
-        preview.style.cssText = 'margin-top:12px; padding:12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; text-align:center;';
-        document.querySelector('.preview-card-large')?.appendChild(preview);
-      }
-      preview.innerHTML = `
-        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:8px;">✓ Texte amélioré :</div>
-        <div style="font-size:13px; line-height:1.5;">${html}</div>
       `;
-
-      // Masquer après 5 secondes
-      setTimeout(() => {
-        preview.style.opacity = '0';
-        setTimeout(() => preview.remove(), 300);
-      }, 5000);
-    }
-
-    function updateColorSelection() {
-      document.querySelectorAll('.color-option').forEach(el => {
-        el.classList.toggle('selected', el.style.background === selectedColor || rgbToHex(el.style.background) === selectedColor);
-      });
-    }
-
-    
-    function setupFormListeners() {
-      const nameField = document.getElementById('field-name');
-      const slugField = document.getElementById('field-slug');
-      const priceField = document.getElementById('field-price');
-      const trialField = document.getElementById('field-trial-days');
-
-      if (nameField) {
-        nameField.addEventListener('input', () => {
-          document.getElementById('editor-title').textContent = nameField.value || 'Nouveau Soldat';
-          // Auto-generate slug from name
-          if (!currentModule && slugField && !slugField.disabled) {
-            slugField.value = nameField.value.toLowerCase().replace(/[^a-z]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-          }
-        });
-      }
-
-      if (priceField) {
-        priceField.addEventListener('input', updatePreview);
-      }
-
-      if (trialField) {
-        trialField.addEventListener('input', updatePreview);
-      }
-
-      // Listener pour changement de visibilité
-      const visibilityField = document.getElementById('field-visibility');
-      if (visibilityField && currentModule) {
-        visibilityField.addEventListener('change', () => checkVisibilityChange());
-      }
-    }
-
-    // Vérifier si le changement de visibilité affecte des abonnés
-    async function checkVisibilityChange() {
-      const visibilityField = document.getElementById('field-visibility');
-      const newVisibility = visibilityField.value;
-      const initialVisibility = visibilityField.dataset.initialValue;
-
-      // Si on passe de public à quelque chose de plus restrictif
-      if (initialVisibility === 'public' && (newVisibility === 'beta' || newVisibility === 'draft')) {
-        await showSubscribersWarning(newVisibility);
-      } else if (initialVisibility === 'beta' && newVisibility === 'draft') {
-        await showSubscribersWarning(newVisibility);
-      }
-    }
-
-    async function showSubscribersWarning(newVisibility) {
-      if (!currentModule) return;
-
-      // Compter les abonnés actifs (subscriptions + module_configs)
-      const [subsResult, configsResult] = await Promise.all([
-        supabaseClient
-          .from('subscriptions')
-          .select('id', { count: 'exact', head: true })
-          .eq('module_name', currentModule.slug)
-          .in('status', ['active', 'trialing']),
-        supabaseClient
-          .from('module_configs')
-          .select('id', { count: 'exact', head: true })
-          .eq('module_name', currentModule.slug)
-      ]);
-
-      const subscribersCount = subsResult.count || 0;
-      const configsCount = configsResult.count || 0;
-      const totalUsers = Math.max(subscribersCount, configsCount);
-
-      if (totalUsers > 0) {
-        const visibilityLabels = {
-          'draft': 'Brouillon (privé)',
-          'beta': 'Beta (testeurs)'
-        };
-
-        const confirmed = confirm(
-          `⚠️ ${totalUsers} utilisateur${totalUsers > 1 ? 's' : ''} ${totalUsers > 1 ? 'ont' : 'a'} ce module configuré.\n\n` +
-          `En passant en "${visibilityLabels[newVisibility]}" :\n` +
-          `• Les utilisateurs existants garderont l'accès\n` +
-          `• Le module n'apparaîtra plus pour les nouveaux\n\n` +
-          `Continuer ?`
-        );
-
-        if (!confirmed) {
-          // Remettre l'ancienne valeur
-          document.getElementById('field-visibility').value = document.getElementById('field-visibility').dataset.initialValue;
-        }
-      }
     }
 
     function updatePreview() {
-      const card = document.getElementById('preview-card');
-      const icon = document.getElementById('preview-icon');
-      const descHtml = document.getElementById('preview-desc-html');
-      const priceEl = document.getElementById('preview-price');
-      const trialEl = document.getElementById('preview-trial');
+      const name = document.getElementById('input-name')?.value || 'Module';
+      document.querySelector('.editor-title').textContent = name;
+    }
 
-      if (!card) return;
+    function setColor(c) {
+      color = c;
+      renderEditor();
+    }
 
-      // Update card background
-      card.style.background = `linear-gradient(145deg, ${selectedColor}40, ${selectedColor}25)`;
-      card.style.borderColor = `${selectedColor}60`;
-
-      // Update icon
-      if (icon) {
-        icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
-        icon.innerHTML = getModuleIcon(selectedIconType, 'white');
+    function toggleCat(id) {
+      if (categories.includes(id)) {
+        categories = categories.filter(c => c !== id);
+      } else {
+        categories.push(id);
       }
-
-      // Update description
-      if (descHtml) {
-        if (currentDescriptionHtml) {
-          descHtml.innerHTML = currentDescriptionHtml;
-        } else if (currentDescription) {
-          descHtml.innerHTML = currentDescription;
-        } else {
-          descHtml.innerHTML = '<span class="placeholder">Clique pour ajouter une description...</span>';
-        }
-      }
-
-      // Update price
-      const priceVal = document.getElementById('field-price')?.value;
-      if (priceEl) priceEl.textContent = priceVal ? priceVal + '€' : '0€';
-
-      // Update trial
-      const trialVal = document.getElementById('field-trial-days')?.value || 7;
-      if (trialEl) trialEl.textContent = trialVal + ' jours d\'essai gratuit';
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        const catId = btn.onclick.toString().match(/'([^']+)'/)?.[1];
+        btn.classList.toggle('active', categories.includes(catId));
+      });
     }
 
-    // Modal functions
-    function openModal(name) {
-      document.getElementById('modal-' + name)?.classList.add('active');
+    function toggleIconGenerator() {
+      document.getElementById('icon-generator').classList.toggle('show');
+      document.getElementById('icon-result').classList.remove('show');
     }
 
-    function closeModal(name) {
-      document.getElementById('modal-' + name)?.classList.remove('active');
-    }
+    // Improve text with AI
+    async function improveText() {
+      const btn = document.getElementById('btn-improve');
+      const textarea = document.getElementById('input-desc');
+      const text = textarea.value.trim();
 
-    function openIconGenerator() {
-      openModal('icon');
-    }
-
-    function editDescription() {
-      const editor = document.getElementById('desc-editor');
-      if (editor) {
-        editor.value = currentDescription;
-      }
-      openModal('description');
-    }
-
-    function saveDescription() {
-      const editor = document.getElementById('desc-editor');
-      const preview = document.getElementById('ai-desc-preview');
-
-      if (preview && preview.style.display !== 'none' && preview.innerHTML) {
-        // Use AI generated HTML
-        currentDescriptionHtml = preview.querySelector('div:last-child')?.innerHTML || preview.innerHTML;
-        currentDescription = stripHtml(currentDescriptionHtml);
-      } else if (editor) {
-        // Use plain text
-        currentDescription = editor.value;
-        currentDescriptionHtml = editor.value;
-      }
-
-      document.getElementById('field-description').value = currentDescriptionHtml;
-      closeModal('description');
-      updatePreview();
-    }
-
-    async function generateDescriptionFromModal() {
-      const editor = document.getElementById('desc-editor');
-      const preview = document.getElementById('ai-desc-preview');
-      const descText = editor?.value.trim();
-
-      if (!descText) {
-        alert('Écris d\'abord une description');
+      if (!text) {
+        textarea.focus();
         return;
       }
 
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({
-            type: 'description',
-            name: document.getElementById('field-name')?.value || 'Module',
-            currentDescription: descText,
-            color: selectedColor
-          })
-        });
-
-        const data = await response.json();
-        if (data.error) {
-          alert('Erreur: ' + data.error);
-          return;
-        }
-
-        // Show preview
-        if (preview) {
-          preview.innerHTML = `
-            <div style="margin-bottom:8px; font-size:11px; color:rgba(255,255,255,0.4);">Aperçu :</div>
-            <div>${data.result}</div>
-          `;
-          preview.style.display = 'block';
-        }
-      } catch (err) {
-        alert('Erreur: ' + err.message);
-      }
-    }
-
-    async function generateAll() {
-      const nameField = document.getElementById('field-name');
-      const name = nameField?.value.trim();
-
-      if (!name) {
-        alert('Entre d\'abord un nom de module');
-        nameField?.focus();
-        return;
-      }
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Amélioration...';
 
       try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(SUPABASE_URL + '/functions/v1/admin-ai-generate', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({
-            type: 'module_full',
-            prompt: name
-          })
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+          body: JSON.stringify({ type: 'description', name: document.getElementById('input-name').value, currentDescription: text, color })
         });
-
-        const data = await response.json();
-        if (data.error) {
-          alert('Erreur: ' + data.error);
-          return;
+        const data = await res.json();
+        if (data.result) {
+          descHtml = data.result;
+          document.getElementById('desc-preview').innerHTML = descHtml;
+          textarea.value = stripHtml(descHtml);
         }
-
-        const result = data.result;
-
-        // Apply generated values
-        if (result.color) {
-          selectedColor = result.color;
-          updateColorSelection();
-        }
-        if (result.icon_type) {
-          selectedIconType = result.icon_type;
-        }
-        if (result.description) {
-          currentDescription = stripHtml(result.description);
-          currentDescriptionHtml = result.description;
-          document.getElementById('field-description').value = result.description;
-        }
-        if (result.price) {
-          document.getElementById('field-price').value = result.price;
-        }
-
-        updatePreview();
-        alert('Module généré ! Vérifie et ajuste si nécessaire.');
-
-      } catch (err) {
-        alert('Erreur: ' + err.message);
+      } catch (e) {
+        alert('Erreur: ' + e.message);
       }
+
+      btn.disabled = false;
+      btn.textContent = '✨ Améliorer le texte';
     }
 
-    // ==================
-    // SAVE
-    // ==================
+    // Generate icon with AI
+    async function generateIcon() {
+      const prompt = document.getElementById('icon-prompt').value.trim();
+      if (!prompt) return;
+
+      const btn = document.querySelector('#icon-generator .btn-improve');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(SUPABASE_URL + '/functions/v1/admin-ai-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+          body: JSON.stringify({ type: 'generate_svg', prompt, animated: true })
+        });
+        const data = await res.json();
+        if (data.result?.svg) {
+          generatedSvg = data.result.svg;
+          const preview = document.getElementById('icon-result-preview');
+          preview.style.background = `linear-gradient(180deg, ${color}, ${darken(color)})`;
+          preview.innerHTML = generatedSvg.replace(/currentColor/g, 'white');
+          document.getElementById('icon-result').classList.add('show');
+        }
+      } catch (e) {
+        alert('Erreur: ' + e.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = '✨ Générer l\'icône';
+    }
+
+    function useIcon() {
+      if (!generatedSvg) return;
+      iconType = 'custom';
+      if (typeof MODULE_ICON_TEMPLATES !== 'undefined') {
+        MODULE_ICON_TEMPLATES.custom = () => generatedSvg;
+      }
+      document.getElementById('card-icon').innerHTML = generatedSvg.replace(/currentColor/g, 'white');
+      toggleIconGenerator();
+    }
+
+    // Save
     async function save() {
-      const slug = document.getElementById('field-slug').value.trim();
-      const name = document.getElementById('field-name').value.trim();
-      const description = currentDescriptionHtml || document.getElementById('field-description').value;
-      const status = document.getElementById('field-status')?.value || 'available';
-      const visibility = document.getElementById('field-visibility').value;
-      const price = document.getElementById('field-price').value;
-      const setupUrl = document.getElementById('field-setup-url')?.value || `/${slug}/setup/`;
-      const stripePriceId = document.getElementById('field-stripe-price-id').value.trim();
-      const trialDays = parseInt(document.getElementById('field-trial-days').value) || 7;
-      const badge = document.getElementById('field-badge')?.value || null;
-      const badgeUntil = document.getElementById('field-badge-until')?.value || null;
+      const slug = document.getElementById('input-slug').value.trim();
+      const name = document.getElementById('input-name').value.trim();
 
       if (!name || !slug) {
-        alert('Nom et ID technique requis');
+        alert('Nom et ID requis');
         return;
       }
 
       const moduleData = {
         slug,
         name,
-        description,
-        color: selectedColor,
-        status,
-        visibility,
-        price: price || null,
-        setup_url: setupUrl,
-        categories: selectedCategories.length > 0 ? selectedCategories : null,
-        settings_url: `/?soldat=${slug}`,
-        icon_type: selectedIconType,
-        stripe_price_id: stripePriceId || null,
-        trial_days: trialDays,
-        badge: badge,
-        badge_until: badgeUntil
+        description: descHtml || document.getElementById('input-desc').value,
+        color,
+        icon_type: iconType,
+        categories: categories.length ? categories : null,
+        price: document.getElementById('input-price').value || null,
+        trial_days: parseInt(document.getElementById('input-trial').value) || 7,
+        visibility: document.getElementById('input-visibility').value,
+        stripe_price_id: document.getElementById('input-stripe').value || null,
+        status: 'available',
+        setup_url: '/' + slug + '/setup/'
       };
 
       let error;
-      if (currentModule) {
-        const result = await supabaseClient.from('modules').update(moduleData).eq('id', currentModule.id);
-        error = result.error;
+      if (current) {
+        const res = await supabase.from('modules').update(moduleData).eq('id', current.id);
+        error = res.error;
       } else {
         moduleData.sort_order = modules.length;
-        const result = await supabaseClient.from('modules').insert(moduleData);
-        error = result.error;
+        const res = await supabase.from('modules').insert(moduleData);
+        error = res.error;
       }
 
       if (error) {
@@ -1622,65 +684,31 @@ Exemples :
       }
 
       await loadModules();
-
-      // Select the saved module
-      if (!currentModule) {
-        const newMod = modules.find(m => m.slug === slug);
-        if (newMod) selectModule(newMod.id);
-      } else {
-        selectModule(currentModule.id);
-      }
-    }
-
-    // ==================
-    // DELETE
-    // ==================
-    function confirmDelete() {
-      document.getElementById('delete-confirm').classList.add('active');
-    }
-
-    function cancelDelete() {
-      document.getElementById('delete-confirm').classList.remove('active');
+      const saved = modules.find(m => m.slug === slug);
+      if (saved) selectModule(saved.id);
     }
 
     async function deleteModule() {
-      if (!currentModule) return;
-
-      const { error } = await supabaseClient.from('modules').delete().eq('id', currentModule.id);
-
-      if (error) {
-        alert('Erreur: ' + error.message);
-        return;
-      }
-
-      currentModule = null;
+      if (!current || !confirm('Supprimer ce module ?')) return;
+      await supabase.from('modules').delete().eq('id', current.id);
+      current = null;
       await loadModules();
-      document.getElementById('main-content').innerHTML = '<div class="main-empty"><p>Selectionne un module ou cree-en un nouveau</p></div>';
+      document.getElementById('main').innerHTML = '<div class="main-empty">Sélectionne un module</div>';
     }
 
-    // ==================
-    // UTILS
-    // ==================
+    // Utils
     function stripHtml(html) {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || '';
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      return div.textContent || '';
     }
 
-    function darkenColor(hex) {
+    function darken(hex) {
       const num = parseInt(hex.replace('#', ''), 16);
-      const amt = -40;
-      const R = Math.max(0, (num >> 16) + amt);
-      const G = Math.max(0, ((num >> 8) & 0x00FF) + amt);
-      const B = Math.max(0, (num & 0x0000FF) + amt);
-      return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
-    }
-
-    function rgbToHex(rgb) {
-      if (!rgb || rgb.startsWith('#')) return rgb;
-      const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-      if (!match) return rgb;
-      return '#' + [match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+      const r = Math.max(0, (num >> 16) - 40);
+      const g = Math.max(0, ((num >> 8) & 0xFF) - 40);
+      const b = Math.max(0, (num & 0xFF) - 40);
+      return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
     }
   </script>
 </body>

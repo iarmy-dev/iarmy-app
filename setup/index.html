@@ -336,79 +336,82 @@
 
   <script>
     // ============================================
-    // CONFIGURATION DES MODULES (source de verite)
+    // FALLBACK CONFIG (utilisé si données manquantes en DB)
+    // La source de vérité est la table Supabase `modules`
     // ============================================
-    const MODULES_CONFIG = {
+    const FALLBACK_CONFIG = {
       compta: {
-        name: "Compta",
-        icon: "📊",
-        color: { primary: "#0f9d58", secondary: "#4ade80" },
-        price: 39,
-        trial_days: 7,
-        description: "Gere ta comptabilite quotidienne",
-        features: [
-          "Saisie rapide par Telegram",
-          "Synchronisation Google Sheets",
-          "Recaps hebdo et mensuels",
-          "Analyse IA des tickets"
+        features: ["Saisie rapide par Telegram", "Synchronisation Google Sheets", "Recaps hebdo et mensuels", "Analyse IA des tickets"],
+        setup_steps: [
+          { id: "google_auth", type: "google_auth", title: "Connecte Google", description: "On stocke tes donnees dans ton Drive" },
+          { id: "upload_excel", type: "file_upload", title: "Upload ton Excel", description: "On analyse ta structure automatiquement", accept: ".xlsx,.xls" },
+          { id: "ai_analyze", type: "ai_analysis", title: "Analyse IA", description: "On detecte tes colonnes (CB, ESP, TR...)" },
+          { id: "confirm_config", type: "config_validation", title: "Valide la config", description: "Verifie que tout est correct" },
+          { id: "payment", type: "stripe_checkout", title: "Essai gratuit 7 jours" },
+          { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
         ],
-        setup: {
-          steps: [
-            { id: "google_auth", type: "google_auth", title: "Connecte Google", description: "On stocke tes donnees dans ton Drive" },
-            { id: "upload_excel", type: "file_upload", title: "Upload ton Excel", description: "On analyse ta structure automatiquement", accept: ".xlsx,.xls" },
-            { id: "ai_analyze", type: "ai_analysis", title: "Analyse IA", description: "On detecte tes colonnes (CB, ESP, TR...)" },
-            { id: "confirm_config", type: "config_validation", title: "Valide la config", description: "Verifie que tout est correct" },
-            { id: "payment", type: "stripe_checkout", title: "Essai gratuit 7 jours" },
-            { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
-          ],
-          onboarding_message: "Envoie ta premiere recette :\n_Exemple : CB 150 ESP 50 TR 30_"
-        }
+        onboarding_message: "Envoie ta premiere recette :\n_Exemple : CB 150 ESP 50 TR 30_"
       },
       stock: {
-        name: "Stock",
-        icon: "🍸",
-        color: { primary: "#10B981", secondary: "#34D399" },
-        price: 39,
-        trial_days: 7,
-        description: "Gere ton inventaire et tes marges",
-        features: [
-          "Scan tickets Z automatique",
-          "Inventaire vocal ou photo",
-          "Alertes stock bas",
-          "Calcul marges cocktails"
+        features: ["Scan tickets Z automatique", "Inventaire vocal ou photo", "Alertes stock bas", "Calcul marges cocktails"],
+        setup_steps: [
+          { id: "upload_menu", type: "multi_photo_menu", title: "Ta carte", description: "Glisse ou ajoute plusieurs photos", ai_type: "menu_complet" },
+          { id: "pos_connection", type: "pos_connection", title: "Ta caisse", description: "Connecte ou passe cette etape" },
+          { id: "payment", type: "stripe_checkout", title: "Paiement", hidden: true },
+          { id: "telegram", type: "telegram_link", title: "Telegram" }
         ],
-        setup: {
-          steps: [
-            { id: "upload_menu", type: "multi_photo_menu", title: "Ta carte", description: "Glisse ou ajoute plusieurs photos", ai_type: "menu_complet" },
-            { id: "pos_connection", type: "pos_connection", title: "Ta caisse", description: "Connecte ou passe cette etape" },
-            { id: "payment", type: "stripe_checkout", title: "Paiement", hidden: true },
-            { id: "telegram", type: "telegram_link", title: "Telegram" }
-          ],
-          onboarding_message: "Stock active ! 🍾\n\nOn commence par ton stock actuel.\n\n🎤 Envoie un vocal : \"4 Sobieski, 2 Jack, 3 Havana...\"\n📸 Ou une photo de ta reserve\n\n💡 Tout est modifiable dans Reglages"
-        }
+        onboarding_message: "Stock active !\n\nOn commence par ton stock actuel.\n\nEnvoie un vocal : \"4 Sobieski, 2 Jack, 3 Havana...\"\nOu une photo de ta reserve\n\nTout est modifiable dans Reglages"
       },
       paie: {
-        name: "Paie",
-        icon: "💰",
-        color: { primary: "#f59e0b", secondary: "#fbbf24" },
-        price: 39,
-        trial_days: 7,
-        description: "Prepare la paie de ton equipe",
-        features: [
-          "Extraction auto des contrats",
-          "Suivi absences & retards",
-          "Calcul automatique fin de mois",
-          "Export pour comptable"
+        features: ["Extraction auto des contrats", "Suivi absences & retards", "Calcul automatique fin de mois", "Export pour comptable"],
+        setup_steps: [
+          { id: "team_setup", type: "team_setup", title: "Ton equipe", description: "Ajoute les contrats de ton equipe" },
+          { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
         ],
-        setup: {
-          steps: [
-            { id: "team_setup", type: "team_setup", title: "Ton equipe", description: "Ajoute les contrats de ton equipe" },
-            { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
-          ],
-          onboarding_message: "Module Paie active !\n\n/equipe - Voir ton equipe\n/paie - Recap du mois\n\nOu envoie : _Ayham absent 2h_"
-        }
+        onboarding_message: "Module Paie active !\n\n/equipe - Voir ton equipe\n/paie - Recap du mois\n\nOu envoie : _Ayham absent 2h_"
       }
     };
+
+    // Charger le module depuis Supabase
+    async function loadModuleFromDB(slug) {
+      const { data, error } = await supabaseClient
+        .from('modules')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+
+      if (error || !data) return null;
+
+      const fallback = FALLBACK_CONFIG[slug] || {};
+
+      // Générer une couleur secondaire (plus claire) à partir de la couleur principale
+      const primaryColor = data.color || '#FF6B35';
+      const secondaryColor = lightenColor(primaryColor, 30);
+
+      return {
+        name: data.name || slug,
+        icon: data.icon || '📦',
+        color: { primary: primaryColor, secondary: secondaryColor },
+        price: parseFloat(data.price) || 29,
+        trial_days: data.trial_days || 7,
+        description: data.description || '',
+        features: (data.features && data.features.length > 0) ? data.features : (fallback.features || []),
+        setup: {
+          steps: (data.setup_steps && data.setup_steps.length > 0) ? data.setup_steps : (fallback.setup_steps || []),
+          onboarding_message: data.onboarding_message || fallback.onboarding_message || ''
+        }
+      };
+    }
+
+    // Helper pour éclaircir une couleur hex
+    function lightenColor(hex, percent) {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const amt = Math.round(2.55 * percent);
+      const R = Math.min(255, (num >> 16) + amt);
+      const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
+      const B = Math.min(255, (num & 0x0000FF) + amt);
+      return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+    }
 
     // ============================================
     // VARIABLES GLOBALES
@@ -458,12 +461,18 @@
     async function init() {
       // Detecter le module depuis l'URL
       currentModule = getUrlParam('module');
-      if (!currentModule || !MODULES_CONFIG[currentModule]) {
+      if (!currentModule) {
         window.location.href = '/';
         return;
       }
 
-      moduleConfig = MODULES_CONFIG[currentModule];
+      // Charger la config du module depuis Supabase
+      moduleConfig = await loadModuleFromDB(currentModule);
+      if (!moduleConfig) {
+        console.error('Module non trouvé:', currentModule);
+        window.location.href = '/';
+        return;
+      }
 
       // Appliquer les couleurs du module
       document.getElementById('orb1').style.background = `linear-gradient(135deg, ${moduleConfig.color.primary}, ${moduleConfig.color.secondary})`;
@@ -2739,8 +2748,9 @@
     if (getUrlParam('success') === '1') {
       window.history.replaceState({}, '', `/setup/?module=${getUrlParam('module')}`);
       setTimeout(() => {
-        // Find telegram step index
-        const steps = MODULES_CONFIG[getUrlParam('module')]?.setup?.steps || [];
+        // Find telegram step index (use fallback since moduleConfig not loaded yet)
+        const fallback = FALLBACK_CONFIG[getUrlParam('module')];
+        const steps = fallback?.setup_steps || [];
         const telegramIndex = steps.findIndex(s => s.type === 'telegram_link');
         if (telegramIndex >= 0) {
           init().then(() => goToStep(telegramIndex));
