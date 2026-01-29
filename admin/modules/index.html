@@ -778,6 +778,8 @@ Exemples :
         }
         document.getElementById('field-status').value = currentModule.status || 'available';
         document.getElementById('field-visibility').value = currentModule.visibility || 'public';
+        // Stocker la visibilité initiale pour détecter les changements
+        document.getElementById('field-visibility').dataset.initialValue = currentModule.visibility || 'public';
         document.getElementById('field-price').value = currentModule.price || '';
         document.getElementById('field-setup-url').value = currentModule.setup_url || '';
         document.getElementById('field-stripe-price-id').value = currentModule.stripe_price_id || '';
@@ -1109,6 +1111,67 @@ Exemples :
           hideDescriptionPreview();
           updatePreview();
         });
+      }
+
+      // Listener pour changement de visibilité
+      const visibilityField = document.getElementById('field-visibility');
+      if (visibilityField && currentModule) {
+        visibilityField.addEventListener('change', () => checkVisibilityChange());
+      }
+    }
+
+    // Vérifier si le changement de visibilité affecte des abonnés
+    async function checkVisibilityChange() {
+      const visibilityField = document.getElementById('field-visibility');
+      const newVisibility = visibilityField.value;
+      const initialVisibility = visibilityField.dataset.initialValue;
+
+      // Si on passe de public à quelque chose de plus restrictif
+      if (initialVisibility === 'public' && (newVisibility === 'beta' || newVisibility === 'draft')) {
+        await showSubscribersWarning(newVisibility);
+      } else if (initialVisibility === 'beta' && newVisibility === 'draft') {
+        await showSubscribersWarning(newVisibility);
+      }
+    }
+
+    async function showSubscribersWarning(newVisibility) {
+      if (!currentModule) return;
+
+      // Compter les abonnés actifs (subscriptions + module_configs)
+      const [subsResult, configsResult] = await Promise.all([
+        supabaseClient
+          .from('subscriptions')
+          .select('id', { count: 'exact', head: true })
+          .eq('module_name', currentModule.slug)
+          .in('status', ['active', 'trialing']),
+        supabaseClient
+          .from('module_configs')
+          .select('id', { count: 'exact', head: true })
+          .eq('module_name', currentModule.slug)
+      ]);
+
+      const subscribersCount = subsResult.count || 0;
+      const configsCount = configsResult.count || 0;
+      const totalUsers = Math.max(subscribersCount, configsCount);
+
+      if (totalUsers > 0) {
+        const visibilityLabels = {
+          'draft': 'Brouillon (privé)',
+          'beta': 'Beta (testeurs)'
+        };
+
+        const confirmed = confirm(
+          `⚠️ ${totalUsers} utilisateur${totalUsers > 1 ? 's' : ''} ${totalUsers > 1 ? 'ont' : 'a'} ce module configuré.\n\n` +
+          `En passant en "${visibilityLabels[newVisibility]}" :\n` +
+          `• Les utilisateurs existants garderont l'accès\n` +
+          `• Le module n'apparaîtra plus pour les nouveaux\n\n` +
+          `Continuer ?`
+        );
+
+        if (!confirmed) {
+          // Remettre l'ancienne valeur
+          document.getElementById('field-visibility').value = document.getElementById('field-visibility').dataset.initialValue;
+        }
       }
     }
 

@@ -1031,6 +1031,33 @@
         }
 
         const { data, error } = await query;
+
+        // Charger aussi les modules configurés par l'utilisateur (même s'ils sont draft)
+        // pour que les utilisateurs existants gardent l'accès
+        if (session?.user?.id && !isAdmin) {
+          const { data: userConfigs } = await supabaseClient
+            .from('module_configs')
+            .select('module_name')
+            .eq('user_id', session.user.id);
+
+          if (userConfigs && userConfigs.length > 0) {
+            const configuredSlugs = userConfigs.map(c => c.module_name);
+            const missingSlugs = configuredSlugs.filter(slug => !data?.find(m => m.slug === slug));
+
+            if (missingSlugs.length > 0) {
+              // Charger les modules manquants (ceux en draft que l'utilisateur a configurés)
+              const { data: missingModules } = await supabaseClient
+                .from('modules')
+                .select('*')
+                .in('slug', missingSlugs);
+
+              if (missingModules) {
+                data.push(...missingModules);
+                console.log('[Modules] Added', missingModules.length, 'user-configured modules (hidden from public)');
+              }
+            }
+          }
+        }
         if (error) throw error;
 
         MODULES_DATA = data || [];
