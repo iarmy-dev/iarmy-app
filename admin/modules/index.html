@@ -364,7 +364,7 @@
   <script>
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
 
     const COLORS = ['#22c55e','#06b6d4','#f59e0b','#8b5cf6','#ec4899','#eab308','#3b82f6','#ef4444','#6366f1','#10b981','#d946ef','#84cc16'];
@@ -387,11 +387,11 @@
     // Auth
     async function signIn() {
       sessionStorage.setItem('auth_redirect', window.location.href);
-      await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback' }});
+      await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback' }});
     }
 
     async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app').style.display = 'grid';
@@ -399,15 +399,15 @@
       } else if (session) {
         document.getElementById('auth-error').textContent = 'Non autorisé';
         document.getElementById('auth-error').style.display = 'block';
-        supabase.auth.signOut();
+        supabaseClient.auth.signOut();
       }
     }
     checkAuth();
-    supabase.auth.onAuthStateChange(() => checkAuth());
+    supabaseClient.auth.onAuthStateChange(() => checkAuth());
 
     // Load modules
     async function loadModules() {
-      const { data } = await supabase.from('modules').select('*').order('sort_order');
+      const { data } = await supabaseClient.from('modules').select('*').order('sort_order');
       modules = data || [];
       renderList();
     }
@@ -582,7 +582,7 @@
       btn.innerHTML = '<span class="spinner"></span> Amélioration...';
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         const res = await fetch(SUPABASE_URL + '/functions/v1/admin-ai-generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
@@ -612,7 +612,7 @@
       btn.innerHTML = '<span class="spinner"></span>';
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         const res = await fetch(SUPABASE_URL + '/functions/v1/admin-ai-generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
@@ -671,11 +671,11 @@
 
       let error;
       if (current) {
-        const res = await supabase.from('modules').update(moduleData).eq('id', current.id);
+        const res = await supabaseClient.from('modules').update(moduleData).eq('id', current.id);
         error = res.error;
       } else {
         moduleData.sort_order = modules.length;
-        const res = await supabase.from('modules').insert(moduleData);
+        const res = await supabaseClient.from('modules').insert(moduleData);
         error = res.error;
       }
 
@@ -691,7 +691,7 @@
 
     async function deleteModule() {
       if (!current || !confirm('Supprimer ce module ?')) return;
-      await supabase.from('modules').delete().eq('id', current.id);
+      await supabaseClient.from('modules').delete().eq('id', current.id);
       current = null;
       await loadModules();
       document.getElementById('main').innerHTML = '<div class="main-empty">Sélectionne un module</div>';
