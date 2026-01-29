@@ -364,6 +364,207 @@
     .delete-confirm.active { display: block; }
     .delete-confirm p { margin-bottom: 12px; font-size: 13px; color: #f87171; }
     .delete-confirm-actions { display: flex; gap: 12px; }
+
+    /* New Preview Card - Large */
+    .preview-card-large {
+      width: 220px;
+      min-height: 200px;
+      border-radius: 24px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin: 0 auto 20px;
+      transition: all 0.3s;
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+    .preview-icon-large {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .preview-name-input {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      width: 100%;
+      margin-bottom: 8px;
+      outline: none;
+    }
+    .preview-name-input::placeholder { color: rgba(255,255,255,0.3); }
+    .preview-desc-html {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      min-height: 40px;
+    }
+    .preview-desc-html:hover { background: rgba(255,255,255,0.05); }
+    .preview-desc-html .placeholder { color: rgba(255,255,255,0.3); font-style: italic; }
+    .preview-desc-html strong { font-weight: 600; }
+
+    /* Price display */
+    .preview-price {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .price-amount {
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+    }
+    .price-period {
+      font-size: 18px;
+      color: rgba(255,255,255,0.5);
+    }
+    .price-trial {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 4px;
+    }
+
+    /* AI Action buttons row */
+    .ai-actions-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .ai-action-btn {
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ai-action-btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.25);
+    }
+
+    /* Category chips */
+    .category-chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .category-chip {
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .category-chip:hover { border-color: rgba(255,255,255,0.2); }
+    .category-chip.selected {
+      background: rgba(255,107,53,0.15);
+      border-color: #FF6B35;
+      color: white;
+    }
+
+    /* Params grid */
+    .params-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .params-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .params-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .param-item { }
+    .param-label {
+      display: block;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 6px;
+    }
+    .param-input, .param-select {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+    }
+    .param-input:focus, .param-select:focus {
+      outline: none;
+      border-color: rgba(255,107,53,0.5);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 600; }
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .ai-btn.use { background: #22c55e; }
+    .ai-btn.secondary { background: rgba(255,255,255,0.1); }
   </style>
 </head>
 <body>
@@ -419,177 +620,158 @@
         </div>
       </div>
 
-      <!-- Live Preview -->
-      <div class="preview-section">
-        <div class="preview-label">Apercu en temps reel</div>
-        <div class="preview-card" id="preview-card">
-          <div class="preview-icon" id="preview-icon"></div>
-          <div class="preview-name" id="preview-name">Nom</div>
-          <div class="preview-status" id="preview-status">Description</div>
-        </div>
-      </div>
-
-      <!-- Form -->
       <form id="module-form" onsubmit="return false;">
         <input type="hidden" id="field-id">
 
-        <!-- Basic Info -->
-        <div class="form-section">
-          <div class="form-section-title">Informations</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Nom du soldat *</label>
-              <input type="text" class="form-input" id="field-name" placeholder="Ex: Compta, Stock, Paie" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">ID technique *</label>
-              <input type="text" class="form-input" id="field-slug" placeholder="ex: compta" required pattern="[a-z_]+">
-              <p class="form-hint">Minuscules et underscores uniquement</p>
+        <!-- Live Preview Card - More prominent -->
+        <div class="preview-section">
+          <div class="preview-card-large" id="preview-card">
+            <div class="preview-icon-large" id="preview-icon"></div>
+            <input type="text" class="preview-name-input" id="field-name" placeholder="Nom du soldat" required>
+            <div class="preview-desc-html" id="preview-desc-html" onclick="editDescription()">
+              <span class="placeholder">Clique pour ajouter une description...</span>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Description courte</label>
-            <div class="ai-input-group">
-              <textarea class="form-textarea" id="field-description" placeholder="Decris ce que fait ce soldat..." style="margin-bottom:8px;"></textarea>
-              <div class="ai-desc-preview" id="ai-desc-preview" style="display:none; padding:12px; background:rgba(0,0,0,0.3); border-radius:10px; margin-bottom:8px;"></div>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <button type="button" class="ai-btn" onclick="generateDescription()" style="padding:8px 14px; font-size:12px;">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  Générer avec IA
-                </button>
-                <span style="font-size:11px; color:rgba(255,255,255,0.4);">L'IA ajoute les mots en couleur automatiquement</span>
-              </div>
-            </div>
+
+          <!-- Price display -->
+          <div class="preview-price">
+            <span class="price-amount" id="preview-price">0€</span><span class="price-period">/mois</span>
+            <div class="price-trial" id="preview-trial">7 jours d'essai gratuit</div>
+          </div>
+
+          <!-- AI Action buttons -->
+          <div class="ai-actions-row">
+            <button type="button" class="ai-action-btn" onclick="generateAll()">
+              ✨ Générer tout avec l'IA
+            </button>
+            <button type="button" class="ai-action-btn" onclick="generateDescription()">
+              ✨ Refaire le texte
+            </button>
+            <button type="button" class="ai-action-btn" onclick="openIconGenerator()">
+              ✨ Créer icône
+            </button>
           </div>
         </div>
 
-        <!-- Color -->
+        <!-- Color Grid -->
         <div class="form-section">
-          <div class="form-section-title">Couleur</div>
+          <div class="form-section-title">COULEUR</div>
           <div class="color-grid" id="color-grid"></div>
         </div>
 
-        <!-- Icon Type -->
+        <!-- Categories -->
         <div class="form-section">
-          <div class="form-section-title">Icône</div>
+          <div class="form-section-title">CATEGORIES</div>
+          <div class="category-chips" id="category-chips"></div>
+        </div>
 
-          <!-- Preset icons (quick select) -->
-          <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:12px;">Icônes prédéfinies (clic rapide) :</p>
-          <div class="icon-grid" id="icon-grid"></div>
-
-          <!-- AI Generator (main) -->
-          <div class="ai-generator" style="margin-top:20px;">
-            <div class="ai-generator-header">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              Ou génère une icône custom avec l'IA
+        <!-- Parameters Row -->
+        <div class="form-section">
+          <div class="form-section-title">PARAMETRES</div>
+          <div class="params-grid">
+            <div class="param-item">
+              <label class="param-label">ID technique</label>
+              <input type="text" class="param-input" id="field-slug" placeholder="compta" pattern="[a-z_]+">
             </div>
-            <textarea class="ai-generator-input" id="ai-prompt" rows="3" placeholder="Décris l'icône que tu veux...
-
-Exemples :
-• un tableau avec des cellules qui se remplissent une par une, animé
-• deux bouteilles de vin, une qui se vide et l'autre qui se remplit
-• un calendrier avec une horloge qui tourne
-• des personnes qui se transforment en symbole euro"></textarea>
-            <div class="ai-generator-actions">
-              <button type="button" class="ai-btn" id="ai-generate-btn" onclick="generateIcon()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                Générer l'icône
-              </button>
-              <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:rgba(255,255,255,0.5); cursor:pointer;">
-                <input type="checkbox" id="ai-animated" checked style="accent-color:#FF6B35;"> Avec animation
-              </label>
+            <div class="param-item">
+              <label class="param-label">Prix €/mois</label>
+              <input type="text" class="param-input" id="field-price" placeholder="9,99">
             </div>
-
-            <!-- AI Preview -->
-            <div class="ai-preview" id="ai-preview">
-              <div class="ai-preview-icon" id="ai-preview-icon"></div>
-              <div style="flex:1;">
-                <p id="ai-preview-desc" style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:12px;"></p>
-                <div class="ai-preview-actions">
-                  <button type="button" class="ai-preview-btn use" onclick="useGeneratedIcon()">✓ Utiliser cette icône</button>
-                  <button type="button" class="ai-preview-btn" onclick="generateIcon()">↻ Régénérer</button>
-                </div>
-                <div style="margin-top:12px;">
-                  <p style="font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:6px;">Modifier l'icône :</p>
-                  <div style="display:flex; gap:6px;">
-                    <input type="text" id="ai-modify-input" class="form-input" style="flex:1; padding:10px 12px; font-size:13px;" placeholder="Ex: rends-la plus grosse, ajoute des étoiles, change l'animation...">
-                    <button type="button" class="ai-btn" onclick="modifyIcon()" style="padding:10px 16px;">Modifier</button>
-                  </div>
-                </div>
-              </div>
+            <div class="param-item">
+              <label class="param-label">Essai (jours)</label>
+              <input type="number" class="param-input" id="field-trial-days" placeholder="7" value="7">
+            </div>
+            <div class="param-item">
+              <label class="param-label">Visibilité</label>
+              <select class="param-select" id="field-visibility">
+                <option value="public">🌍 Public</option>
+                <option value="beta">🧪 Beta</option>
+                <option value="draft">🔒 Brouillon</option>
+              </select>
+            </div>
+            <div class="param-item">
+              <label class="param-label">Stripe Price ID</label>
+              <input type="text" class="param-input" id="field-stripe-price-id" placeholder="price_xxx">
             </div>
           </div>
         </div>
 
-        <!-- Settings -->
-        <div class="form-section">
-          <div class="form-section-title">Parametres</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Statut</label>
-              <select class="form-select" id="field-status">
-                <option value="available">Disponible</option>
-                <option value="beta">Beta</option>
-                <option value="coming_soon">Bientot</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Visibilite</label>
-              <select class="form-select" id="field-visibility">
-                <option value="draft">Brouillon (moi seul)</option>
-                <option value="beta">Beta (testeurs)</option>
-                <option value="public">Public (tous)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Prix mensuel (€)</label>
-              <input type="text" class="form-input" id="field-price" placeholder="9.99">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Stripe Price ID</label>
-              <input type="text" class="form-input" id="field-stripe-price-id" placeholder="price_xxxxx">
-              <p class="form-hint">ID Stripe pour la facturation (depuis dashboard.stripe.com)</p>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">URL Setup</label>
-              <input type="text" class="form-input" id="field-setup-url" placeholder="/compta/setup/">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Jours d'essai</label>
-              <input type="number" class="form-input" id="field-trial-days" placeholder="7" value="7">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Badge</label>
-              <select class="form-select" id="field-badge">
-                <option value="">Auto (nouveau si < 30j)</option>
-                <option value="nouveau">Nouveau</option>
-                <option value="populaire">Populaire</option>
-                <option value="promo">Promo</option>
-                <option value="none">Aucun</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Badge jusqu'au</label>
-              <input type="date" class="form-input" id="field-badge-until">
-            </div>
-          </div>
-        </div>
+        <!-- Hidden fields -->
+        <input type="hidden" id="field-description">
+        <input type="hidden" id="field-status" value="available">
+        <input type="hidden" id="field-setup-url">
+        <input type="hidden" id="field-badge">
+        <input type="hidden" id="field-badge-until">
 
         <!-- Delete Confirmation -->
         <div class="delete-confirm" id="delete-confirm">
-          <p>⚠️ Supprimer definitivement ce module ? Cette action est irreversible.</p>
+          <p>⚠️ Supprimer définitivement ce module ? Cette action est irréversible.</p>
           <div class="delete-confirm-actions">
             <button type="button" class="btn btn-secondary" onclick="cancelDelete()">Annuler</button>
             <button type="button" class="btn btn-danger" onclick="deleteModule()">Supprimer</button>
           </div>
         </div>
       </form>
+    </div>
+
+    <!-- Icon Generator Modal -->
+    <div class="modal-overlay" id="modal-icon">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Créer une icône avec l'IA</h3>
+          <button class="modal-close" onclick="closeModal('icon')">×</button>
+        </div>
+        <div class="modal-body">
+          <textarea class="ai-generator-input" id="ai-prompt" rows="4" placeholder="Décris l'icône que tu veux...
+
+Exemples :
+• un tableau avec des cellules qui se remplissent une par une, animé
+• deux bouteilles de vin, une qui se vide et l'autre qui se remplit
+• des personnes qui se transforment en symbole euro"></textarea>
+          <label style="display:flex; align-items:center; gap:8px; margin:12px 0; font-size:13px; color:rgba(255,255,255,0.6); cursor:pointer;">
+            <input type="checkbox" id="ai-animated" checked style="accent-color:#FF6B35;"> Avec animation
+          </label>
+          <div class="ai-preview" id="ai-preview" style="display:none;">
+            <div class="ai-preview-icon" id="ai-preview-icon"></div>
+            <div style="flex:1;">
+              <p id="ai-preview-desc" style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:8px;"></p>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="ai-btn use" onclick="useGeneratedIcon()" style="background:#22c55e;">✓ Utiliser</button>
+                <button type="button" class="ai-btn secondary" onclick="generateIcon()">↻ Régénérer</button>
+              </div>
+              <div style="margin-top:12px;">
+                <input type="text" id="ai-modify-input" class="form-input" style="width:100%; padding:10px; font-size:13px; margin-bottom:8px;" placeholder="Modifier: rends-la plus grosse, ajoute des étoiles...">
+                <button type="button" class="ai-btn secondary" onclick="modifyIcon()" style="width:100%;">Appliquer modification</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="ai-btn" id="ai-generate-btn" onclick="generateIcon()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Générer l'icône
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description Editor Modal -->
+    <div class="modal-overlay" id="modal-description">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Description du module</h3>
+          <button class="modal-close" onclick="closeModal('description')">×</button>
+        </div>
+        <div class="modal-body">
+          <textarea class="ai-generator-input" id="desc-editor" rows="4" placeholder="Décris ce que fait ce soldat..."></textarea>
+          <div class="ai-desc-preview" id="ai-desc-preview" style="display:none; padding:12px; background:rgba(0,0,0,0.3); border-radius:10px; margin-top:12px;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="ai-btn secondary" onclick="closeModal('description')">Annuler</button>
+          <button type="button" class="ai-btn" onclick="generateDescriptionFromModal()">✨ Générer avec IA</button>
+          <button type="button" class="ai-btn" onclick="saveDescription()" style="background:#22c55e;">Valider</button>
+        </div>
+      </div>
     </div>
   </template>
 
@@ -626,6 +808,15 @@ Exemples :
       { id: 'star', name: 'Fidelite', desc: 'Etoile coeur' }
     ];
 
+    // Categories disponibles
+    const CATEGORIES = [
+      { id: 'restaurant', name: 'Restaurant', emoji: '🍽️' },
+      { id: 'bar', name: 'Bar', emoji: '🍸' },
+      { id: 'hotel', name: 'Hotel', emoji: '🏨' },
+      { id: 'commerce', name: 'Commerce', emoji: '🏪' },
+      { id: 'service', name: 'Service', emoji: '🔧' }
+    ];
+
     // Icon templates - utilise le système centralisé de /js/icons.js
     // MINI_ICON_TEMPLATES est défini dans icons.js
 
@@ -633,6 +824,9 @@ Exemples :
     let currentModule = null;
     let selectedColor = COLOR_PRESETS[0].color;
     let selectedIconType = 'telegram_sheets';
+    let selectedCategories = [];
+    let currentDescription = '';
+    let currentDescriptionHtml = '';
 
     // ==================
     // AUTH
@@ -749,57 +943,51 @@ Exemples :
       const template = document.getElementById('editor-template');
       main.innerHTML = template.innerHTML;
 
-      // Setup listeners
+      // Setup grids
       setupColorGrid();
-      setupIconGrid();
+      setupCategoryChips();
       setupFormListeners();
 
       // Fill form if editing
       if (currentModule) {
-        document.getElementById('editor-title').textContent = currentModule.name;
+        document.getElementById('editor-title').textContent = currentModule.name || 'Module';
         document.getElementById('field-id').value = currentModule.id;
         document.getElementById('field-name').value = currentModule.name || '';
         document.getElementById('field-slug').value = currentModule.slug || '';
         document.getElementById('field-slug').disabled = true;
-        const descField = document.getElementById('field-description');
-        descField.value = stripHtml(currentModule.description || '');
-        // Stocker le HTML original pour la sauvegarde
-        if (currentModule.description && currentModule.description.includes('<')) {
-          descField.dataset.htmlValue = currentModule.description;
-          // Afficher l'aperçu HTML
-          const preview = document.getElementById('ai-desc-preview');
-          if (preview) {
-            preview.innerHTML = `
-              <div style="margin-bottom:8px; font-size:11px; color:rgba(255,255,255,0.4);">Description actuelle (HTML) :</div>
-              <div>${currentModule.description}</div>
-            `;
-            preview.style.display = 'block';
-          }
-        }
-        document.getElementById('field-status').value = currentModule.status || 'available';
+
+        // Description
+        currentDescription = stripHtml(currentModule.description || '');
+        currentDescriptionHtml = currentModule.description || '';
+        document.getElementById('field-description').value = currentDescriptionHtml;
+
+        // Other fields
         document.getElementById('field-visibility').value = currentModule.visibility || 'public';
-        // Stocker la visibilité initiale pour détecter les changements
         document.getElementById('field-visibility').dataset.initialValue = currentModule.visibility || 'public';
         document.getElementById('field-price').value = currentModule.price || '';
-        document.getElementById('field-setup-url').value = currentModule.setup_url || '';
         document.getElementById('field-stripe-price-id').value = currentModule.stripe_price_id || '';
         document.getElementById('field-trial-days').value = currentModule.trial_days || 7;
+        document.getElementById('field-setup-url').value = currentModule.setup_url || '';
         document.getElementById('field-badge').value = currentModule.badge || '';
         document.getElementById('field-badge-until').value = currentModule.badge_until ? currentModule.badge_until.split('T')[0] : '';
         document.getElementById('btn-delete').style.display = 'block';
 
         selectedColor = currentModule.color || COLOR_PRESETS[0].color;
         selectedIconType = currentModule.icon_type || 'telegram_sheets';
+        selectedCategories = currentModule.categories || [];
       } else {
         document.getElementById('editor-title').textContent = 'Nouveau Soldat';
         document.getElementById('field-slug').disabled = false;
         document.getElementById('btn-delete').style.display = 'none';
         document.getElementById('field-trial-days').value = 7;
+        currentDescription = '';
+        currentDescriptionHtml = '';
+        selectedCategories = [];
       }
 
-      // Highlight selected color and icon
+      // Update UI
       updateColorSelection();
-      updateIconSelection();
+      updateCategorySelection();
       updatePreview();
     }
 
@@ -817,28 +1005,44 @@ Exemples :
       `).join('');
     }
 
-    function setupIconGrid() {
-      const grid = document.getElementById('icon-grid');
-      if (!grid) return;
+    function setupCategoryChips() {
+      const container = document.getElementById('category-chips');
+      if (!container) return;
 
-      grid.innerHTML = ICON_TYPES.map(icon => `
-        <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')">
-          <div class="icon-option-preview">${getModuleIcon(icon.id, 'white')}</div>
-          <div class="icon-option-label">${icon.name}</div>
+      container.innerHTML = CATEGORIES.map(cat => `
+        <div class="category-chip ${selectedCategories.includes(cat.id) ? 'selected' : ''}"
+             onclick="toggleCategory('${cat.id}')">
+          ${cat.emoji} ${cat.name}
         </div>
       `).join('');
+    }
+
+    function toggleCategory(catId) {
+      if (selectedCategories.includes(catId)) {
+        selectedCategories = selectedCategories.filter(c => c !== catId);
+      } else {
+        selectedCategories.push(catId);
+      }
+      updateCategorySelection();
+    }
+
+    function updateCategorySelection() {
+      document.querySelectorAll('.category-chip').forEach(chip => {
+        const catId = chip.onclick.toString().match(/'([^']+)'/)?.[1];
+        if (catId) {
+          chip.classList.toggle('selected', selectedCategories.includes(catId));
+        }
+      });
     }
 
     function selectColor(color) {
       selectedColor = color;
       updateColorSelection();
-      updateIconSelection();
       updatePreview();
     }
 
     function selectIcon(iconType) {
       selectedIconType = iconType;
-      updateIconSelection();
       updatePreview();
     }
 
@@ -846,11 +1050,11 @@ Exemples :
     // AI ICON GENERATOR
     // ==================
     let generatedSvg = null;
-    let generatedDescription = null;
+    let generatedIconDescription = null;
 
     async function generateIcon() {
-      const prompt = document.getElementById('ai-prompt').value.trim();
-      const animated = document.getElementById('ai-animated').checked;
+      const prompt = document.getElementById('ai-prompt')?.value.trim();
+      const animated = document.getElementById('ai-animated')?.checked ?? true;
       const btn = document.getElementById('ai-generate-btn');
       const preview = document.getElementById('ai-preview');
       const previewIcon = document.getElementById('ai-preview-icon');
@@ -862,9 +1066,11 @@ Exemples :
       }
 
       // Loading state
-      btn.disabled = true;
-      btn.innerHTML = '<div class="ai-spinner"></div> Génération...';
-      preview.classList.remove('show');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<div class="ai-spinner"></div> Génération...';
+      }
+      if (preview) preview.style.display = 'none';
 
       try {
         // Utiliser admin-ai-generate avec le type generate_svg
@@ -886,7 +1092,7 @@ Exemples :
         }
 
         generatedSvg = data.result?.svg;
-        generatedDescription = data.result?.description;
+        generatedIconDescription = data.result?.description;
 
         if (!generatedSvg) {
           alert('Pas de SVG généré');
@@ -894,17 +1100,21 @@ Exemples :
         }
 
         // Show preview with current color
-        previewIcon.style.background = `linear-gradient(135deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
-        previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
-        if (previewDesc) previewDesc.textContent = generatedDescription || '';
-        preview.classList.add('show');
+        if (previewIcon) {
+          previewIcon.style.background = `linear-gradient(135deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
+          previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
+        }
+        if (previewDesc) previewDesc.textContent = generatedIconDescription || '';
+        if (preview) preview.style.display = 'flex';
 
       } catch (err) {
         console.error(err);
         alert('Erreur de génération: ' + err.message);
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer`;
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer l'icône`;
+        }
       }
     }
 
@@ -945,12 +1155,12 @@ Exemples :
         }
 
         generatedSvg = data.result?.svg;
-        generatedDescription = data.result?.description;
+        generatedIconDescription = data.result?.description;
 
         // Update preview
-        previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
-        if (previewDesc) previewDesc.textContent = generatedDescription || '';
-        modifyInput.value = '';
+        if (previewIcon) previewIcon.innerHTML = generatedSvg.replace(/stroke="currentColor"/g, 'stroke="white"');
+        if (previewDesc) previewDesc.textContent = generatedIconDescription || '';
+        if (modifyInput) modifyInput.value = '';
 
       } catch (err) {
         console.error(err);
@@ -964,17 +1174,14 @@ Exemples :
       if (!generatedSvg) return;
 
       // Add the generated icon to MODULE_ICON_TEMPLATES as 'custom'
-      // and select it
       const customTemplate = (color) => generatedSvg.replace(/stroke="currentColor"/g, `stroke="${color}"`);
-      MODULE_ICON_TEMPLATES.custom = customTemplate;
+      if (typeof MODULE_ICON_TEMPLATES !== 'undefined') {
+        MODULE_ICON_TEMPLATES.custom = customTemplate;
+      }
 
       selectedIconType = 'custom';
-      updateIconSelection();
       updatePreview();
-
-      // Update preview icon to show it's now the active icon
-      document.getElementById('ai-preview').classList.remove('show');
-      alert('Icône appliquée ! Elle sera sauvegardée avec le module.');
+      closeModal('icon');
     }
 
     function copyIconSvg() {
@@ -985,92 +1192,9 @@ Exemples :
     }
 
     // ==================
-    // AI DESCRIPTION GENERATOR
-    // ==================
-    let generatedDescriptionHtml = null;
-
-    async function generateDescription() {
-      const descField = document.getElementById('field-description');
-      const descText = descField?.value.trim();
-      const preview = document.getElementById('ai-desc-preview');
-      const btn = descField?.parentElement.querySelector('.ai-btn');
-      const moduleColor = selectedColor;
-
-      if (!descText) {
-        alert('Écris d\'abord une description de ce que fait le soldat');
-        return;
-      }
-
-      // Loading state
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<div class="ai-spinner"></div> Génération...';
-      }
-
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({
-            type: 'description',
-            name: document.getElementById('field-name')?.value || 'Module',
-            currentDescription: descText,
-            color: moduleColor
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          alert('Erreur: ' + data.error);
-          return;
-        }
-
-        // La réponse est directement le texte avec HTML pour le type "description"
-        generatedDescriptionHtml = data.result;
-
-        // Afficher la preview
-        if (preview) {
-          preview.innerHTML = `
-            <div style="margin-bottom:12px;">${generatedDescriptionHtml}</div>
-            <div style="display:flex; gap:8px;">
-              <button type="button" onclick="useGeneratedDescription()" style="padding:8px 12px; background:#22c55e; border:none; border-radius:8px; color:white; font-size:11px; cursor:pointer;">✓ Utiliser</button>
-              <button type="button" onclick="generateDescription()" style="padding:8px 12px; background:rgba(255,255,255,0.1); border:none; border-radius:8px; color:white; font-size:11px; cursor:pointer;">↻ Régénérer</button>
-              <button type="button" onclick="hideDescriptionPreview()" style="padding:8px 12px; background:rgba(255,255,255,0.1); border:none; border-radius:8px; color:white; font-size:11px; cursor:pointer;">✕ Fermer</button>
-            </div>
-          `;
-          preview.style.display = 'block';
-        }
-
-      } catch (err) {
-        console.error(err);
-        alert('Erreur de génération: ' + err.message);
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec IA`;
-        }
-      }
-    }
-
-    function useGeneratedDescription() {
-      if (!generatedDescriptionHtml) return;
-      const descField = document.getElementById('field-description');
-      // Stocker le HTML dans un attribut data pour la sauvegarde
-      descField.dataset.htmlValue = generatedDescriptionHtml;
-      // Afficher la version texte dans le textarea
-      descField.value = stripHtml(generatedDescriptionHtml);
-      hideDescriptionPreview();
-      updatePreview();
-    }
-
-    function hideDescriptionPreview() {
-      const preview = document.getElementById('ai-desc-preview');
-      if (preview) preview.style.display = 'none';
+    // AI DESCRIPTION - ouvre le modal
+    function generateDescription() {
+      editDescription();
     }
 
     function updateColorSelection() {
@@ -1079,38 +1203,29 @@ Exemples :
       });
     }
 
-    function updateIconSelection() {
-      const grid = document.getElementById('icon-grid');
-      if (!grid) return;
-      grid.innerHTML = ICON_TYPES.map(icon => `
-        <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')">
-          <div class="icon-option-preview">${getModuleIcon(icon.id, 'white')}</div>
-          <div class="icon-option-label">${icon.name}</div>
-        </div>
-      `).join('');
-    }
-
+    
     function setupFormListeners() {
       const nameField = document.getElementById('field-name');
-      const descField = document.getElementById('field-description');
       const slugField = document.getElementById('field-slug');
+      const priceField = document.getElementById('field-price');
+      const trialField = document.getElementById('field-trial-days');
 
       if (nameField) {
         nameField.addEventListener('input', () => {
-          updatePreview();
+          document.getElementById('editor-title').textContent = nameField.value || 'Nouveau Soldat';
           // Auto-generate slug from name
           if (!currentModule && slugField && !slugField.disabled) {
             slugField.value = nameField.value.toLowerCase().replace(/[^a-z]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
           }
         });
       }
-      if (descField) {
-        descField.addEventListener('input', () => {
-          // Effacer le HTML généré si l'utilisateur modifie manuellement
-          delete descField.dataset.htmlValue;
-          hideDescriptionPreview();
-          updatePreview();
-        });
+
+      if (priceField) {
+        priceField.addEventListener('input', updatePreview);
+      }
+
+      if (trialField) {
+        trialField.addEventListener('input', updatePreview);
       }
 
       // Listener pour changement de visibilité
@@ -1178,25 +1293,182 @@ Exemples :
     function updatePreview() {
       const card = document.getElementById('preview-card');
       const icon = document.getElementById('preview-icon');
-      const name = document.getElementById('preview-name');
-      const status = document.getElementById('preview-status');
+      const descHtml = document.getElementById('preview-desc-html');
+      const priceEl = document.getElementById('preview-price');
+      const trialEl = document.getElementById('preview-trial');
 
       if (!card) return;
-
-      const nameVal = document.getElementById('field-name')?.value || 'Nom';
-      const descVal = document.getElementById('field-description')?.value || 'Description';
 
       // Update card background
       card.style.background = `linear-gradient(145deg, ${selectedColor}40, ${selectedColor}25)`;
       card.style.borderColor = `${selectedColor}60`;
 
       // Update icon
-      icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
-      icon.innerHTML = getModuleIcon(selectedIconType, 'white');
+      if (icon) {
+        icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColor(selectedColor)})`;
+        icon.innerHTML = getModuleIcon(selectedIconType, 'white');
+      }
 
-      // Update text
-      name.textContent = nameVal;
-      status.textContent = descVal.substring(0, 30) + (descVal.length > 30 ? '...' : '');
+      // Update description
+      if (descHtml) {
+        if (currentDescriptionHtml) {
+          descHtml.innerHTML = currentDescriptionHtml;
+        } else if (currentDescription) {
+          descHtml.innerHTML = currentDescription;
+        } else {
+          descHtml.innerHTML = '<span class="placeholder">Clique pour ajouter une description...</span>';
+        }
+      }
+
+      // Update price
+      const priceVal = document.getElementById('field-price')?.value;
+      if (priceEl) priceEl.textContent = priceVal ? priceVal + '€' : '0€';
+
+      // Update trial
+      const trialVal = document.getElementById('field-trial-days')?.value || 7;
+      if (trialEl) trialEl.textContent = trialVal + ' jours d\'essai gratuit';
+    }
+
+    // Modal functions
+    function openModal(name) {
+      document.getElementById('modal-' + name)?.classList.add('active');
+    }
+
+    function closeModal(name) {
+      document.getElementById('modal-' + name)?.classList.remove('active');
+    }
+
+    function openIconGenerator() {
+      openModal('icon');
+    }
+
+    function editDescription() {
+      const editor = document.getElementById('desc-editor');
+      if (editor) {
+        editor.value = currentDescription;
+      }
+      openModal('description');
+    }
+
+    function saveDescription() {
+      const editor = document.getElementById('desc-editor');
+      const preview = document.getElementById('ai-desc-preview');
+
+      if (preview && preview.style.display !== 'none' && preview.innerHTML) {
+        // Use AI generated HTML
+        currentDescriptionHtml = preview.querySelector('div:last-child')?.innerHTML || preview.innerHTML;
+        currentDescription = stripHtml(currentDescriptionHtml);
+      } else if (editor) {
+        // Use plain text
+        currentDescription = editor.value;
+        currentDescriptionHtml = editor.value;
+      }
+
+      document.getElementById('field-description').value = currentDescriptionHtml;
+      closeModal('description');
+      updatePreview();
+    }
+
+    async function generateDescriptionFromModal() {
+      const editor = document.getElementById('desc-editor');
+      const preview = document.getElementById('ai-desc-preview');
+      const descText = editor?.value.trim();
+
+      if (!descText) {
+        alert('Écris d\'abord une description');
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            type: 'description',
+            name: document.getElementById('field-name')?.value || 'Module',
+            currentDescription: descText,
+            color: selectedColor
+          })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+          alert('Erreur: ' + data.error);
+          return;
+        }
+
+        // Show preview
+        if (preview) {
+          preview.innerHTML = `
+            <div style="margin-bottom:8px; font-size:11px; color:rgba(255,255,255,0.4);">Aperçu :</div>
+            <div>${data.result}</div>
+          `;
+          preview.style.display = 'block';
+        }
+      } catch (err) {
+        alert('Erreur: ' + err.message);
+      }
+    }
+
+    async function generateAll() {
+      const nameField = document.getElementById('field-name');
+      const name = nameField?.value.trim();
+
+      if (!name) {
+        alert('Entre d\'abord un nom de module');
+        nameField?.focus();
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            type: 'module_full',
+            prompt: name
+          })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+          alert('Erreur: ' + data.error);
+          return;
+        }
+
+        const result = data.result;
+
+        // Apply generated values
+        if (result.color) {
+          selectedColor = result.color;
+          updateColorSelection();
+        }
+        if (result.icon_type) {
+          selectedIconType = result.icon_type;
+        }
+        if (result.description) {
+          currentDescription = stripHtml(result.description);
+          currentDescriptionHtml = result.description;
+          document.getElementById('field-description').value = result.description;
+        }
+        if (result.price) {
+          document.getElementById('field-price').value = result.price;
+        }
+
+        updatePreview();
+        alert('Module généré ! Vérifie et ajuste si nécessaire.');
+
+      } catch (err) {
+        alert('Erreur: ' + err.message);
+      }
     }
 
     // ==================
@@ -1205,17 +1477,15 @@ Exemples :
     async function save() {
       const slug = document.getElementById('field-slug').value.trim();
       const name = document.getElementById('field-name').value.trim();
-      const descField = document.getElementById('field-description');
-      // Utiliser la description HTML si générée par l'IA, sinon le texte brut
-      const description = descField.dataset.htmlValue || descField.value;
-      const status = document.getElementById('field-status').value;
+      const description = currentDescriptionHtml || document.getElementById('field-description').value;
+      const status = document.getElementById('field-status')?.value || 'available';
       const visibility = document.getElementById('field-visibility').value;
       const price = document.getElementById('field-price').value;
-      const setupUrl = document.getElementById('field-setup-url').value || `/${slug}/setup/`;
+      const setupUrl = document.getElementById('field-setup-url')?.value || `/${slug}/setup/`;
       const stripePriceId = document.getElementById('field-stripe-price-id').value.trim();
       const trialDays = parseInt(document.getElementById('field-trial-days').value) || 7;
-      const badge = document.getElementById('field-badge').value || null;
-      const badgeUntil = document.getElementById('field-badge-until').value || null;
+      const badge = document.getElementById('field-badge')?.value || null;
+      const badgeUntil = document.getElementById('field-badge-until')?.value || null;
 
       if (!name || !slug) {
         alert('Nom et ID technique requis');
@@ -1231,6 +1501,7 @@ Exemples :
         visibility,
         price: price || null,
         setup_url: setupUrl,
+        categories: selectedCategories.length > 0 ? selectedCategories : null,
         settings_url: `/?soldat=${slug}`,
         icon_type: selectedIconType,
         stripe_price_id: stripePriceId || null,
