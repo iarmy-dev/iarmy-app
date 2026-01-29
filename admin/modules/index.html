@@ -400,19 +400,40 @@
       outline: none;
     }
     .preview-name-input::placeholder { color: rgba(255,255,255,0.3); }
-    .preview-desc-html {
+    .preview-desc-textarea {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: white;
       font-size: 13px;
-      color: rgba(255,255,255,0.6);
       line-height: 1.5;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 8px;
-      transition: background 0.2s;
-      min-height: 40px;
+      padding: 12px;
+      resize: none;
+      text-align: center;
+      margin-bottom: 12px;
     }
-    .preview-desc-html:hover { background: rgba(255,255,255,0.05); }
-    .preview-desc-html .placeholder { color: rgba(255,255,255,0.3); font-style: italic; }
-    .preview-desc-html strong { font-weight: 600; }
+    .preview-desc-textarea::placeholder { color: rgba(255,255,255,0.3); }
+    .preview-desc-textarea:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+
+    .improve-btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .improve-btn:hover {
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
+      border-color: rgba(255,255,255,0.3);
+    }
+    .improve-btn:disabled { opacity: 0.5; cursor: wait; }
+
+    .preview-icon-large { cursor: pointer; transition: transform 0.2s; }
+    .preview-icon-large:hover { transform: scale(1.1); }
 
     /* Price display */
     .preview-price {
@@ -623,33 +644,28 @@
       <form id="module-form" onsubmit="return false;">
         <input type="hidden" id="field-id">
 
-        <!-- Live Preview Card - More prominent -->
+        <!-- Live Preview Card - Editable -->
         <div class="preview-section">
           <div class="preview-card-large" id="preview-card">
-            <div class="preview-icon-large" id="preview-icon"></div>
+            <!-- Icon - clickable to generate -->
+            <div class="preview-icon-large" id="preview-icon" onclick="openIconGenerator()" title="Clique pour créer une icône"></div>
+
+            <!-- Name - editable -->
             <input type="text" class="preview-name-input" id="field-name" placeholder="Nom du soldat" required>
-            <div class="preview-desc-html" id="preview-desc-html" onclick="editDescription()">
-              <span class="placeholder">Clique pour ajouter une description...</span>
-            </div>
+
+            <!-- Description - editable textarea -->
+            <textarea class="preview-desc-textarea" id="field-description-edit" placeholder="Décris ce que fait ce module..." rows="3"></textarea>
+
+            <!-- Improve button -->
+            <button type="button" class="improve-btn" onclick="improveText()">
+              ✨ Améliorer le texte
+            </button>
           </div>
 
           <!-- Price display -->
           <div class="preview-price">
             <span class="price-amount" id="preview-price">0€</span><span class="price-period">/mois</span>
             <div class="price-trial" id="preview-trial">7 jours d'essai gratuit</div>
-          </div>
-
-          <!-- AI Action buttons -->
-          <div class="ai-actions-row">
-            <button type="button" class="ai-action-btn" onclick="generateAll()">
-              ✨ Générer tout avec l'IA
-            </button>
-            <button type="button" class="ai-action-btn" onclick="generateDescription()">
-              ✨ Refaire le texte
-            </button>
-            <button type="button" class="ai-action-btn" onclick="openIconGenerator()">
-              ✨ Créer icône
-            </button>
           </div>
         </div>
 
@@ -960,6 +976,8 @@ Exemples :
         currentDescription = stripHtml(currentModule.description || '');
         currentDescriptionHtml = currentModule.description || '';
         document.getElementById('field-description').value = currentDescriptionHtml;
+        const descEdit = document.getElementById('field-description-edit');
+        if (descEdit) descEdit.value = currentDescription;
 
         // Other fields
         document.getElementById('field-visibility').value = currentModule.visibility || 'public';
@@ -1192,9 +1210,86 @@ Exemples :
     }
 
     // ==================
-    // AI DESCRIPTION - ouvre le modal
-    function generateDescription() {
-      editDescription();
+    // Améliorer le texte - reformule + met en couleur
+    async function improveText() {
+      const textarea = document.getElementById('field-description-edit');
+      const btn = document.querySelector('.improve-btn');
+      const text = textarea?.value.trim();
+
+      if (!text) {
+        alert('Écris d\'abord une description à améliorer');
+        textarea?.focus();
+        return;
+      }
+
+      // Loading
+      btn.disabled = true;
+      btn.textContent = '⏳ Amélioration...';
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const response = await fetch('https://byqfnpdcnifauhwgetcq.supabase.co/functions/v1/admin-ai-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            type: 'description',
+            name: document.getElementById('field-name')?.value || 'Module',
+            currentDescription: text,
+            color: selectedColor
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          alert('Erreur: ' + data.error);
+          return;
+        }
+
+        // Mettre à jour avec le texte amélioré (contient déjà le HTML avec couleurs)
+        currentDescriptionHtml = data.result;
+        currentDescription = stripHtml(data.result);
+
+        // Afficher dans le textarea (version texte)
+        textarea.value = currentDescription;
+
+        // Mettre à jour le champ caché avec le HTML
+        document.getElementById('field-description').value = currentDescriptionHtml;
+
+        // Afficher un aperçu du résultat formaté
+        showImprovedPreview(currentDescriptionHtml);
+
+      } catch (err) {
+        console.error(err);
+        alert('Erreur: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Améliorer le texte';
+      }
+    }
+
+    function showImprovedPreview(html) {
+      // Créer ou mettre à jour l'aperçu
+      let preview = document.getElementById('improved-preview');
+      if (!preview) {
+        preview = document.createElement('div');
+        preview.id = 'improved-preview';
+        preview.style.cssText = 'margin-top:12px; padding:12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; text-align:center;';
+        document.querySelector('.preview-card-large')?.appendChild(preview);
+      }
+      preview.innerHTML = `
+        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:8px;">✓ Texte amélioré :</div>
+        <div style="font-size:13px; line-height:1.5;">${html}</div>
+      `;
+
+      // Masquer après 5 secondes
+      setTimeout(() => {
+        preview.style.opacity = '0';
+        setTimeout(() => preview.remove(), 300);
+      }, 5000);
     }
 
     function updateColorSelection() {
