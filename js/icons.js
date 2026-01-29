@@ -257,7 +257,7 @@ const ANIMATED_ICON_TEMPLATES = {
 /**
  * CSS pour les icônes animées - à injecter une fois dans la page
  */
-const ANIMATED_ICONS_CSS = \`
+const ANIMATED_ICONS_CSS = `
   /* Mini Sheet (Compta) */
   .mini-sheet { width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
   .mini-sheet-row { display: flex; height: 8px; }
@@ -326,7 +326,7 @@ const ANIMATED_ICONS_CSS = \`
   .mini-pulse-dot { width: 10px; height: 10px; border-radius: 50%; }
   .mini-pulse-ring { position: absolute; width: 20px; height: 20px; border-radius: 50%; border: 2px solid; opacity: 0; animation: pulseRing 2s ease-out infinite; }
   @keyframes pulseRing { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-\`;
+`;
 
 /**
  * Obtenir une icône ANIMÉE pour un module
@@ -355,7 +355,7 @@ function lightenColor(hex, percent = 30) {
   const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + percent);
   const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + percent);
   const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + percent);
-  return \`#\${r.toString(16).padStart(2,'0')}\${g.toString(16).padStart(2,'0')}\${b.toString(16).padStart(2,'0')}\`;
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
 }
 
 // Export pour modules ES6
