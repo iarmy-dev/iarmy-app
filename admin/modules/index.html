@@ -390,20 +390,27 @@
       await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback' }});
     }
 
+    let authChecked = false;
     async function checkAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app').style.display = 'grid';
-        loadModules();
+        if (!authChecked) {
+          authChecked = true;
+          loadModules();
+        }
       } else if (session) {
         document.getElementById('auth-error').textContent = 'Non autorisé';
         document.getElementById('auth-error').style.display = 'block';
         supabaseClient.auth.signOut();
       }
+      // Si pas de session, on reste sur l'écran de login
     }
     checkAuth();
-    supabaseClient.auth.onAuthStateChange(() => checkAuth());
+    supabaseClient.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') checkAuth();
+    });
 
     // Load modules
     async function loadModules() {
