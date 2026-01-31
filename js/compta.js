@@ -977,7 +977,7 @@ async function comptaPreviewExport() {
     console.log('[Compta] Calling generate-pdf with:', { sheetId: comptaConfig.sheet_id, sheetName });
 
     const SUPABASE_URL = 'https://byqfnpdcnifauhwgetcq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cWZucGRjbmlmYXVod2dldGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODY1MTIsImV4cCI6MjA4MzQ2MjUxMn0.1W2OaRb0sApMvrG_28AoV2zUFAzrptzpwbR1c65tOPo';
+    const SUPABASE_ANON_KEY = 'sb_publishable_8mpFx9ubrV29KfKtgAb3eg_dyazidfT';
 
     const pdfRes = await fetch(SUPABASE_URL + '/functions/v1/generate-pdf', {
       method: 'POST',
