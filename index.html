@@ -1607,26 +1607,42 @@
     }
 
     // Equipe settings
+    let equipeConfig = {};
+
     async function loadEquipeSettings() {
+      // Stats
+      const now = new Date();
+      const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const lastOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
       const { count: employeeCount } = await supabaseClient
         .from('employees')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', currentUser.id)
         .eq('status', 'active');
 
-      const { count: absenceCount } = await supabaseClient
-        .from('employee_absences')
+      const { count: eventCount } = await supabaseClient
+        .from('employee_events')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', currentUser.id);
+        .eq('user_id', currentUser.id)
+        .gte('event_date', firstOfMonth)
+        .lte('event_date', lastOfMonth);
+
+      const { count: absCount } = await supabaseClient
+        .from('employee_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id)
+        .eq('event_type', 'absence')
+        .gte('event_date', firstOfMonth)
+        .lte('event_date', lastOfMonth);
 
       if (employeeCount > 0) {
         document.getElementById('module-stats-section').style.display = 'block';
-
         document.getElementById('module-stat-1').textContent = employeeCount || 0;
         document.getElementById('module-stat-1-label').textContent = 'Employes';
-        document.getElementById('module-stat-2').textContent = absenceCount || 0;
+        document.getElementById('module-stat-2').textContent = absCount || 0;
         document.getElementById('module-stat-2-label').textContent = 'Absences';
-        document.getElementById('module-stat-3').textContent = '-';
+        document.getElementById('module-stat-3').textContent = eventCount || 0;
         document.getElementById('module-stat-3-label').textContent = 'Ce mois';
 
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer l\'equipe';
@@ -1634,6 +1650,306 @@
       } else {
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des contrats';
+      }
+
+      // Load config
+      const { data: cfgData } = await supabaseClient
+        .from('module_configs')
+        .select('config')
+        .eq('user_id', currentUser.id)
+        .eq('module_name', 'equipe')
+        .maybeSingle();
+
+      equipeConfig = cfgData?.config || {};
+
+      // Charger les événements récents
+      const { data: recentEvents } = await supabaseClient
+        .from('employee_events')
+        .select('id, employee_id, event_type, event_date, duration_minutes, notes')
+        .eq('user_id', currentUser.id)
+        .order('event_date', { ascending: false })
+        .limit(20);
+
+      const { data: allEmployees } = await supabaseClient
+        .from('employees')
+        .select('id, name, first_name, last_name')
+        .eq('user_id', currentUser.id);
+
+      const empMap = {};
+      (allEmployees || []).forEach(e => { empMap[e.id] = e.first_name ? `${e.first_name} ${e.last_name || ''}`.trim() : e.name; });
+
+      const eventLabels = { absence: '🚫 Absence', late: '⏰ Retard', extra_hours: '➕ Heures sup', reduced_hours: '➖ Heures en moins' };
+
+      // Render settings content
+      const content = document.getElementById('module-content');
+      content.innerHTML = `
+        <!-- Export auto -->
+        <div style="margin-bottom: 28px;">
+          <div class="section-title">Export automatique</div>
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+              <div>
+                <div style="font-size: 14px; font-weight: 500;">Envoi automatique</div>
+                <div style="font-size: 12px; color: rgba(255,255,255,0.4);">Recois le recap chaque mois</div>
+              </div>
+              <label style="position: relative; width: 44px; height: 24px; cursor: pointer;">
+                <input type="checkbox" id="equipe-auto-export" ${equipeConfig.auto_export_enabled ? 'checked' : ''} onchange="saveEquipeConfig()" style="opacity:0;width:0;height:0;">
+                <span style="position: absolute; inset: 0; background: ${equipeConfig.auto_export_enabled ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
+                <span style="position: absolute; top: 2px; left: ${equipeConfig.auto_export_enabled ? '22px' : '2px'}; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s;"></span>
+              </label>
+            </div>
+            <div id="equipe-export-details" style="display: ${equipeConfig.auto_export_enabled ? 'block' : 'none'};">
+              <div style="margin-bottom: 12px;">
+                <label style="font-size: 12px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">Email du comptable</label>
+                <input type="email" id="equipe-export-email" value="${escapeHtml(equipeConfig.export_email || '')}" onchange="saveEquipeConfig()" placeholder="comptable@example.com" style="width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-size: 14px; outline: none; box-sizing: border-box;">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label style="font-size: 12px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">Jour d'envoi</label>
+                  <select id="equipe-export-day" onchange="saveEquipeConfig()" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-size: 14px;">
+                    <option value="1" ${(equipeConfig.export_day || 1) == 1 ? 'selected' : ''}>Le 1er</option>
+                    <option value="5" ${equipeConfig.export_day == 5 ? 'selected' : ''}>Le 5</option>
+                    <option value="10" ${equipeConfig.export_day == 10 ? 'selected' : ''}>Le 10</option>
+                    <option value="15" ${equipeConfig.export_day == 15 ? 'selected' : ''}>Le 15</option>
+                    <option value="25" ${equipeConfig.export_day == 25 ? 'selected' : ''}>Le 25</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px;">Format</label>
+                  <select id="equipe-export-format" onchange="saveEquipeConfig()" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-size: 14px;">
+                    <option value="csv" ${(equipeConfig.export_format || 'csv') === 'csv' ? 'selected' : ''}>CSV</option>
+                    <option value="pdf" ${equipeConfig.export_format === 'pdf' ? 'selected' : ''}>PDF</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications Telegram -->
+        <div style="margin-bottom: 28px;">
+          <div class="section-title">Notifications Telegram</div>
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <div style="font-size: 14px;">Recap hebdomadaire</div>
+              <label style="position: relative; width: 44px; height: 24px; cursor: pointer;">
+                <input type="checkbox" id="equipe-notif-weekly" ${equipeConfig.notif_weekly !== false ? 'checked' : ''} onchange="saveEquipeConfig()" style="opacity:0;width:0;height:0;">
+                <span style="position: absolute; inset: 0; background: ${equipeConfig.notif_weekly !== false ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
+                <span style="position: absolute; top: 2px; left: ${equipeConfig.notif_weekly !== false ? '22px' : '2px'}; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s;"></span>
+              </label>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-size: 14px;">Recap mensuel</div>
+              <label style="position: relative; width: 44px; height: 24px; cursor: pointer;">
+                <input type="checkbox" id="equipe-notif-monthly" ${equipeConfig.notif_monthly !== false ? 'checked' : ''} onchange="saveEquipeConfig()" style="opacity:0;width:0;height:0;">
+                <span style="position: absolute; inset: 0; background: ${equipeConfig.notif_monthly !== false ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
+                <span style="position: absolute; top: 2px; left: ${equipeConfig.notif_monthly !== false ? '22px' : '2px'}; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s;"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Événements récents -->
+        <div style="margin-bottom: 28px;">
+          <div class="section-title">Evenements recents</div>
+          <div id="equipe-events-list" style="display: flex; flex-direction: column; gap: 8px;">
+            ${(recentEvents && recentEvents.length > 0) ? recentEvents.map(ev => {
+              const empName = empMap[ev.employee_id] || 'Inconnu';
+              const mins = ev.duration_minutes || 0;
+              const dur = mins >= 60 ? Math.floor(mins/60) + 'h' + (mins%60 > 0 ? mins%60 + 'min' : '') : mins > 0 ? mins + 'min' : '';
+              const dateStr = new Date(ev.event_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+              return `<div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;" data-event-id="${ev.id}">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="font-size: 16px;">${(eventLabels[ev.event_type] || '📝').split(' ')[0]}</div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 500;">${escapeHtml(empName)}</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.4);">${eventLabels[ev.event_type]?.split(' ')[1] || ev.event_type}${dur ? ' · ' + dur : ''} · ${dateStr}</div>
+                  </div>
+                </div>
+                <button onclick="deleteEquipeEvent('${ev.id}')" style="background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; padding: 8px; font-size: 16px;" title="Supprimer">✕</button>
+              </div>`;
+            }).join('') : '<div style="text-align: center; color: rgba(255,255,255,0.3); padding: 24px; font-size: 14px;">Aucun evenement ce mois</div>'}
+          </div>
+        </div>
+
+        <!-- Archives -->
+        <div style="margin-bottom: 28px;">
+          <div class="section-title">Archives</div>
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;" id="equipe-archives">
+              ${generateArchiveMonths()}
+            </div>
+          </div>
+        </div>
+
+        <!-- Envoyer maintenant -->
+        <div style="margin-bottom: 28px;">
+          <button onclick="sendEquipeRecapNow()" style="width: 100%; padding: 14px; background: var(--module-color, #8b5cf6); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            📤 Envoyer le recap maintenant
+          </button>
+        </div>
+      `;
+
+      // Toggle listeners pour les switchs
+      document.getElementById('equipe-auto-export')?.addEventListener('change', function() {
+        document.getElementById('equipe-export-details').style.display = this.checked ? 'block' : 'none';
+        // Update toggle visuals
+        this.parentElement.querySelector('span:first-of-type').style.background = this.checked ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)';
+        this.parentElement.querySelector('span:last-of-type').style.left = this.checked ? '22px' : '2px';
+      });
+
+      document.querySelectorAll('#module-content input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', function() {
+          this.parentElement.querySelector('span:first-of-type').style.background = this.checked ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)';
+          this.parentElement.querySelector('span:last-of-type').style.left = this.checked ? '22px' : '2px';
+        });
+      });
+    }
+
+    function generateArchiveMonths() {
+      const months = [];
+      const now = new Date();
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const m = d.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const isCurrent = i === 0;
+        months.push(`<button onclick="downloadEquipeArchive('${key}')" style="padding: 10px; background: rgba(255,255,255,${isCurrent ? '0.06' : '0.02'}); border: 1px solid rgba(255,255,255,${isCurrent ? '0.12' : '0.06'}); border-radius: 10px; color: ${isCurrent ? 'white' : 'rgba(255,255,255,0.5)'}; font-size: 13px; cursor: pointer; transition: all 0.2s;">${m}${isCurrent ? ' ●' : ''}</button>`);
+      }
+      return months.join('');
+    }
+
+    async function saveEquipeConfig() {
+      const config = {
+        auto_export_enabled: document.getElementById('equipe-auto-export')?.checked || false,
+        export_email: document.getElementById('equipe-export-email')?.value || '',
+        export_day: parseInt(document.getElementById('equipe-export-day')?.value) || 1,
+        export_format: document.getElementById('equipe-export-format')?.value || 'csv',
+        notif_weekly: document.getElementById('equipe-notif-weekly')?.checked ?? true,
+        notif_monthly: document.getElementById('equipe-notif-monthly')?.checked ?? true
+      };
+
+      equipeConfig = config;
+
+      const { data: existing } = await supabaseClient
+        .from('module_configs')
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .eq('module_name', 'equipe')
+        .maybeSingle();
+
+      if (existing) {
+        await supabaseClient.from('module_configs')
+          .update({ config, updated_at: new Date().toISOString() })
+          .eq('user_id', currentUser.id)
+          .eq('module_name', 'equipe');
+      } else {
+        await supabaseClient.from('module_configs')
+          .insert({ user_id: currentUser.id, module_name: 'equipe', config });
+      }
+    }
+
+    async function deleteEquipeEvent(eventId) {
+      if (!confirm('Supprimer cet evenement ?')) return;
+
+      const { error } = await supabaseClient
+        .from('employee_events')
+        .delete()
+        .eq('id', eventId)
+        .eq('user_id', currentUser.id);
+
+      if (!error) {
+        const el = document.querySelector(`[data-event-id="${eventId}"]`);
+        if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }
+      }
+    }
+
+    async function downloadEquipeArchive(monthKey) {
+      const [year, month] = monthKey.split('-').map(Number);
+      const firstOfMonth = new Date(year, month - 1, 1).toISOString().split('T')[0];
+      const lastOfMonth = new Date(year, month, 0).toISOString().split('T')[0];
+
+      const { data: employees } = await supabaseClient
+        .from('employees')
+        .select('id, name, first_name, last_name, monthly_hours, net_salary_reference, monthly_salary')
+        .eq('user_id', currentUser.id);
+
+      const { data: events } = await supabaseClient
+        .from('employee_events')
+        .select('employee_id, event_type, duration_minutes, event_date, notes')
+        .eq('user_id', currentUser.id)
+        .gte('event_date', firstOfMonth)
+        .lte('event_date', lastOfMonth)
+        .order('event_date');
+
+      let csv = 'Nom;Heures prevues;Absences (h);Retards (min);Heures sup;Heures en moins;Salaire ref;Details\n';
+
+      for (const emp of (employees || [])) {
+        const name = emp.first_name ? `${emp.first_name} ${emp.last_name || ''}`.trim() : emp.name;
+        const empEvents = (events || []).filter(e => e.employee_id === emp.id);
+        const absMin = empEvents.filter(e => e.event_type === 'absence').reduce((s, e) => s + (e.duration_minutes || 0), 0);
+        const lateMin = empEvents.filter(e => e.event_type === 'late').reduce((s, e) => s + (e.duration_minutes || 0), 0);
+        const extraMin = empEvents.filter(e => e.event_type === 'extra_hours').reduce((s, e) => s + (e.duration_minutes || 0), 0);
+        const reducedMin = empEvents.filter(e => e.event_type === 'reduced_hours').reduce((s, e) => s + (e.duration_minutes || 0), 0);
+        const details = empEvents.map(e => `${e.event_date}: ${e.notes || e.event_type}`).join(' | ');
+        csv += `${name};${emp.monthly_hours || emp.monthly_salary || ''};${(absMin/60).toFixed(1)};${lateMin};${(extraMin/60).toFixed(1)};${(reducedMin/60).toFixed(1)};${emp.net_salary_reference || emp.monthly_salary || ''};${details}\n`;
+      }
+
+      const monthName = new Date(year, month - 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `equipe_${monthKey}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function sendEquipeRecapNow() {
+      const email = equipeConfig.export_email;
+      if (!email) {
+        alert('Configure d\'abord l\'email du comptable dans Export automatique.');
+        return;
+      }
+
+      const btn = event.target;
+      btn.textContent = '⏳ Envoi en cours...';
+      btn.disabled = true;
+
+      try {
+        // Générer le CSV du mois en cours
+        const now = new Date();
+        const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        const lastOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+        const { data: employees } = await supabaseClient
+          .from('employees')
+          .select('id, name, first_name, last_name, monthly_hours, net_salary_reference, monthly_salary')
+          .eq('user_id', currentUser.id);
+
+        const { data: events } = await supabaseClient
+          .from('employee_events')
+          .select('employee_id, event_type, duration_minutes, event_date')
+          .eq('user_id', currentUser.id)
+          .gte('event_date', firstOfMonth)
+          .lte('event_date', lastOfMonth);
+
+        const monthName = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+        // Pour l'instant, télécharger le CSV (l'envoi email nécessite une edge function)
+        await downloadEquipeArchive(monthKey);
+
+        btn.textContent = '✅ CSV telecharge !';
+        setTimeout(() => {
+          btn.textContent = '📤 Envoyer le recap maintenant';
+          btn.disabled = false;
+        }, 2000);
+
+      } catch (err) {
+        btn.textContent = '❌ Erreur';
+        btn.disabled = false;
+        console.error('Erreur envoi recap:', err);
       }
     }
 
