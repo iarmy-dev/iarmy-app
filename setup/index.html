@@ -415,6 +415,16 @@
       };
     }
 
+    // Helper pour capitaliser proprement (Prénom, Poste)
+    function capitalizeWord(str) {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+    function capitalizeWords(str) {
+      if (!str) return '';
+      return str.split(' ').map(w => capitalizeWord(w)).join(' ');
+    }
+
     // Helper pour éclaircir une couleur hex
     function lightenColor(hex, percent) {
       const num = parseInt(hex.replace('#', ''), 16);
@@ -573,6 +583,13 @@
         return;
       }
 
+      // Pour les testeurs, masquer le step stripe_checkout
+      if (isTester) {
+        moduleConfig.setup.steps.forEach(s => {
+          if (s.type === 'stripe_checkout') s.hidden = true;
+        });
+      }
+
       // Generer l'interface
       generateStepsNav();
       generateStepsContent();
@@ -620,17 +637,22 @@
     function generateStepsContent() {
       const steps = moduleConfig.setup.steps;
       const container = document.getElementById('steps-container');
+      const visibleCount = steps.filter(s => !s.hidden).length;
+      let visibleNum = 0;
 
-      container.innerHTML = steps.map((step, i) => `
-        <div class="step-content" id="step-${i}">
-          <div class="mb-2"><span class="text-white/30 text-sm">Etape ${i + 1}/${steps.length}</span></div>
-          <h1 class="text-3xl font-bold mb-3">${step.title}</h1>
-          <p class="text-white/40 mb-8">${step.description || ''}</p>
-          <div class="glass-card p-8" id="step-${i}-content">
-            ${renderStepContent(step, i)}
+      container.innerHTML = steps.map((step, i) => {
+        if (!step.hidden) visibleNum++;
+        return `
+          <div class="step-content" id="step-${i}">
+            <div class="mb-2"><span class="text-white/30 text-sm">Etape ${step.hidden ? '' : visibleNum + '/'}${step.hidden ? '' : visibleCount}</span></div>
+            <h1 class="text-3xl font-bold mb-3">${step.title}</h1>
+            <p class="text-white/40 mb-8">${step.description || ''}</p>
+            <div class="glass-card p-8" id="step-${i}-content">
+              ${renderStepContent(step, i)}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderStepContent(step, index) {
@@ -1091,8 +1113,10 @@
 
           <!-- CTA -->
           <div style="background: rgba(255,107,53,0.06); border-radius: 16px; padding: 24px; text-align: center;">
-            <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">7 jours gratuits puis</div>
-            <div style="font-size: 36px; font-weight: 800; color: #FF8B5E; margin-bottom: 16px;">${moduleConfig.price}€<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.4);">/mois</span></div>
+            <div id="pricing-display-recap-${index}">
+              <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">7 jours gratuits puis</div>
+              <div style="font-size: 36px; font-weight: 800; color: #FF8B5E; margin-bottom: 16px;">${moduleConfig.price}€<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.4);">/mois</span></div>
+            </div>
 
             <div id="tester-access-recap-${index}" style="display: none;">
               <div style="color: #c084fc; font-size: 14px; margin-bottom: 16px;">🧪 Acces testeur</div>
@@ -1271,6 +1295,9 @@
         const extracted = await analyzeContractWithGemini(base64Files);
 
         if (extracted && extracted.name && extracted.name !== 'null') {
+          // Capitaliser proprement le nom et le poste
+          if (extracted.name) extracted.name = extracted.name.split(' ').map((w, i, arr) => i === arr.length - 1 && arr.length > 1 ? w.toUpperCase() : capitalizeWord(w)).join(' ');
+          if (extracted.role) extracted.role = capitalizeWords(extracted.role);
           stepData.employees.push(extracted);
           showToast('Employe ajoute !');
         } else {
@@ -1443,19 +1470,22 @@
 
       currentStepIndex = index;
 
-      // Update sidebar
-      document.querySelectorAll('.step-item').forEach((el, i) => {
+      // Update sidebar (nav items only exist for visible steps, match by id)
+      const visibleIndices = steps.map((s, i) => s.hidden ? -1 : i).filter(i => i >= 0);
+      document.querySelectorAll('.step-item').forEach((el, navIdx) => {
+        const stepIdx = visibleIndices[navIdx];
         el.classList.remove('active', 'completed', 'upcoming');
-        if (i < index) el.classList.add('completed');
-        else if (i === index) el.classList.add('active');
+        if (stepIdx < index) el.classList.add('completed');
+        else if (stepIdx === index) el.classList.add('active');
         else el.classList.add('upcoming');
       });
 
       // Update mobile steps
-      document.querySelectorAll('.mobile-step').forEach((el, i) => {
+      document.querySelectorAll('.mobile-step').forEach((el, navIdx) => {
+        const stepIdx = visibleIndices[navIdx];
         el.classList.remove('active', 'completed');
-        if (i < index) el.classList.add('completed');
-        else if (i === index) el.classList.add('active');
+        if (stepIdx < index) el.classList.add('completed');
+        else if (stepIdx === index) el.classList.add('active');
       });
       document.getElementById('mobile-step-label').textContent = steps[index].title;
 
@@ -1468,7 +1498,10 @@
     }
 
     function nextStep() {
-      goToStep(currentStepIndex + 1);
+      let next = currentStepIndex + 1;
+      const steps = moduleConfig.setup.steps;
+      while (next < steps.length && steps[next].hidden) next++;
+      goToStep(next);
     }
 
     function initStep(step, index) {
@@ -2130,8 +2163,8 @@
       }
 
       const employeeData = {
-        name: `${firstname} ${lastname.toUpperCase()}`,
-        role: role,
+        name: `${capitalizeWords(firstname)} ${lastname.toUpperCase()}`,
+        role: capitalizeWords(role),
         contract_type: contract,
         start_date: startDate || null,
         hours_per_week: parseInt(hours),
@@ -2832,12 +2865,12 @@
 
         // Transform extract-contract format to employee format
         const d = result.data;
-        // Formater: Prénom NOM (nom en majuscules)
-        const firstName = (d.employee?.first_name || '').trim();
+        // Formater: Prénom NOM (nom en majuscules, prénom capitalisé)
+        const firstName = capitalizeWords((d.employee?.first_name || '').trim());
         const lastName = (d.employee?.last_name || '').trim().toUpperCase();
         return {
           name: `${firstName} ${lastName}`.trim(),
-          role: d.contract?.job_title || null,
+          role: capitalizeWords(d.contract?.job_title || '') || null,
           contract_type: d.contract?.type || null,
           hours_per_week: d.hours?.weekly_hours || null,
           start_date: d.contract?.start_date || null,
@@ -2965,6 +2998,7 @@
 
       // Check if tester
       if (isTester) {
+        document.getElementById(`pricing-display-recap-${index}`).style.display = 'none';
         document.getElementById(`tester-access-recap-${index}`).style.display = 'block';
         document.getElementById(`payment-section-recap-${index}`).style.display = 'none';
       }
