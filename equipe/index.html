@@ -245,10 +245,9 @@
             <tr>
               <th>Employé</th>
               <th>Type</th>
-              <th>Du</th>
-              <th>Au</th>
+              <th>Date</th>
               <th>Durée</th>
-              <th>Justifié</th>
+              <th>Notes</th>
             </tr>
           </thead>
           <tbody id="absences-table"></tbody>
@@ -269,9 +268,9 @@
             <tr>
               <th>Employé</th>
               <th>Date</th>
-              <th>Heures</th>
+              <th>Durée</th>
               <th>Type</th>
-              <th>Validé</th>
+              <th>Notes</th>
             </tr>
           </thead>
           <tbody id="overtime-table"></tbody>
@@ -408,21 +407,23 @@
     function renderAbsences() {
       const tbody = document.getElementById('absences-table');
       if (absences.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:rgba(255,255,255,0.4); padding:32px;">Aucune absence ce mois</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:rgba(255,255,255,0.4); padding:32px;">Aucune absence ce mois</td></tr>';
         return;
       }
 
-      tbody.innerHTML = absences.map(abs => {
-        const emp = employees.find(e => e.id === abs.employee_id) || {};
-        const badgeClass = abs.absence_type === 'maladie' ? 'badge-maladie' : abs.absence_type === 'conges' ? 'badge-conges' : 'badge-retard';
+      tbody.innerHTML = absences.map(ev => {
+        const emp = employees.find(e => e.id === ev.employee_id) || {};
+        const badgeClass = ev.event_type === 'absence' ? 'badge-maladie' : 'badge-retard';
+        const label = ev.event_type === 'absence' ? 'Absence' : 'Retard';
+        const mins = ev.duration_minutes || 0;
+        const duration = mins >= 60 ? `${Math.floor(mins/60)}h${mins%60 > 0 ? mins%60 + 'min' : ''}` : `${mins}min`;
         return `
           <tr>
-            <td>${emp.first_name || ''} ${emp.last_name || ''}</td>
-            <td><span class="badge ${badgeClass}">${abs.absence_type}</span></td>
-            <td>${formatDate(abs.start_date)}</td>
-            <td>${formatDate(abs.end_date)}</td>
-            <td>${abs.duration_hours ? abs.duration_hours + 'h' : '-'}</td>
-            <td>${abs.justified ? '✓' : '✗'}</td>
+            <td>${emp.first_name || emp.name || ''} ${emp.last_name || ''}</td>
+            <td><span class="badge ${badgeClass}">${label}</span></td>
+            <td>${formatDate(ev.event_date)}</td>
+            <td>${duration}</td>
+            <td style="color:rgba(255,255,255,0.5);font-size:13px;">${ev.notes || '-'}</td>
           </tr>
         `;
       }).join('');
@@ -473,15 +474,17 @@
       const endOfMonth = new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0];
 
       const { data } = await supabase
-        .from('employee_absences')
+        .from('employee_events')
         .select('*')
         .eq('user_id', session.user.id)
-        .gte('start_date', startOfMonth)
-        .lte('start_date', endOfMonth);
+        .in('event_type', ['absence', 'late'])
+        .gte('event_date', startOfMonth)
+        .lte('event_date', endOfMonth)
+        .order('event_date', { ascending: false });
 
       absences = data || [];
-      document.getElementById('stat-absences').textContent = absences.filter(a => a.absence_type !== 'retard').length;
-      document.getElementById('stat-late').textContent = absences.filter(a => a.absence_type === 'retard').length;
+      document.getElementById('stat-absences').textContent = absences.filter(a => a.event_type === 'absence').length;
+      document.getElementById('stat-late').textContent = absences.filter(a => a.event_type === 'late').length;
 
       renderAbsences();
     }
@@ -494,11 +497,13 @@
       const endOfMonth = new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0];
 
       const { data } = await supabase
-        .from('employee_overtime')
+        .from('employee_events')
         .select('*')
         .eq('user_id', session.user.id)
-        .gte('work_date', startOfMonth)
-        .lte('work_date', endOfMonth);
+        .in('event_type', ['extra_hours', 'reduced_hours'])
+        .gte('event_date', startOfMonth)
+        .lte('event_date', endOfMonth)
+        .order('event_date', { ascending: false });
 
       overtime = data || [];
 
@@ -508,15 +513,18 @@
         return;
       }
 
-      tbody.innerHTML = overtime.map(ot => {
-        const emp = employees.find(e => e.id === ot.employee_id) || {};
+      tbody.innerHTML = overtime.map(ev => {
+        const emp = employees.find(e => e.id === ev.employee_id) || {};
+        const mins = ev.duration_minutes || 0;
+        const duration = mins >= 60 ? `${Math.floor(mins/60)}h${mins%60 > 0 ? mins%60 + 'min' : ''}` : `${mins}min`;
+        const label = ev.event_type === 'extra_hours' ? '➕ Sup' : '➖ Moins';
         return `
           <tr>
-            <td>${emp.first_name || ''} ${emp.last_name || ''}</td>
-            <td>${formatDate(ot.work_date)}</td>
-            <td>${ot.hours}h</td>
-            <td>${ot.overtime_type}</td>
-            <td>${ot.validated ? '✓' : '⏳'}</td>
+            <td>${emp.first_name || emp.name || ''} ${emp.last_name || ''}</td>
+            <td>${formatDate(ev.event_date)}</td>
+            <td>${duration}</td>
+            <td>${label}</td>
+            <td style="color:rgba(255,255,255,0.5);font-size:13px;">${ev.notes || '-'}</td>
           </tr>
         `;
       }).join('');
