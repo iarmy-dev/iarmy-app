@@ -880,8 +880,8 @@
         moduleComptaInactive: document.getElementById('module-compta')?.classList.contains('inactive'),
         stockStatus: document.getElementById('stock-status')?.textContent,
         moduleStockInactive: document.getElementById('module-stock')?.classList.contains('inactive'),
-        paieStatus: document.getElementById('paie-status')?.textContent,
-        modulePaieInactive: document.getElementById('module-paie')?.classList.contains('inactive'),
+        equipeStatus: document.getElementById('equipe-status')?.textContent,
+        moduleEquipeInactive: document.getElementById('module-equipe')?.classList.contains('inactive'),
         sheetsConnected: document.getElementById('conn-sheets')?.classList.contains('connected'),
         sheetsStatus: document.getElementById('sheets-status')?.innerHTML,
         telegramConnected: document.getElementById('conn-telegram')?.classList.contains('connected'),
@@ -926,8 +926,8 @@
         if (cache.moduleComptaInactive) document.getElementById('module-compta').classList.add('inactive');
         if (cache.stockStatus) document.getElementById('stock-status').textContent = cache.stockStatus;
         if (cache.moduleStockInactive) document.getElementById('module-stock').classList.add('inactive');
-        if (cache.paieStatus) document.getElementById('paie-status').textContent = cache.paieStatus;
-        if (cache.modulePaieInactive) document.getElementById('module-paie').classList.add('inactive');
+        if (cache.equipeStatus) document.getElementById('equipe-status').textContent = cache.equipeStatus;
+        if (cache.moduleEquipeInactive) document.getElementById('module-equipe').classList.add('inactive');
 
         // Connections
         if (cache.sheetsConnected) {
