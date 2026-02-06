@@ -2878,13 +2878,15 @@
     }
 
     async function saveEmployee(data) {
+      // Convertir hours_per_week en entier (la DB attend un integer)
+      const hoursPerWeek = data.hours_per_week ? Math.round(parseFloat(data.hours_per_week)) : 35;
       const employeeData = {
         user_id: currentUser.id,
         name: data.name,
         role: data.role || null,
         contract_type: data.contract_type || null,
-        hours_per_week: data.hours_per_week || 35,
-        monthly_hours: data.monthly_hours || (data.hours_per_week ? data.hours_per_week * 4.33 : 151.67),
+        hours_per_week: hoursPerWeek,
+        monthly_hours: data.monthly_hours || Math.round(hoursPerWeek * 4.33),
         hourly_rate: data.hourly_rate || null,
         gross_salary: data.gross_salary || null,
         net_salary_reference: data.net_salary_reference || null,
