@@ -196,6 +196,17 @@
     let current = null;
     let formData = {};
 
+    const STORAGE_TYPES = [
+      { id: 'supabase', label: '🗄️ Supabase' },
+      { id: 'google_sheets', label: '📊 Google Sheets' }
+    ];
+    const LOADING_TYPES = [
+      { id: 'default', label: '⏳ Default' },
+      { id: 'spreadsheet', label: '📊 Tableau' },
+      { id: 'bottle', label: '🍾 Bouteille' },
+      { id: 'calendar', label: '📅 Calendrier' }
+    ];
+
     // Injecter CSS icônes animées
     if (typeof injectAnimatedIconsCSS === 'function') injectAnimatedIconsCSS();
 
@@ -259,7 +270,15 @@
         visibility: current?.visibility || 'draft',
         price: current?.price || '',
         trial_days: current?.trial_days || 7,
-        stripe_price_id: current?.stripe_price_id || ''
+        stripe_price_id: current?.stripe_price_id || '',
+        // Nouveaux champs centralisés
+        detection_pattern: current?.detection_pattern || '',
+        keywords: current?.keywords || [],
+        input_example: current?.input_example || '',
+        storage_type: current?.storage_type || 'supabase',
+        needs_sheet: current?.needs_sheet || false,
+        telegram_commands: current?.telegram_commands || [],
+        loading_type: current?.loading_type || 'default'
       };
       renderList();
       renderEditor();
@@ -278,7 +297,15 @@
         visibility: 'draft',
         price: '',
         trial_days: 7,
-        stripe_price_id: ''
+        stripe_price_id: '',
+        // Nouveaux champs centralisés
+        detection_pattern: '',
+        keywords: [],
+        input_example: '',
+        storage_type: 'supabase',
+        needs_sheet: false,
+        telegram_commands: [],
+        loading_type: 'default'
       };
       renderList();
       renderEditor();
@@ -358,6 +385,55 @@
                 <label class="form-label">Stripe Price ID</label>
                 <input type="text" class="form-input" value="${formData.stripe_price_id}" placeholder="price_xxx" oninput="updateForm('stripe_price_id', this.value)">
               </div>
+            </div>
+
+            <!-- SECTION BOT TELEGRAM -->
+            <div style="margin-top:32px; padding-top:24px; border-top:1px solid rgba(255,255,255,0.1);">
+              <div style="font-size:12px; font-weight:600; color:rgba(255,255,255,0.5); margin-bottom:16px;">🤖 CONFIGURATION BOT TELEGRAM</div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Pattern de détection (Regex)</label>
+              <input type="text" class="form-input" value="${formData.detection_pattern}" placeholder="\\b(CB|ESP|TR)\\s*:?\\s*\\d+" oninput="updateForm('detection_pattern', this.value)">
+              <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-top:4px;">Regex pour auto-détecter ce module depuis un message Telegram</div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Mots-clés (séparés par virgule)</label>
+              <input type="text" class="form-input" id="input-keywords" value="${(formData.keywords || []).join(', ')}" placeholder="CB, ESP, TR, CARTE" oninput="updateKeywords(this.value)">
+              <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-top:4px;">Fallback si le regex ne matche pas</div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Exemple d'input</label>
+              <textarea class="form-input" rows="2" placeholder="CB: 1250&#10;ESP: 340" oninput="updateForm('input_example', this.value)">${formData.input_example}</textarea>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Commandes Telegram (séparées par virgule)</label>
+              <input type="text" class="form-input" value="${(formData.telegram_commands || []).join(', ')}" placeholder="/recap, /export" oninput="updateTelegramCommands(this.value)">
+            </div>
+
+            <div class="form-section form-row">
+              <div>
+                <label class="form-label">Stockage</label>
+                <div class="visibility">
+                  ${STORAGE_TYPES.map(s => `<div class="vis-btn ${formData.storage_type === s.id ? 'active' : ''}" onclick="setStorageType('${s.id}')">${s.label}</div>`).join('')}
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Animation loading</label>
+                <select class="form-input" onchange="updateForm('loading_type', this.value)">
+                  ${LOADING_TYPES.map(l => `<option value="${l.id}" ${formData.loading_type === l.id ? 'selected' : ''}>${l.label}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" ${formData.needs_sheet ? 'checked' : ''} onchange="updateForm('needs_sheet', this.checked)">
+                <span style="font-size:13px;">Nécessite Google Sheets</span>
+              </label>
             </div>
 
             <div class="actions">
@@ -493,6 +569,20 @@
       event.currentTarget.classList.add('active');
     }
 
+    function setStorageType(type) {
+      formData.storage_type = type;
+      formData.needs_sheet = (type === 'google_sheets');
+      renderEditor();
+    }
+
+    function updateKeywords(value) {
+      formData.keywords = value.split(',').map(k => k.trim().toUpperCase()).filter(k => k);
+    }
+
+    function updateTelegramCommands(value) {
+      formData.telegram_commands = value.split(',').map(c => c.trim()).filter(c => c);
+    }
+
     // AI improve
     async function improveText() {
       const btn = event.currentTarget;
@@ -545,7 +635,15 @@
         trial_days: parseInt(formData.trial_days) || 7,
         stripe_price_id: formData.stripe_price_id || null,
         status: 'available',
-        setup_url: '/' + formData.slug + '/setup/'
+        setup_url: '/' + formData.slug + '/setup/',
+        // Nouveaux champs centralisés
+        detection_pattern: formData.detection_pattern || null,
+        keywords: formData.keywords.length ? formData.keywords : null,
+        input_example: formData.input_example || null,
+        storage_type: formData.storage_type || 'supabase',
+        needs_sheet: formData.needs_sheet || false,
+        telegram_commands: formData.telegram_commands.length ? formData.telegram_commands : null,
+        loading_type: formData.loading_type || 'default'
       };
 
       let error;
