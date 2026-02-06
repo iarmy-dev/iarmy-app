@@ -2822,8 +2822,11 @@
 
         // Transform extract-contract format to employee format
         const d = result.data;
+        // Formater: Prénom NOM (nom en majuscules)
+        const firstName = (d.employee?.first_name || '').trim();
+        const lastName = (d.employee?.last_name || '').trim().toUpperCase();
         return {
-          name: `${d.employee?.first_name || ''} ${d.employee?.last_name || ''}`.trim(),
+          name: `${firstName} ${lastName}`.trim(),
           role: d.contract?.job_title || null,
           contract_type: d.contract?.type || null,
           hours_per_week: d.hours?.weekly_hours || null,
