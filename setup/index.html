@@ -453,6 +453,7 @@
     let stepData = {}; // Donnees collectees pendant le setup
     let isTester = false;
     let connectionCheckInterval = null;
+    let sessionToken = null; // JWT pour les appels edge functions
 
     // ============================================
     // UTILITAIRES
@@ -546,6 +547,7 @@
         return;
       }
       currentUser = session.user;
+      sessionToken = session.access_token;
 
       // Afficher avatar nav
       const avatarLink = document.getElementById('nav-avatar-link');
@@ -1264,8 +1266,14 @@
       }
     }
 
+    let isAnalyzing = false;
+    const MAX_EMPLOYEES = 30;
+
     async function processTeamFiles(files, index) {
       if (!files.length) return;
+      if (isAnalyzing) { showToast('Analyse en cours, patiente...', true); return; }
+      if ((stepData.employees || []).length >= MAX_EMPLOYEES) { showToast(`Maximum ${MAX_EMPLOYEES} employes`, true); return; }
+      isAnalyzing = true;
 
       const grid = document.getElementById(`team-grid-${index}`);
       const analyzing = document.getElementById(`team-analyzing-${index}`);
@@ -1321,6 +1329,7 @@
         showToast('Erreur d\'analyse - complete manuellement', true);
       }
 
+      isAnalyzing = false;
       analyzing.style.display = 'none';
       grid.style.display = 'grid';
 
@@ -1371,7 +1380,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Authorization': `Bearer ${sessionToken || SUPABASE_ANON_KEY}`,
             'apikey': SUPABASE_ANON_KEY
           },
           body: JSON.stringify({
@@ -1729,8 +1738,12 @@
       }
     }
 
+    let isAnalyzingMenu = false;
+
     async function analyzeMenuPhotos(index) {
       if (menuPhotos.length === 0) return;
+      if (isAnalyzingMenu) { showToast('Analyse en cours...', true); return; }
+      isAnalyzingMenu = true;
 
       document.getElementById(`menu-photos-preview-${index}`).style.display = 'none';
       document.getElementById(`menu-analyzing-${index}`).style.display = 'block';
@@ -1745,7 +1758,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Authorization': `Bearer ${sessionToken || SUPABASE_ANON_KEY}`,
             'apikey': SUPABASE_ANON_KEY
           },
           body: JSON.stringify({
@@ -1778,16 +1791,19 @@
 
         if (uniqueItems.length === 0) {
           showToast('Aucun produit detecte. Verifie les photos.', true);
+          isAnalyzingMenu = false;
           resetMenuUpload(index);
           return;
         }
 
         stepData.extractedItems = uniqueItems;
+        isAnalyzingMenu = false;
         showMenuResults(index, uniqueItems);
 
       } catch (err) {
         console.error('Error analyzing photos:', err);
         showToast('Erreur d\'analyse. Reessaie.', true);
+        isAnalyzingMenu = false;
         resetMenuUpload(index);
         return;
       }
