@@ -1456,7 +1456,7 @@
 
       try {
         const base64 = await fileToBase64(file);
-        const results = await analyzeWithGemini(base64, aiType);
+        const results = await analyzeWithGemini(base64, aiType, file);
 
         stepData.extractedItems = results;
         showPhotoResults(index, results, aiType);
@@ -1835,7 +1835,7 @@
 
       try {
         const base64 = await fileToBase64(file);
-        const extracted = await analyzeEmployeeWithGemini(base64);
+        const extracted = await analyzeEmployeeWithGemini(base64, file);
 
         if (extracted && extracted.name) {
           showMultiPhotoPreview(index, extracted);
@@ -2488,8 +2488,48 @@
       });
     }
 
-    async function analyzeWithGemini(base64, type) {
-      // Call Supabase Edge Function (API key hidden server-side)
+    async function analyzeWithGemini(base64, type, file) {
+      // Detect MIME type
+      const mimeType = file ? file.type : (base64.startsWith('data:') ? base64.split(';')[0].split(':')[1] : 'image/jpeg');
+      const isPdf = mimeType === 'application/pdf';
+
+      // For contract type with PDF, use extract-contract (Claude)
+      if (isPdf && (type === 'contract' || type === 'employee')) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) throw new Error('Non connecté');
+
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/extract-contract`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            pdf_base64: base64.split(',')[1],
+            file_name: file?.name || 'document.pdf'
+          })
+        });
+
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        const result = await response.json();
+        if (result.error) throw new Error(result.error);
+
+        // Transform to expected format
+        const d = result.data;
+        return {
+          name: `${d.employee?.first_name || ''} ${d.employee?.last_name || ''}`.trim(),
+          role: d.contract?.job_title || null,
+          contract_type: d.contract?.type || null,
+          hours_per_week: d.hours?.weekly_hours || null,
+          start_date: d.contract?.start_date || null,
+          hourly_rate: d.salary?.hourly_rate || null,
+          gross_salary: d.salary?.monthly_gross || null,
+          phone: d.employee?.phone || null,
+          email: d.employee?.email || null
+        };
+      }
+
+      // Use analyze-menu for images (Gemini)
       const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-menu`, {
         method: 'POST',
         headers: {
@@ -2499,7 +2539,8 @@
         },
         body: JSON.stringify({
           image: base64.split(',')[1],
-          type: type
+          type: type,
+          mimeTypes: [mimeType]
         })
       });
 
@@ -2516,7 +2557,57 @@
       return data.result || [];
     }
 
-    async function analyzeEmployeeWithGemini(base64) {
+    async function analyzeEmployeeWithGemini(base64, file) {
+      // Detect if PDF or image
+      const isPdf = file && file.type === 'application/pdf';
+      const mimeType = file ? file.type : 'image/jpeg';
+
+      if (isPdf) {
+        // Use extract-contract for PDFs (Claude supports PDF)
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) throw new Error('Non connecté');
+
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/extract-contract`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            pdf_base64: base64.split(',')[1],
+            file_name: file.name
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.error) throw new Error(result.error);
+
+        // Transform extract-contract format to employee format
+        const d = result.data;
+        return {
+          name: `${d.employee?.first_name || ''} ${d.employee?.last_name || ''}`.trim(),
+          role: d.contract?.job_title || null,
+          contract_type: d.contract?.type || null,
+          hours_per_week: d.hours?.weekly_hours || null,
+          start_date: d.contract?.start_date || null,
+          hourly_rate: d.salary?.hourly_rate || null,
+          phone: d.employee?.phone || null,
+          email: d.employee?.email || null,
+          birth_date: null,
+          social_security_number: null,
+          address: null,
+          nationality: null,
+          monthly_hours: null,
+          gross_salary: d.salary?.monthly_gross || null,
+          work_schedule: null
+        };
+      }
+
+      // Use analyze-menu for images (Gemini)
       const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-menu`, {
         method: 'POST',
         headers: {
@@ -2526,7 +2617,8 @@
         },
         body: JSON.stringify({
           image: base64.split(',')[1],
-          type: 'employee'
+          type: 'employee',
+          mimeTypes: [mimeType]
         })
       });
 
