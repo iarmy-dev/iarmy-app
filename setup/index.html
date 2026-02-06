@@ -265,6 +265,18 @@
     .upload-zone-multi { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .upload-zone-multi.dragover { border-color: #10B981; background: rgba(16,185,129,0.1); transform: scale(1.02); }
     #menu-drop-area-0.dragover .upload-zone, [id^="menu-drop-area-"].dragover .upload-zone { border-color: #10B981; background: rgba(16,185,129,0.1); }
+    .upload-zone.dragover { border-color: #FF6B35 !important; background: rgba(255,107,53,0.15) !important; transform: scale(1.02); }
+
+    /* Tabs */
+    .tab-btn { padding: 10px 20px; border-radius: 10px; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+    .tab-btn:hover { background: rgba(255,255,255,0.08); }
+    .tab-btn.active { background: linear-gradient(135deg, #FF6B35, #FF8B5E); border-color: transparent; color: white; }
+
+    /* Form inputs */
+    .form-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 14px; transition: all 0.2s; }
+    .form-input:focus { outline: none; border-color: #FF6B35; background: rgba(255,107,53,0.1); }
+    .form-input::placeholder { color: rgba(255,255,255,0.3); }
+    select.form-input { cursor: pointer; }
   </style>
 </head>
 <body style="background: #0f0f0f;">
@@ -724,12 +736,76 @@
 
     function renderMultiPhotoUpload(step, index) {
       return `
-        <div class="upload-zone" id="upload-zone-${index}" onclick="document.getElementById('file-input-${index}').click()">
-          <input type="file" id="file-input-${index}" accept="image/*,.pdf" style="display: none;" onchange="handleMultiPhotoUpload(event, ${index}, '${step.ai_type}')">
-          <div style="font-size: 48px; margin-bottom: 16px;">📸</div>
-          <div style="font-weight: 600; margin-bottom: 8px;">Ajoute une photo</div>
-          <div style="color: rgba(255,255,255,0.4); font-size: 14px;">Contrat, planning, fiche de paie...</div>
+        <!-- Tabs -->
+        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;">
+          <button class="tab-btn active" id="tab-upload-${index}" onclick="switchMultiTab(${index}, 'upload')">📄 Upload fichier</button>
+          <button class="tab-btn" id="tab-manual-${index}" onclick="switchMultiTab(${index}, 'manual')">✏️ Saisie manuelle</button>
         </div>
+
+        <!-- Upload Section -->
+        <div id="upload-section-${index}">
+          <div class="upload-zone" id="upload-zone-${index}"
+               onclick="document.getElementById('file-input-${index}').click()"
+               ondragover="handleDragOver(event, ${index})"
+               ondragleave="handleDragLeave(event, ${index})"
+               ondrop="handleDrop(event, ${index}, '${step.ai_type}')">
+            <input type="file" id="file-input-${index}" accept="image/*,.pdf" multiple style="display: none;" onchange="handleMultiFilesUpload(event, ${index}, '${step.ai_type}')">
+            <div style="font-size: 48px; margin-bottom: 16px;">📄</div>
+            <div style="font-weight: 600; margin-bottom: 8px;">Glisse tes fichiers ici</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 14px;">PDF ou images • Plusieurs fichiers acceptés</div>
+          </div>
+          <div id="multi-progress-${index}" style="display: none; margin-top: 16px;">
+            <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+              <div id="multi-progress-bar-${index}" style="height: 100%; background: linear-gradient(90deg, #FF6B35, #FF8B5E); width: 0%; transition: width 0.3s;"></div>
+            </div>
+            <div id="multi-progress-text-${index}" style="text-align: center; margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.5);"></div>
+          </div>
+        </div>
+
+        <!-- Manual Entry Section -->
+        <div id="manual-section-${index}" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Prénom *</label>
+              <input type="text" id="manual-firstname-${index}" class="form-input" placeholder="Jean">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Nom *</label>
+              <input type="text" id="manual-lastname-${index}" class="form-input" placeholder="DUPONT">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Type contrat</label>
+              <select id="manual-contract-${index}" class="form-input">
+                <option value="CDI">CDI</option>
+                <option value="CDD">CDD</option>
+                <option value="CDI TP">CDI Temps partiel</option>
+                <option value="CDD TP">CDD Temps partiel</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Poste *</label>
+              <input type="text" id="manual-role-${index}" class="form-input" placeholder="Serveur">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Date début</label>
+              <input type="date" id="manual-start-${index}" class="form-input">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Heures/sem</label>
+              <input type="number" id="manual-hours-${index}" class="form-input" placeholder="35" value="35">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Salaire brut (€)</label>
+              <input type="number" id="manual-salary-${index}" class="form-input" placeholder="1800">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; display: block;">Téléphone</label>
+              <input type="tel" id="manual-phone-${index}" class="form-input" placeholder="06 12 34 56 78">
+            </div>
+          </div>
+          <button onclick="addManualEmployeeSetup(${index})" class="btn-secondary" style="width: 100%; margin-top: 16px; background: rgba(255,107,53,0.15); color: #FF8B5E;">+ Ajouter cet employé</button>
+        </div>
+
         <div id="multi-analyzing-${index}" style="display: none; text-align: center; padding: 40px 0;">
           <div class="loading-spinner"></div>
           <div style="font-weight: 600; margin-bottom: 8px;">Analyse en cours...</div>
@@ -1914,6 +1990,164 @@
       document.getElementById(`multi-analyzing-${index}`).style.display = 'none';
       document.getElementById(`multi-preview-${index}`).style.display = 'none';
       document.getElementById(`file-input-${index}`).value = '';
+    }
+
+    // Switch entre onglets upload / manuel
+    function switchMultiTab(index, tab) {
+      const uploadSection = document.getElementById(`upload-section-${index}`);
+      const manualSection = document.getElementById(`manual-section-${index}`);
+      const tabUpload = document.getElementById(`tab-upload-${index}`);
+      const tabManual = document.getElementById(`tab-manual-${index}`);
+
+      if (tab === 'upload') {
+        uploadSection.style.display = 'block';
+        manualSection.style.display = 'none';
+        tabUpload.classList.add('active');
+        tabManual.classList.remove('active');
+      } else {
+        uploadSection.style.display = 'none';
+        manualSection.style.display = 'block';
+        tabUpload.classList.remove('active');
+        tabManual.classList.add('active');
+      }
+    }
+
+    // Drag & drop handlers
+    function handleDragOver(event, index) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById(`upload-zone-${index}`).classList.add('dragover');
+    }
+
+    function handleDragLeave(event, index) {
+      event.preventDefault();
+      event.stopPropagation();
+      const zone = document.getElementById(`upload-zone-${index}`);
+      if (!event.relatedTarget || !zone.contains(event.relatedTarget)) {
+        zone.classList.remove('dragover');
+      }
+    }
+
+    function handleDrop(event, index, aiType) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById(`upload-zone-${index}`).classList.remove('dragover');
+
+      const files = Array.from(event.dataTransfer.files);
+      if (files.length > 0) {
+        processMultiFiles(files, index, aiType);
+      }
+    }
+
+    // Multi-fichiers upload via input
+    function handleMultiFilesUpload(event, index, aiType) {
+      const files = Array.from(event.target.files);
+      if (files.length > 0) {
+        processMultiFiles(files, index, aiType);
+      }
+    }
+
+    // Traiter plusieurs fichiers
+    async function processMultiFiles(files, index, aiType) {
+      document.getElementById(`upload-zone-${index}`).style.display = 'none';
+      document.getElementById(`multi-progress-${index}`).style.display = 'block';
+
+      const progressBar = document.getElementById(`multi-progress-bar-${index}`);
+      const progressText = document.getElementById(`multi-progress-text-${index}`);
+
+      let processed = 0;
+      const total = files.length;
+
+      for (const file of files) {
+        if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+          continue;
+        }
+
+        progressText.textContent = `Analyse ${processed + 1}/${total}: ${file.name}`;
+        progressBar.style.width = `${((processed + 0.5) / total) * 100}%`;
+
+        try {
+          const base64 = await fileToBase64(file);
+          const extracted = await analyzeEmployeeWithGemini(base64, file);
+
+          if (extracted && extracted.name) {
+            const saved = await saveEmployee(extracted);
+            if (saved) {
+              if (!stepData.employees) stepData.employees = [];
+              stepData.employees.push(saved);
+            }
+          }
+        } catch (err) {
+          console.error(`Error processing ${file.name}:`, err);
+        }
+
+        processed++;
+        progressBar.style.width = `${(processed / total) * 100}%`;
+      }
+
+      document.getElementById(`multi-progress-${index}`).style.display = 'none';
+
+      if (stepData.employees && stepData.employees.length > 0) {
+        renderEmployeesList(index);
+        updateMultiContinue(index);
+        showToast(`${processed} fichier(s) traite(s)`);
+      } else {
+        showToast('Aucun employe detecte dans les fichiers', true);
+      }
+
+      resetMultiPhotoUpload(index);
+    }
+
+    // Ajout manuel d'employe
+    function addManualEmployeeSetup(index) {
+      const firstname = document.getElementById(`manual-firstname-${index}`).value.trim();
+      const lastname = document.getElementById(`manual-lastname-${index}`).value.trim();
+      const contract = document.getElementById(`manual-contract-${index}`).value;
+      const role = document.getElementById(`manual-role-${index}`).value.trim();
+      const startDate = document.getElementById(`manual-start-${index}`).value;
+      const hours = document.getElementById(`manual-hours-${index}`).value || 35;
+      const salary = document.getElementById(`manual-salary-${index}`).value;
+      const phone = document.getElementById(`manual-phone-${index}`).value.trim();
+
+      if (!firstname || !lastname) {
+        showToast('Prenom et nom requis', true);
+        return;
+      }
+
+      if (!role) {
+        showToast('Poste requis', true);
+        return;
+      }
+
+      const employeeData = {
+        name: `${firstname} ${lastname.toUpperCase()}`,
+        role: role,
+        contract_type: contract,
+        start_date: startDate || null,
+        hours_per_week: parseInt(hours),
+        salary_gross: salary ? parseFloat(salary) : null,
+        phone: phone || null
+      };
+
+      // Save directly
+      saveEmployee(employeeData).then(saved => {
+        if (saved) {
+          if (!stepData.employees) stepData.employees = [];
+          stepData.employees.push(saved);
+          renderEmployeesList(index);
+          updateMultiContinue(index);
+          showToast('Employe ajoute');
+
+          // Reset form
+          document.getElementById(`manual-firstname-${index}`).value = '';
+          document.getElementById(`manual-lastname-${index}`).value = '';
+          document.getElementById(`manual-role-${index}`).value = '';
+          document.getElementById(`manual-start-${index}`).value = '';
+          document.getElementById(`manual-hours-${index}`).value = '35';
+          document.getElementById(`manual-salary-${index}`).value = '';
+          document.getElementById(`manual-phone-${index}`).value = '';
+        }
+      });
     }
 
     function renderEmployeesList(index) {

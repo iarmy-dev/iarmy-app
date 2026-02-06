@@ -1644,20 +1644,20 @@
     }
 
     function goToModuleSetup() {
-      const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
+      const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
       // Redirect to the appropriate setup/config page
       switch (currentModuleView) {
         case 'compta':
-          window.location.href = '/compta/' + (tgParams ? '?' + tgParams.substring(1) : '');
+          window.location.href = '/setup/?module=compta' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
         case 'stock':
-          window.location.href = '/setup/?module=stock' + (tgParams ? '?' + tgParams.substring(1) : '');
+          window.location.href = '/setup/?module=stock' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
         case 'paie':
-          window.location.href = '/setup/?module=paie' + tgParams;
+          window.location.href = '/setup/?module=paie' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
         case 'equipe':
-          window.location.href = '/equipe/setup/' + (tgParams ? '?' + tgParams.substring(1) : '');
+          window.location.href = '/equipe/setup/' + tgParams;
           break;
       }
     }
