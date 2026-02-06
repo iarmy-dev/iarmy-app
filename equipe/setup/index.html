@@ -27,12 +27,23 @@
     .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
     .header p { color: rgba(255,255,255,0.5); font-size: 15px; }
 
-    /* Steps */
-    .steps { display: flex; gap: 8px; justify-content: center; margin-bottom: 48px; }
-    .step { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; transition: all 0.3s; }
-    .step.active { background: #8b5cf6; color: white; }
-    .step.done { background: #22c55e; color: white; }
-    .step.pending { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 32px; }
+    .tab {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .tab:hover { background: rgba(255,255,255,0.08); }
+    .tab.active {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      border-color: transparent;
+    }
 
     /* Upload Zone */
     .upload-section { margin-bottom: 32px; }
@@ -55,6 +66,30 @@
     .upload-hint { color: rgba(255,255,255,0.4); font-size: 13px; }
     .upload-input { display: none; }
 
+    /* Manual Form */
+    .manual-form { display: none; }
+    .manual-form.active { display: block; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: span 2; }
+    .form-label { font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+    .form-input {
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: white;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      background: rgba(139,92,246,0.1);
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.3); }
+    select.form-input { cursor: pointer; }
+
     /* Employees List */
     .employees-section { margin-top: 32px; }
     .employees-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
@@ -70,6 +105,7 @@
     }
     .employee-card:hover { border-color: rgba(139,92,246,0.3); }
     .employee-card.extracting { opacity: 0.6; }
+    .employee-card.editing { border-color: #8b5cf6; background: rgba(139,92,246,0.05); }
     .employee-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
     .employee-name { font-size: 18px; font-weight: 600; }
     .employee-badge { padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
@@ -88,6 +124,9 @@
     .btn-edit:hover { background: rgba(255,255,255,0.15); }
     .btn-delete { background: rgba(239,68,68,0.1); color: #f87171; }
     .btn-delete:hover { background: rgba(239,68,68,0.2); }
+    .btn-save { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .btn-save:hover { background: rgba(34,197,94,0.3); }
+    .btn-cancel { background: rgba(255,255,255,0.1); color: white; }
 
     /* Empty State */
     .empty-state {
@@ -120,18 +159,13 @@
       color: white;
     }
     .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-
-    /* Loading */
-    .loading { text-align: center; padding: 48px; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid rgba(139,92,246,0.2);
-      border-top-color: #8b5cf6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 16px;
+    .btn-add {
+      background: rgba(139,92,246,0.15);
+      color: #a78bfa;
+      width: 100%;
+      margin-top: 16px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-add:hover { background: rgba(139,92,246,0.25); }
 
     /* Progress */
     .progress-bar {
@@ -145,6 +179,12 @@
       height: 100%;
       background: linear-gradient(90deg, #8b5cf6, #a78bfa);
       transition: width 0.3s;
+    }
+    .progress-status {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
     }
 
     /* Toast */
@@ -162,6 +202,34 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .toast.error { background: rgba(239,68,68,0.9); }
+
+    /* Edit Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #1a1a1a;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 24px; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+      .tabs { flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
@@ -193,18 +261,17 @@
         </svg>
       </div>
       <h1>Configure ton équipe</h1>
-      <p>Uploade tes contrats de travail, l'IA extrait automatiquement les infos</p>
+      <p>Ajoute tes employés via contrat PDF ou manuellement</p>
     </div>
 
-    <!-- Steps -->
-    <div class="steps">
-      <div class="step active" id="step-1">1</div>
-      <div class="step pending" id="step-2">2</div>
-      <div class="step pending" id="step-3">3</div>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('upload')">📄 Upload PDF</div>
+      <div class="tab" onclick="switchTab('manual')">✏️ Saisie manuelle</div>
     </div>
 
     <!-- Upload Zone -->
-    <div class="upload-section">
+    <div class="upload-section" id="upload-section">
       <div class="upload-zone" id="upload-zone">
         <div class="upload-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -220,6 +287,59 @@
       <div class="progress-bar" id="progress-bar" style="display: none;">
         <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
       </div>
+      <div class="progress-status" id="progress-status" style="display: none;"></div>
+    </div>
+
+    <!-- Manual Form -->
+    <div class="manual-form" id="manual-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Prénom *</label>
+          <input type="text" class="form-input" id="form-firstname" placeholder="Jean">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom *</label>
+          <input type="text" class="form-input" id="form-lastname" placeholder="DUPONT">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type de contrat</label>
+          <select class="form-input" id="form-contract">
+            <option value="CDI">CDI - Temps plein</option>
+            <option value="CDI TP">CDI - Temps partiel</option>
+            <option value="CDD">CDD - Temps plein</option>
+            <option value="CDD TP">CDD - Temps partiel</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Poste *</label>
+          <input type="text" class="form-input" id="form-job" placeholder="Serveur, Cuisinier...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date début</label>
+          <input type="date" class="form-input" id="form-start">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date fin (si CDD)</label>
+          <input type="date" class="form-input" id="form-end">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Heures/semaine</label>
+          <input type="number" class="form-input" id="form-hours" placeholder="35" value="35">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salaire brut mensuel (€)</label>
+          <input type="number" class="form-input" id="form-salary" placeholder="1800">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="form-email" placeholder="jean@exemple.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input type="tel" class="form-input" id="form-phone" placeholder="06 12 34 56 78">
+        </div>
+      </div>
+      <button class="btn btn-add" onclick="addManualEmployee()">+ Ajouter cet employé</button>
     </div>
 
     <!-- Employees List -->
@@ -239,15 +359,65 @@
         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
-      <p>Aucun employé pour l'instant<br>Uploade des contrats pour commencer</p>
+      <p>Aucun employé pour l'instant<br>Uploade des contrats ou ajoute manuellement</p>
     </div>
 
     <!-- Actions -->
     <div class="actions">
       <button class="btn btn-secondary" onclick="window.location.href='/'">Retour</button>
       <button class="btn btn-primary" id="btn-continue" disabled onclick="continueSetup()">
-        Continuer
+        Enregistrer l'équipe
       </button>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+      <div class="modal-title">Modifier l'employé</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-input" id="edit-firstname">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-input" id="edit-lastname">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type de contrat</label>
+          <select class="form-input" id="edit-contract">
+            <option value="CDI">CDI - Temps plein</option>
+            <option value="CDI TP">CDI - Temps partiel</option>
+            <option value="CDD">CDD - Temps plein</option>
+            <option value="CDD TP">CDD - Temps partiel</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Poste</label>
+          <input type="text" class="form-input" id="edit-job">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date début</label>
+          <input type="date" class="form-input" id="edit-start">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date fin</label>
+          <input type="date" class="form-input" id="edit-end">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Heures/semaine</label>
+          <input type="number" class="form-input" id="edit-hours">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salaire brut (€)</label>
+          <input type="number" class="form-input" id="edit-salary">
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button class="btn btn-secondary" style="flex: 1;" onclick="closeEditModal()">Annuler</button>
+        <button class="btn btn-primary" style="flex: 1;" onclick="saveEdit()">Enregistrer</button>
+      </div>
     </div>
   </div>
 
@@ -261,6 +431,7 @@
 
     let employees = [];
     let currentUser = null;
+    let editingIndex = -1;
 
     // Toast notification
     function showToast(message, isError = false) {
@@ -269,6 +440,15 @@
       toast.className = 'toast' + (isError ? ' error' : '');
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'upload' && i === 0) || (tab === 'manual' && i === 1));
+      });
+      document.getElementById('upload-section').style.display = tab === 'upload' ? 'block' : 'none';
+      document.getElementById('manual-form').classList.toggle('active', tab === 'manual');
     }
 
     // Render employees list
@@ -292,22 +472,23 @@
       btn.disabled = false;
 
       list.innerHTML = employees.map((emp, idx) => {
-        const contractBadge = emp.contract_type.includes('TP')
-          ? `<span class="employee-badge tp">${emp.contract_type}</span>`
-          : emp.contract_type === 'CDD'
+        const contractType = emp.contract_type || 'CDI';
+        const contractBadge = contractType.includes('TP')
+          ? `<span class="employee-badge tp">${contractType}</span>`
+          : contractType === 'CDD'
             ? `<span class="employee-badge cdd">CDD</span>`
             : `<span class="employee-badge cdi">CDI</span>`;
 
         return `
           <div class="employee-card" data-id="${emp.id || idx}">
             <div class="employee-header">
-              <div class="employee-name">${emp.first_name} ${emp.last_name}</div>
+              <div class="employee-name">${emp.first_name || ''} ${emp.last_name || ''}</div>
               ${contractBadge}
             </div>
             <div class="employee-details">
               <div class="employee-detail">
                 <div class="employee-detail-label">Poste</div>
-                <div class="employee-detail-value">${emp.job_title}</div>
+                <div class="employee-detail-value">${emp.job_title || '-'}</div>
               </div>
               <div class="employee-detail">
                 <div class="employee-detail-label">Début</div>
@@ -315,16 +496,16 @@
               </div>
               <div class="employee-detail">
                 <div class="employee-detail-label">Heures/sem</div>
-                <div class="employee-detail-value">${emp.weekly_hours}h</div>
+                <div class="employee-detail-value">${emp.weekly_hours || 35}h</div>
               </div>
               <div class="employee-detail">
                 <div class="employee-detail-label">Salaire brut</div>
-                <div class="employee-detail-value">${emp.monthly_salary.toLocaleString('fr-FR')}€</div>
+                <div class="employee-detail-value">${(emp.monthly_salary || 0).toLocaleString('fr-FR')}€</div>
               </div>
             </div>
             <div class="employee-actions">
-              <button class="btn-sm btn-edit" onclick="editEmployee(${idx})">Modifier</button>
-              <button class="btn-sm btn-delete" onclick="deleteEmployee(${idx})">Supprimer</button>
+              <button class="btn-sm btn-edit" onclick="editEmployee(${idx})">✏️ Modifier</button>
+              <button class="btn-sm btn-delete" onclick="deleteEmployee(${idx})">🗑️ Supprimer</button>
             </div>
           </div>
         `;
@@ -357,6 +538,7 @@
       uploadZone.classList.remove('drag-over');
       const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
       if (files.length) processFiles(files);
+      else showToast('Seuls les fichiers PDF sont acceptés', true);
     });
 
     fileInput.addEventListener('change', (e) => {
@@ -367,21 +549,28 @@
     async function processFiles(files) {
       const progressBar = document.getElementById('progress-bar');
       const progressFill = document.getElementById('progress-fill');
+      const progressStatus = document.getElementById('progress-status');
 
       uploadZone.classList.add('uploading');
       progressBar.style.display = 'block';
+      progressStatus.style.display = 'block';
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         showToast('Tu dois être connecté', true);
         uploadZone.classList.remove('uploading');
+        progressBar.style.display = 'none';
+        progressStatus.style.display = 'none';
         return;
       }
 
       let processed = 0;
       const total = files.length;
+      let successCount = 0;
 
       for (const file of files) {
+        progressStatus.textContent = `Analyse de ${file.name}... (${processed + 1}/${total})`;
+
         try {
           // Convert to base64
           const base64 = await fileToBase64(file);
@@ -400,34 +589,41 @@
           });
 
           const result = await response.json();
+          console.log('Extract result:', result);
 
           if (result.error) {
-            showToast(`Erreur: ${result.error}`, true);
+            showToast(`Erreur ${file.name}: ${result.error}`, true);
+            continue;
+          }
+
+          if (!result.data) {
+            showToast(`Pas de données extraites de ${file.name}`, true);
             continue;
           }
 
           // Add extracted employee
           const data = result.data;
           employees.push({
-            first_name: data.employee.first_name,
-            last_name: data.employee.last_name,
-            email: data.employee.email,
-            phone: data.employee.phone,
-            contract_type: data.contract.type,
-            job_title: data.contract.job_title,
-            start_date: data.contract.start_date,
-            end_date: data.contract.end_date,
-            weekly_hours: data.hours.weekly_hours,
-            monthly_salary: data.salary.monthly_gross,
-            hourly_rate: data.salary.hourly_rate,
+            first_name: data.employee?.first_name || '',
+            last_name: data.employee?.last_name || '',
+            email: data.employee?.email || null,
+            phone: data.employee?.phone || null,
+            contract_type: data.contract?.type || 'CDI',
+            job_title: data.contract?.job_title || '',
+            start_date: data.contract?.start_date || null,
+            end_date: data.contract?.end_date || null,
+            weekly_hours: data.hours?.weekly_hours || 35,
+            monthly_salary: data.salary?.monthly_gross || 0,
+            hourly_rate: data.salary?.hourly_rate || null,
             contract_raw_data: data
           });
 
-          showToast(`${data.employee.first_name} ${data.employee.last_name} ajouté`);
+          successCount++;
+          showToast(`${data.employee?.first_name || ''} ${data.employee?.last_name || ''} ajouté`);
 
         } catch (err) {
-          console.error(err);
-          showToast(`Erreur avec ${file.name}`, true);
+          console.error('Error processing file:', err);
+          showToast(`Erreur avec ${file.name}: ${err.message}`, true);
         }
 
         processed++;
@@ -435,13 +631,16 @@
       }
 
       uploadZone.classList.remove('uploading');
+      progressStatus.textContent = `${successCount} contrat${successCount > 1 ? 's' : ''} extrait${successCount > 1 ? 's' : ''}`;
+
       setTimeout(() => {
         progressBar.style.display = 'none';
+        progressStatus.style.display = 'none';
         progressFill.style.width = '0%';
-      }, 500);
+      }, 2000);
 
       renderEmployees();
-      updateSteps();
+      fileInput.value = ''; // Reset input
     }
 
     function fileToBase64(file) {
@@ -456,26 +655,92 @@
       });
     }
 
-    function updateSteps() {
-      const step1 = document.getElementById('step-1');
-      const step2 = document.getElementById('step-2');
+    // Manual employee entry
+    function addManualEmployee() {
+      const firstName = document.getElementById('form-firstname').value.trim();
+      const lastName = document.getElementById('form-lastname').value.trim();
+      const jobTitle = document.getElementById('form-job').value.trim();
 
-      if (employees.length > 0) {
-        step1.className = 'step done';
-        step2.className = 'step active';
+      if (!firstName || !lastName || !jobTitle) {
+        showToast('Prénom, nom et poste sont requis', true);
+        return;
       }
+
+      employees.push({
+        first_name: firstName,
+        last_name: lastName.toUpperCase(),
+        contract_type: document.getElementById('form-contract').value,
+        job_title: jobTitle,
+        start_date: document.getElementById('form-start').value || null,
+        end_date: document.getElementById('form-end').value || null,
+        weekly_hours: parseFloat(document.getElementById('form-hours').value) || 35,
+        monthly_salary: parseFloat(document.getElementById('form-salary').value) || 0,
+        email: document.getElementById('form-email').value || null,
+        phone: document.getElementById('form-phone').value || null
+      });
+
+      // Reset form
+      document.getElementById('form-firstname').value = '';
+      document.getElementById('form-lastname').value = '';
+      document.getElementById('form-job').value = '';
+      document.getElementById('form-start').value = '';
+      document.getElementById('form-end').value = '';
+      document.getElementById('form-hours').value = '35';
+      document.getElementById('form-salary').value = '';
+      document.getElementById('form-email').value = '';
+      document.getElementById('form-phone').value = '';
+
+      showToast(`${firstName} ${lastName} ajouté`);
+      renderEmployees();
     }
 
+    // Edit employee
     function editEmployee(idx) {
-      // TODO: Open edit modal
-      alert('Édition à implémenter');
+      editingIndex = idx;
+      const emp = employees[idx];
+
+      document.getElementById('edit-firstname').value = emp.first_name || '';
+      document.getElementById('edit-lastname').value = emp.last_name || '';
+      document.getElementById('edit-contract').value = emp.contract_type || 'CDI';
+      document.getElementById('edit-job').value = emp.job_title || '';
+      document.getElementById('edit-start').value = emp.start_date || '';
+      document.getElementById('edit-end').value = emp.end_date || '';
+      document.getElementById('edit-hours').value = emp.weekly_hours || 35;
+      document.getElementById('edit-salary').value = emp.monthly_salary || '';
+
+      document.getElementById('edit-modal').classList.add('show');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.remove('show');
+      editingIndex = -1;
+    }
+
+    function saveEdit() {
+      if (editingIndex < 0) return;
+
+      employees[editingIndex] = {
+        ...employees[editingIndex],
+        first_name: document.getElementById('edit-firstname').value.trim(),
+        last_name: document.getElementById('edit-lastname').value.trim().toUpperCase(),
+        contract_type: document.getElementById('edit-contract').value,
+        job_title: document.getElementById('edit-job').value.trim(),
+        start_date: document.getElementById('edit-start').value || null,
+        end_date: document.getElementById('edit-end').value || null,
+        weekly_hours: parseFloat(document.getElementById('edit-hours').value) || 35,
+        monthly_salary: parseFloat(document.getElementById('edit-salary').value) || 0
+      };
+
+      closeEditModal();
+      renderEmployees();
+      showToast('Modifications enregistrées');
     }
 
     function deleteEmployee(idx) {
       if (confirm('Supprimer cet employé ?')) {
         employees.splice(idx, 1);
         renderEmployees();
-        updateSteps();
+        showToast('Employé supprimé');
       }
     }
 
@@ -505,28 +770,27 @@
             weekly_hours: emp.weekly_hours,
             monthly_salary: emp.monthly_salary,
             hourly_rate: emp.hourly_rate,
-            contract_raw_data: emp.contract_raw_data
+            contract_raw_data: emp.contract_raw_data || {}
           });
 
-          if (error) throw error;
+          if (error) {
+            console.error('Insert error:', error);
+            throw error;
+          }
         }
-
-        // Mark step as done
-        document.getElementById('step-2').className = 'step done';
-        document.getElementById('step-3').className = 'step active';
 
         showToast('Équipe enregistrée !');
 
-        // Redirect to Telegram link step
+        // Redirect to dashboard
         setTimeout(() => {
-          window.location.href = '/equipe/?setup=telegram';
+          window.location.href = '/equipe/';
         }, 1500);
 
       } catch (err) {
         console.error(err);
         showToast(err.message || 'Erreur d\'enregistrement', true);
         btn.disabled = false;
-        btn.textContent = 'Continuer';
+        btn.textContent = 'Enregistrer l\'équipe';
       }
     }
 
@@ -549,7 +813,6 @@
       if (existing?.length > 0) {
         employees = existing;
         renderEmployees();
-        updateSteps();
       }
     }
 
