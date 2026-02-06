@@ -803,6 +803,19 @@
       }
       currentUser = session.user;
 
+      // Vérifier abonnement equipe (actif, trial, ou testeur)
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('status, is_tester')
+        .eq('user_id', session.user.id)
+        .in('module_name', ['equipe', 'paie'])
+        .maybeSingle();
+
+      if (!sub || (!sub.is_tester && sub.status !== 'active' && sub.status !== 'trialing' && sub.status !== 'tester')) {
+        window.location.href = '/soldats/';
+        return;
+      }
+
       // Load existing employees
       const { data: existing } = await supabase
         .from('employees')
