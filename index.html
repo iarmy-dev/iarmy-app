@@ -1236,6 +1236,9 @@
           case 'paie':
             await loadPaieSettings();
             break;
+          case 'equipe':
+            await loadEquipeSettings();
+            break;
         }
       } catch (err) {
         console.error('Error loading module data:', err);
@@ -1600,6 +1603,37 @@
       } else {
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des employes';
+      }
+    }
+
+    // Equipe settings
+    async function loadEquipeSettings() {
+      const { count: employeeCount } = await supabaseClient
+        .from('employees')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id)
+        .eq('status', 'active');
+
+      const { count: absenceCount } = await supabaseClient
+        .from('employee_absences')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id);
+
+      if (employeeCount > 0) {
+        document.getElementById('module-stats-section').style.display = 'block';
+
+        document.getElementById('module-stat-1').textContent = employeeCount || 0;
+        document.getElementById('module-stat-1-label').textContent = 'Employes';
+        document.getElementById('module-stat-2').textContent = absenceCount || 0;
+        document.getElementById('module-stat-2-label').textContent = 'Absences';
+        document.getElementById('module-stat-3').textContent = '-';
+        document.getElementById('module-stat-3-label').textContent = 'Ce mois';
+
+        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer l\'equipe';
+        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Voir les employes';
+      } else {
+        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
+        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des contrats';
       }
     }
 
