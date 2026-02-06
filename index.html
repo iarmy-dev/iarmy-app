@@ -1233,9 +1233,6 @@
           case 'stock':
             await loadStockSettings();
             break;
-          case 'paie':
-            await loadPaieSettings();
-            break;
           case 'equipe':
             await loadEquipeSettings();
             break;
@@ -1578,31 +1575,6 @@
       } else {
         document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
         document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des produits';
-      }
-    }
-
-    // Paie settings
-    async function loadPaieSettings() {
-      const { count: employeeCount } = await supabaseClient
-        .from('employees')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', currentUser.id);
-
-      if (employeeCount > 0) {
-        document.getElementById('module-stats-section').style.display = 'block';
-
-        document.getElementById('module-stat-1').textContent = employeeCount || 0;
-        document.getElementById('module-stat-1-label').textContent = 'Employes';
-        document.getElementById('module-stat-2').textContent = '-';
-        document.getElementById('module-stat-2-label').textContent = 'Ce mois';
-        document.getElementById('module-stat-3').textContent = '-';
-        document.getElementById('module-stat-3-label').textContent = 'Evenements';
-
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer l\'equipe';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Employes et contrats';
-      } else {
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des employes';
       }
     }
 
@@ -1969,11 +1941,8 @@
         case 'stock':
           window.location.href = '/setup/?module=stock' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
-        case 'paie':
-          window.location.href = '/setup/?module=paie' + (tgParams ? '&' + tgParams.substring(1) : '');
-          break;
         case 'equipe':
-          window.location.href = '/equipe/setup/' + tgParams;
+          window.location.href = '/setup/?module=equipe' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
       }
     }
@@ -2438,10 +2407,10 @@
           };
         }
 
-        // Paie - utiliser le count de telegram-auth
+        // Equipe - utiliser le count de telegram-auth
         paieEmployeeCount = paieCount;
         if (paieEmployeeCount > 0) {
-          userModuleStatuses['paie'] = {
+          userModuleStatuses['equipe'] = {
             installed: true,
             active: true,
             statusText: paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '')
@@ -2528,7 +2497,7 @@
           };
         }
 
-        // 5. Paie - verifier les employes
+        // 5. Equipe - verifier les employes
         const { count: paieCount } = await supabaseClient
           .from('employees')
           .select('id', { count: 'exact', head: true })
@@ -2536,7 +2505,7 @@
 
         paieEmployeeCount = paieCount || 0;
         if (paieEmployeeCount > 0) {
-          userModuleStatuses['paie'] = {
+          userModuleStatuses['equipe'] = {
             installed: true,
             active: true,
             statusText: paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '')
@@ -2590,10 +2559,8 @@
       }
     }
 
-    function goToPaieModule() {
-      // Unified module settings view with ?soldat=paie
+    function goToEquipeModule() {
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
-      // Check variable first, then cache
       let count = paieEmployeeCount;
       if (!count) {
         try {
@@ -2602,9 +2569,9 @@
         } catch (e) {}
       }
       if (count > 0) {
-        window.location.href = '/?soldat=paie' + tgParams;
+        window.location.href = '/?soldat=equipe' + tgParams;
       } else {
-        window.location.href = '/setup/?module=paie' + tgParams;
+        window.location.href = '/setup/?module=equipe' + tgParams;
       }
     }
 

@@ -808,7 +808,7 @@
         .from('subscriptions')
         .select('status, is_tester')
         .eq('user_id', session.user.id)
-        .in('module_name', ['equipe', 'paie'])
+        .eq('module_name', 'equipe')
         .maybeSingle();
 
       if (!sub || (!sub.is_tester && sub.status !== 'active' && sub.status !== 'trialing' && sub.status !== 'tester')) {

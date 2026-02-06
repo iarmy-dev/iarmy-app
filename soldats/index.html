@@ -335,14 +335,14 @@
           userModules.push('stock');
         }
 
-        // Verifier paie
-        const { count: paieCount } = await supabaseClient
+        // Verifier equipe
+        const { count: equipeCount } = await supabaseClient
           .from('employees')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', userId);
 
-        if (paieCount > 0 && !userModules.includes('paie')) {
-          userModules.push('paie');
+        if (equipeCount > 0 && !userModules.includes('equipe')) {
+          userModules.push('equipe');
         }
       } catch (err) {
         console.log('Error loading user modules from telegram:', err);
@@ -406,13 +406,13 @@
           userModules.push('stock');
         }
 
-        const { count: paieCount } = await supabaseClient
+        const { count: equipeCount } = await supabaseClient
           .from('employees')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', currentUser.id);
 
-        if (paieCount > 0 && !userModules.includes('paie')) {
-          userModules.push('paie');
+        if (equipeCount > 0 && !userModules.includes('equipe')) {
+          userModules.push('equipe');
         }
       } catch (err) {
         console.log('Error loading user modules:', err);
