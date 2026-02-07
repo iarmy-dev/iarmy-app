@@ -235,7 +235,7 @@
       // Header icon - utilise icons.js centralise
       const moduleIcon = document.getElementById('module-icon');
       moduleIcon.style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
-      moduleIcon.innerHTML = getModuleIcon(mod.icon_type, 'white', 28);
+      moduleIcon.innerHTML = getSoldatIcon(mod.icon_type, 'white', 28);
 
       document.title = `${mod.name} - Abonnement | iArmy`;
       document.getElementById('success-checkmark').style.background = `linear-gradient(135deg, ${mod.color}, ${mod.colorLight})`;
@@ -248,7 +248,7 @@
       // Loading icon - utilise icons.js centralise
       const loadingIcon = document.getElementById('loading-icon');
       loadingIcon.innerHTML = `<div class="icon-wrapper" style="background: linear-gradient(135deg, ${mod.color}, ${mod.colorLight}); box-shadow: 0 0 40px ${mod.color}50;">
-        ${getModuleIcon(mod.icon_type, 'white', 36)}
+        ${getSoldatIcon(mod.icon_type, 'white', 36)}
       </div>`;
     }
 

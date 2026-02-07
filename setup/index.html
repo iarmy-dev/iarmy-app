@@ -329,7 +329,7 @@
     <aside class="sidebar">
       <div class="mb-6">
         <div style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Soldat</div>
-        <div style="font-size: 18px; font-weight: 700; color: white; margin-top: 4px;" id="module-name"></div>
+        <div style="font-size: 18px; font-weight: 700; color: white; margin-top: 4px;" id="soldat-name"></div>
       </div>
       <div id="steps-nav"></div>
     </aside>
@@ -349,7 +349,7 @@
   <script>
     // ============================================
     // FALLBACK CONFIG (utilisé si données manquantes en DB)
-    // La source de vérité est la table Supabase `modules`
+    // La source de vérité est la table Supabase `modules` (soldats)
     // ============================================
     const FALLBACK_CONFIG = {
       compta: {
@@ -380,12 +380,12 @@
           { id: "team_setup", type: "team_setup", title: "Ton equipe", description: "Ajoute les contrats de ton equipe" },
           { id: "telegram", type: "telegram_link", title: "Connecte Telegram" }
         ],
-        onboarding_message: "Module Equipe active !\n\nNote les evenements du jour :\nExemple : _Ayham absent 2h_ ou _Retard Marie 30min_"
+        onboarding_message: "Soldat Equipe activé !\n\nNote les evenements du jour :\nExemple : _Ayham absent 2h_ ou _Retard Marie 30min_"
       }
     };
 
-    // Charger le module depuis Supabase
-    async function loadModuleFromDB(slug) {
+    // Charger le soldat depuis Supabase
+    async function loadSoldatFromDB(slug) {
       const { data, error } = await supabaseClient
         .from('modules')
         .select('*')
@@ -447,8 +447,8 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUser = null;
-    let currentModule = null;
-    let moduleConfig = null;
+    let currentSoldat = null;
+    let soldatConfig = null;
     let currentStepIndex = 0;
     let stepData = {}; // Donnees collectees pendant le setup
     let isTester = false;
@@ -483,24 +483,24 @@
     // ============================================
     async function init() {
       // Detecter le soldat depuis l'URL (?soldat= ou ?module= pour compat)
-      currentModule = getUrlParam('soldat') || getUrlParam('module');
-      if (!currentModule) {
+      currentSoldat = getUrlParam('soldat') || getUrlParam('module');
+      if (!currentSoldat) {
         window.location.href = '/';
         return;
       }
 
-      // Charger la config du module depuis Supabase
-      moduleConfig = await loadModuleFromDB(currentModule);
-      if (!moduleConfig) {
-        console.error('Module non trouvé:', currentModule);
+      // Charger la config du soldat depuis Supabase
+      soldatConfig = await loadSoldatFromDB(currentSoldat);
+      if (!soldatConfig) {
+        console.error('Soldat non trouvé:', currentSoldat);
         window.location.href = '/';
         return;
       }
 
-      // Appliquer les couleurs du module
-      document.getElementById('orb1').style.background = `linear-gradient(135deg, ${moduleConfig.color.primary}, ${moduleConfig.color.secondary})`;
-      document.getElementById('module-name').textContent = moduleConfig.name;
-      document.title = `${moduleConfig.name} - Configuration | iArmy`;
+      // Appliquer les couleurs du soldat
+      document.getElementById('orb1').style.background = `linear-gradient(135deg, ${soldatConfig.color.primary}, ${soldatConfig.color.secondary})`;
+      document.getElementById('soldat-name').textContent = soldatConfig.name;
+      document.title = `${soldatConfig.name} - Configuration | iArmy`;
 
       // Check si Telegram Mini App (seulement si initData est présent = vraiment dans Telegram)
       const tg = window.Telegram?.WebApp;
@@ -521,14 +521,14 @@
         });
         tg.BackButton.show();
 
-        const setupUrl = `https://app.iarmy.fr/setup/?soldat=${currentModule}`;
-        const moduleName = moduleConfig?.name || currentModule;
+        const setupUrl = `https://app.iarmy.fr/setup/?soldat=${currentSoldat}`;
+        const soldatName = soldatConfig?.name || currentSoldat;
         document.querySelector('.main-content').innerHTML = `
           <div class="glass-card" style="padding: 48px; text-align: center; margin-top: 40px;">
             <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
-            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configure ${moduleName}</h2>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Configure ${soldatName}</h2>
             <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">La configuration se fait sur le site web.</p>
-            <button onclick="window.Telegram.WebApp.openLink('${setupUrl}')" class="btn-glow" style="display: inline-block; width: auto; cursor: pointer;">Configurer ${moduleName} →</button>
+            <button onclick="window.Telegram.WebApp.openLink('${setupUrl}')" class="btn-glow" style="display: inline-block; width: auto; cursor: pointer;">Configurer ${soldatName} →</button>
           </div>
         `;
         hideInitialLoading();
@@ -564,30 +564,30 @@
         .from('subscriptions')
         .select('status, is_tester')
         .eq('user_id', currentUser.id)
-        .eq('module_name', currentModule)
+        .eq('module_name', currentSoldat)
         .maybeSingle();
 
       isTester = sub?.is_tester === true;
 
-      // Check si module deja configure (sheet_id existe)
-      const { data: moduleConfigData } = await supabaseClient
+      // Check si soldat deja configure (sheet_id existe)
+      const { data: soldatConfigData } = await supabaseClient
         .from('module_configs')
         .select('sheet_id')
         .eq('user_id', currentUser.id)
-        .eq('module_name', currentModule)
+        .eq('module_name', currentSoldat)
         .maybeSingle();
 
-      const isConfigured = !!moduleConfigData?.sheet_id;
+      const isConfigured = !!soldatConfigData?.sheet_id;
 
-      // Si deja configure -> settings (page compte avec ?soldat=module)
+      // Si deja configure -> settings (page compte avec ?soldat=)
       if (isConfigured) {
-        window.location.href = `/?soldat=${currentModule}`;
+        window.location.href = `/?soldat=${currentSoldat}`;
         return;
       }
 
       // Pour les testeurs, masquer le step stripe_checkout
       if (isTester) {
-        moduleConfig.setup.steps.forEach(s => {
+        soldatConfig.setup.steps.forEach(s => {
           if (s.type === 'stripe_checkout') s.hidden = true;
         });
       }
@@ -612,7 +612,7 @@
     // GENERATION DE L'INTERFACE
     // ============================================
     function generateStepsNav() {
-      const steps = moduleConfig.setup.steps;
+      const steps = soldatConfig.setup.steps;
       const nav = document.getElementById('steps-nav');
       const mobileTrack = document.getElementById('mobile-steps-track');
 
@@ -637,7 +637,7 @@
     }
 
     function generateStepsContent() {
-      const steps = moduleConfig.setup.steps;
+      const steps = soldatConfig.setup.steps;
       const container = document.getElementById('steps-container');
       const visibleCount = steps.filter(s => !s.hidden).length;
       let visibleNum = 0;
@@ -1117,7 +1117,7 @@
           <div style="background: rgba(255,107,53,0.06); border-radius: 16px; padding: 24px; text-align: center;">
             <div id="pricing-display-recap-${index}">
               <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">7 jours gratuits puis</div>
-              <div style="font-size: 36px; font-weight: 800; color: #FF8B5E; margin-bottom: 16px;">${moduleConfig.price}€<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.4);">/mois</span></div>
+              <div style="font-size: 36px; font-weight: 800; color: #FF8B5E; margin-bottom: 16px;">${soldatConfig.price}€<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.4);">/mois</span></div>
             </div>
 
             <div id="tester-access-recap-${index}" style="display: none;">
@@ -1406,12 +1406,12 @@
     function renderStripeCheckout(step, index) {
       return `
         <div class="price-box">
-          <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">${moduleConfig.trial_days} jours d'essai gratuit puis</div>
-          <div class="amount">${moduleConfig.price}€</div>
+          <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">${soldatConfig.trial_days} jours d'essai gratuit puis</div>
+          <div class="amount">${soldatConfig.price}€</div>
           <div class="period">/mois</div>
         </div>
         <div class="feature-list">
-          ${moduleConfig.features.map(f => `
+          ${soldatConfig.features.map(f => `
             <div class="feature-item">
               <div class="feature-check">✓</div>
               <div>${f}</div>
@@ -1445,7 +1445,7 @@
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.28-.37.78-.57 3.05-1.33 5.08-2.21 6.1-2.63 2.91-1.21 3.52-1.42 3.91-1.43.09 0 .28.02.41.12.1.09.13.21.15.34-.01.05.01.18 0 .28z"/>
             </svg>
           </div>
-          <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">Le bot t'enverra des notifications et te permettra de gerer ${moduleConfig.name} directement depuis Telegram</p>
+          <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">Le bot t'enverra des notifications et te permettra de gerer ${soldatConfig.name} directement depuis Telegram</p>
           <button onclick="connectTelegram(${index})" class="btn-telegram" id="btn-telegram-${index}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.28-.37.78-.57 3.05-1.33 5.08-2.21 6.1-2.63 2.91-1.21 3.52-1.42 3.91-1.43.09 0 .28.02.41.12.1.09.13.21.15.34-.01.05.01.18 0 .28z"/>
@@ -1464,8 +1464,8 @@
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <div style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">C'est pret !</div>
-          <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">Ton module ${moduleConfig.name} est configure</p>
-          <button onclick="goToModule()" class="btn-glow">Acceder a ${moduleConfig.name}</button>
+          <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">Ton soldat ${soldatConfig.name} est configuré</p>
+          <button onclick="goToSoldat()" class="btn-glow">Acceder a ${soldatConfig.name}</button>
         </div>
       `;
     }
@@ -1474,7 +1474,7 @@
     // NAVIGATION
     // ============================================
     function goToStep(index) {
-      const steps = moduleConfig.setup.steps;
+      const steps = soldatConfig.setup.steps;
       if (index < 0 || index >= steps.length) return;
 
       currentStepIndex = index;
@@ -1508,7 +1508,7 @@
 
     function nextStep() {
       let next = currentStepIndex + 1;
-      const steps = moduleConfig.setup.steps;
+      const steps = soldatConfig.setup.steps;
       while (next < steps.length && steps[next].hidden) next++;
       goToStep(next);
     }
@@ -1653,7 +1653,7 @@
     async function validatePhotoResults(index) {
       // Save items to database
       if (stepData.extractedItems && stepData.extractedItems.length > 0) {
-        if (currentModule === 'stock') {
+        if (currentSoldat === 'stock') {
           await saveStockCocktails(stepData.extractedItems);
         }
       }
@@ -2343,9 +2343,9 @@
             'Authorization': 'Bearer ' + session.access_token
           },
           body: JSON.stringify({
-            moduleName: currentModule,
-            successUrl: window.location.origin + `/setup/?soldat=${currentModule}&success=1`,
-            cancelUrl: window.location.origin + `/setup/?soldat=${currentModule}&canceled=1`
+            moduleName: currentSoldat,
+            successUrl: window.location.origin + `/setup/?soldat=${currentSoldat}&success=1`,
+            cancelUrl: window.location.origin + `/setup/?soldat=${currentSoldat}&canceled=1`
           })
         });
 
@@ -2406,8 +2406,8 @@
       }, 2000);
     }
 
-    function goToModule() {
-      window.location.href = `/${currentModule}/`;
+    function goToSoldat() {
+      window.location.href = `/${currentSoldat}/`;
     }
 
     // ============================================
@@ -3075,9 +3075,9 @@
             'Authorization': 'Bearer ' + session.access_token
           },
           body: JSON.stringify({
-            moduleName: currentModule,
-            successUrl: window.location.origin + `/setup/?soldat=${currentModule}&success=1`,
-            cancelUrl: window.location.origin + `/setup/?soldat=${currentModule}&canceled=1`
+            moduleName: currentSoldat,
+            successUrl: window.location.origin + `/setup/?soldat=${currentSoldat}&success=1`,
+            cancelUrl: window.location.origin + `/setup/?soldat=${currentSoldat}&canceled=1`
           })
         });
 
@@ -3141,7 +3141,7 @@
     if (getUrlParam('success') === '1') {
       window.history.replaceState({}, '', `/setup/?soldat=${getUrlParam('soldat') || getUrlParam('module')}`);
       setTimeout(() => {
-        // Find telegram step index (use fallback since moduleConfig not loaded yet)
+        // Find telegram step index (use fallback since soldatConfig not loaded yet)
         const fallback = FALLBACK_CONFIG[getUrlParam('soldat') || getUrlParam('module')];
         const steps = fallback?.setup_steps || [];
         const telegramIndex = steps.findIndex(s => s.type === 'telegram_link');

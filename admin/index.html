@@ -1016,7 +1016,7 @@
               ${modules.slice(0, 5).map(m => `
                 <div class="module-list-item" onclick="switchTab('modules');selectModule('${m.id}');">
                   <div class="module-list-color" style="background:${m.color};">
-                    ${getModuleIcon(m.icon_type, 'white')}
+                    ${getSoldatIcon(m.icon_type, 'white')}
                   </div>
                   <div class="module-list-info">
                     <div class="module-list-name">${m.name}</div>
@@ -1058,7 +1058,7 @@
             return `
               <div class="module-list-item" onclick="selectModule('${m.id}')">
                 <div class="module-list-color" style="background:${m.color};">
-                  ${getModuleIcon(m.icon_type, 'white')}
+                  ${getSoldatIcon(m.icon_type, 'white')}
                 </div>
                 <div class="module-list-info">
                   <div class="module-list-name">${m.name} ${badge ? `<span style="font-size:12px;">${badge}</span>` : ''}</div>
@@ -1445,7 +1445,7 @@
               ${icons.map(i => `
                 <div onclick="selectIconStudio('${i.id}');this.closest('[style*=fixed]').remove();" style="padding:20px;background:rgba(255,255,255,0.04);border:2px solid ${selectedIconType === i.id ? '#FF6B35' : 'rgba(255,255,255,0.08)'};border-radius:16px;cursor:pointer;text-align:center;">
                   <div style="width:48px;height:48px;margin:0 auto 8px;background:${selectedColor};border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                    ${getModuleIconMini(i.id)}
+                    ${getSoldatIconMini(i.id)}
                   </div>
                   <div style="font-size:12px;color:rgba(255,255,255,0.6);">${i.name}</div>
                 </div>
@@ -1472,7 +1472,7 @@
       const icon = document.getElementById('preview-icon');
       if (icon) {
         icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColorHex(selectedColor)})`;
-        icon.innerHTML = getModuleIcon(selectedIconType, 'white');
+        icon.innerHTML = getSoldatIcon(selectedIconType, 'white');
       }
 
       const badge = document.getElementById('preview-badge');
@@ -1522,7 +1522,7 @@
     }
 
     // Mini icon for bar
-    function getModuleIconMini(type) {
+    function getSoldatIconMini(type) {
       const icons = {
         'telegram_sheets': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>',
         'bottles_count': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2h8v4l2 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V8l2-2V2z"/></svg>',
@@ -1680,7 +1680,7 @@
       const grid = document.getElementById('icon-grid');
       if (!grid) return;
       grid.innerHTML = ICON_TYPES.map(icon => {
-        const iconHtml = getModuleIcon(icon.id, 'white');
+        const iconHtml = getSoldatIcon(icon.id, 'white');
         return `
           <div class="icon-option ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIcon('${icon.id}')" title="${icon.desc || ''}">
             <div class="icon-option-preview">${iconHtml}</div>
@@ -1708,7 +1708,7 @@
                 <h4 style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;">ANIMATIONS DISPONIBLES</h4>
                 <div class="animation-gallery-grid">
                   ${ICON_TYPES.map(icon => {
-                    const iconHtml = getModuleIcon(icon.id, 'white');
+                    const iconHtml = getSoldatIcon(icon.id, 'white');
                     return `
                       <div class="animation-gallery-item ${selectedIconType === icon.id ? 'selected' : ''}" onclick="selectIconFromGallery('${icon.id}')">
                         <div class="animation-gallery-preview" style="background:${selectedColor}20;">${iconHtml}</div>
@@ -1832,7 +1832,7 @@
       const icon = document.getElementById('preview-icon');
       if (icon) {
         icon.style.background = `linear-gradient(180deg, ${selectedColor}, ${darkenColorHex(selectedColor)})`;
-        icon.innerHTML = getModuleIcon(selectedIconType, 'white');
+        icon.innerHTML = getSoldatIcon(selectedIconType, 'white');
       }
 
       // Name

@@ -474,7 +474,7 @@
       ];
       grid.innerHTML = types.map(t => `
         <div class="icon-btn ${formData.icon_type === t.id ? 'active' : ''}" onclick="setIconType('${t.id}')" title="${t.name}">
-          ${getModuleIcon(t.id, formData.color, 24)}
+          ${getSoldatIcon(t.id, formData.color, 24)}
         </div>
       `).join('');
     }
@@ -485,7 +485,7 @@
       if (typeof getAnimatedIcon === 'function') {
         el.innerHTML = getAnimatedIcon(formData.icon_type, 'white');
       } else {
-        el.innerHTML = getModuleIcon(formData.icon_type, 'white', 24);
+        el.innerHTML = getSoldatIcon(formData.icon_type, 'white', 24);
       }
     }
 

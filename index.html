@@ -66,20 +66,20 @@
     .stats-empty { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 24px; text-align: center; color: rgba(255,255,255,0.3); font-size: 13px; margin-bottom: 24px; }
 
     /* Modules Grid - style home */
-    .modules-grid {
+    .soldats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
       margin-bottom: 24px;
     }
     @media (max-width: 600px) {
-      .modules-grid { grid-template-columns: repeat(2, 1fr); }
+      .soldats-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 400px) {
-      .modules-grid { grid-template-columns: 1fr; }
+      .soldats-grid { grid-template-columns: 1fr; }
     }
 
-    .module-card {
+    .soldat-card {
       border-radius: 20px;
       padding: 20px 16px;
       aspect-ratio: 1;
@@ -93,41 +93,41 @@
       border: 1px solid transparent;
       position: relative;
     }
-    .module-card:hover { transform: translateY(-2px); }
+    .soldat-card:hover { transform: translateY(-2px); }
 
     /* Module inactive */
-    .module-card.inactive {
+    .soldat-card.inactive {
       background: rgba(255,255,255,0.03);
       border-color: rgba(255,255,255,0.08);
       opacity: 0.6;
     }
-    .module-card.inactive:hover {
+    .soldat-card.inactive:hover {
       opacity: 0.8;
       transform: none;
     }
 
     /* Add module card */
-    .module-card.add-module {
+    .soldat-card.add-soldat {
       background: rgba(255,255,255,0.02);
       border: 2px dashed rgba(255,255,255,0.1);
     }
-    .module-card.add-module:hover {
+    .soldat-card.add-soldat:hover {
       border-color: rgba(255,107,53,0.4);
       background: rgba(255,107,53,0.05);
     }
-    .module-card.add-module:hover .module-icon span {
+    .soldat-card.add-soldat:hover .soldat-icon span {
       color: #FF6B35;
     }
 
-    .module-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-    .module-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-    .module-status { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .module-badge { position: absolute; top: 10px; right: 10px; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; text-transform: uppercase; }
-    .module-badge.active { background: rgba(34,197,94,0.2); color: #4ade80; }
-    .module-badge.setup { background: rgba(255,107,53,0.2); color: #FF8B5E; }
-    .module-badge.nouveau { background: linear-gradient(135deg, rgba(34,197,94,0.25), rgba(74,222,128,0.25)); color: #4ade80; }
-    .module-badge.populaire { background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.25)); color: #fbbf24; }
-    .module-badge.promo { background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(248,113,113,0.25)); color: #f87171; }
+    .soldat-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .soldat-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .soldat-status { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .soldat-badge { position: absolute; top: 10px; right: 10px; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; text-transform: uppercase; }
+    .soldat-badge.active { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .soldat-badge.setup { background: rgba(255,107,53,0.2); color: #FF8B5E; }
+    .soldat-badge.nouveau { background: linear-gradient(135deg, rgba(34,197,94,0.25), rgba(74,222,128,0.25)); color: #4ade80; }
+    .soldat-badge.populaire { background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.25)); color: #fbbf24; }
+    .soldat-badge.promo { background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(248,113,113,0.25)); color: #f87171; }
 
     /* Mini spreadsheet animation */
     .mini-sheet { width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
@@ -249,21 +249,21 @@
     .invoice-download:hover { color: white; }
 
     /* Billing Module Card */
-    .billing-module-card { display: flex; align-items: center; gap: 14px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; margin-bottom: 10px; }
-    .billing-module-card:last-child { margin-bottom: 0; }
-    .billing-module-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .billing-module-info { flex: 1; min-width: 0; }
-    .billing-module-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-    .billing-module-name { font-size: 15px; font-weight: 600; }
-    .billing-module-badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
-    .billing-module-badge.active { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .billing-module-badge.tester { background: rgba(168,85,247,0.15); color: #c084fc; }
-    .billing-module-badge.trial { background: rgba(59,130,246,0.15); color: #60a5fa; }
-    .billing-module-badge.canceled { background: rgba(239,68,68,0.15); color: #f87171; }
-    .billing-module-details { font-size: 12px; color: rgba(255,255,255,0.45); }
-    .billing-module-price { text-align: right; flex-shrink: 0; }
-    .billing-module-amount { font-size: 15px; font-weight: 600; }
-    .billing-module-period { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .billing-soldat-card { display: flex; align-items: center; gap: 14px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; margin-bottom: 10px; }
+    .billing-soldat-card:last-child { margin-bottom: 0; }
+    .billing-soldat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .billing-soldat-info { flex: 1; min-width: 0; }
+    .billing-soldat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .billing-soldat-name { font-size: 15px; font-weight: 600; }
+    .billing-soldat-badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+    .billing-soldat-badge.active { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .billing-soldat-badge.tester { background: rgba(168,85,247,0.15); color: #c084fc; }
+    .billing-soldat-badge.trial { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .billing-soldat-badge.canceled { background: rgba(239,68,68,0.15); color: #f87171; }
+    .billing-soldat-details { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .billing-soldat-price { text-align: right; flex-shrink: 0; }
+    .billing-soldat-amount { font-size: 15px; font-weight: 600; }
+    .billing-soldat-period { font-size: 11px; color: rgba(255,255,255,0.4); }
     .billing-empty { text-align: center; padding: 24px; color: rgba(255,255,255,0.4); font-size: 13px; }
 
     /* Settings - Liquid Glass */
@@ -343,7 +343,7 @@
     /* Module Settings View */
     .btn-action:hover { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.1) !important; transform: translateY(-2px); }
     .btn-back:hover { background: rgba(255,255,255,0.08); color: white; }
-    #module-settings .stat-value { color: var(--module-color, #FF6B35); }
+    #soldat-settings .stat-value { color: var(--soldat-color, #FF6B35); }
 
     /* Loading Screen - Unified iArmy Loader */
     .loading-screen {
@@ -533,16 +533,16 @@
 
     <!-- Modules -->
     <div class="section-title">Mes soldats</div>
-    <div class="modules-grid" id="modules-container">
+    <div class="soldats-grid" id="soldats-container">
       <!-- Les modules sont chargés dynamiquement depuis Supabase -->
 
       <!-- Add more modules -->
-      <div class="module-card add-module" onclick="goToSoldats()">
-        <div class="module-icon" style="background: rgba(255,255,255,0.06);">
+      <div class="soldat-card add-soldat" onclick="goToSoldats()">
+        <div class="soldat-icon" style="background: rgba(255,255,255,0.06);">
           <span style="font-size: 28px; color: rgba(255,255,255,0.4);">+</span>
         </div>
-        <div class="module-name" style="color: rgba(255,255,255,0.5);">Plus</div>
-        <div class="module-status" style="color: rgba(255,255,255,0.3);">Voir tous les soldats</div>
+        <div class="soldat-name" style="color: rgba(255,255,255,0.5);">Plus</div>
+        <div class="soldat-status" style="color: rgba(255,255,255,0.3);">Voir tous les soldats</div>
       </div>
     </div>
 
@@ -589,7 +589,7 @@
   </div>
 
   <!-- Module Settings View (shown when ?soldat=xxx) -->
-  <div class="container" id="module-settings" style="display: none;">
+  <div class="container" id="soldat-settings" style="display: none;">
     <div class="page-header" style="margin-bottom: 24px;">
       <div class="page-header-row">
         <div class="page-header-left" style="display: flex; align-items: center; gap: 12px;">
@@ -597,8 +597,8 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div>
-            <div id="module-page-title" style="font-size: 20px; font-weight: 600;">Module</div>
-            <div id="module-page-subtitle" style="font-size: 13px; color: rgba(255,255,255,0.4);">Configuration</div>
+            <div id="soldat-page-title" style="font-size: 20px; font-weight: 600;">Soldat</div>
+            <div id="soldat-page-subtitle" style="font-size: 13px; color: rgba(255,255,255,0.4);">Configuration</div>
           </div>
         </div>
       </div>
@@ -606,28 +606,28 @@
 
 
     <!-- Module Quick Stats -->
-    <div id="module-stats-section" style="display: none; margin-bottom: 24px;">
+    <div id="soldat-stats-section" style="display: none; margin-bottom: 24px;">
       <div class="section-title">Statistiques</div>
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-value" id="module-stat-1">-</div>
-          <div class="stat-label" id="module-stat-1-label">-</div>
+          <div class="stat-value" id="soldat-stat-1">-</div>
+          <div class="stat-label" id="soldat-stat-1-label">-</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" id="module-stat-2">-</div>
-          <div class="stat-label" id="module-stat-2-label">-</div>
+          <div class="stat-value" id="soldat-stat-2">-</div>
+          <div class="stat-label" id="soldat-stat-2-label">-</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" id="module-stat-3">-</div>
-          <div class="stat-label" id="module-stat-3-label">-</div>
+          <div class="stat-value" id="soldat-stat-3">-</div>
+          <div class="stat-label" id="soldat-stat-3-label">-</div>
         </div>
       </div>
     </div>
 
     <!-- Module Actions -->
-    <div id="module-actions" class="section-title" style="margin-bottom: 12px;">Actions</div>
-    <div id="module-actions-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-      <button id="module-btn-setup" onclick="goToModuleSetup()" class="btn-action" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px 16px; cursor: pointer; transition: all 0.2s; text-align: center;">
+    <div id="soldat-actions" class="section-title" style="margin-bottom: 12px;">Actions</div>
+    <div id="soldat-actions-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <button id="soldat-btn-setup" onclick="goToSoldatSetup()" class="btn-action" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px 16px; cursor: pointer; transition: all 0.2s; text-align: center;">
         <div style="font-size: 24px; margin-bottom: 8px;">⚙️</div>
         <div style="font-size: 14px; font-weight: 500; color: white;">Configurer</div>
         <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">Modifier les parametres</div>
@@ -640,13 +640,13 @@
     </div>
 
     <!-- Module Specific Content -->
-    <div id="module-content" style="margin-top: 24px;">
+    <div id="soldat-content" style="margin-top: 24px;">
       <!-- Dynamically populated based on module type -->
     </div>
 
     <!-- Footer -->
-    <div id="module-footer" class="footer-links" style="margin-top: 32px;">
-      <button class="footer-link" onclick="goToModuleSetup()">
+    <div id="soldat-footer" class="footer-links" style="margin-top: 32px;">
+      <button class="footer-link" onclick="goToSoldatSetup()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Parametres avances
       </button>
@@ -671,7 +671,7 @@
         <div id="billing-content" style="display: none;">
           <!-- Modules List - Populated dynamically -->
           <div class="settings-title">Mes soldats</div>
-          <div id="billing-modules-list">
+          <div id="billing-soldats-list">
             <!-- Rendered by JS -->
           </div>
 
@@ -853,13 +853,13 @@
       saveUICache();
 
       // Afficher le bon container selon le mode
-      if (currentModuleView) {
+      if (currentSoldatView) {
         document.getElementById('account-dashboard').style.display = 'none';
-        document.getElementById('module-settings').style.display = 'block';
-        document.getElementById('module-settings').classList.add('visible');
+        document.getElementById('soldat-settings').style.display = 'block';
+        document.getElementById('soldat-settings').classList.add('visible');
       } else {
         document.getElementById('account-dashboard').classList.add('visible');
-        document.getElementById('module-settings').style.display = 'none';
+        document.getElementById('soldat-settings').style.display = 'none';
       }
     }
 
@@ -876,18 +876,18 @@
           text: document.getElementById('user-badge')?.textContent,
           className: document.getElementById('user-badge')?.className
         },
-        moduleStatus: document.getElementById('module-status')?.innerHTML,
-        moduleComptaInactive: document.getElementById('module-compta')?.classList.contains('inactive'),
+        soldatStatus: document.getElementById('soldat-status')?.innerHTML,
+        soldatComptaInactive: document.getElementById('soldat-compta')?.classList.contains('inactive'),
         stockStatus: document.getElementById('stock-status')?.textContent,
-        moduleStockInactive: document.getElementById('module-stock')?.classList.contains('inactive'),
+        soldatStockInactive: document.getElementById('soldat-stock')?.classList.contains('inactive'),
         equipeStatus: document.getElementById('equipe-status')?.textContent,
-        moduleEquipeInactive: document.getElementById('module-equipe')?.classList.contains('inactive'),
+        soldatEquipeInactive: document.getElementById('soldat-equipe')?.classList.contains('inactive'),
         sheetsConnected: document.getElementById('conn-sheets')?.classList.contains('connected'),
         sheetsStatus: document.getElementById('sheets-status')?.innerHTML,
         telegramConnected: document.getElementById('conn-telegram')?.classList.contains('connected'),
         telegramStatus: document.getElementById('telegram-status')?.innerHTML,
         // JavaScript variables
-        moduleConfig: moduleConfig,
+        soldatConfig: soldatConfig,
         stockProductCount: stockProductCount,
         paieEmployeeCount: paieEmployeeCount
       };
@@ -922,12 +922,12 @@
         }
 
         // Modules
-        if (cache.moduleStatus) document.getElementById('module-status').innerHTML = cache.moduleStatus;
-        if (cache.moduleComptaInactive) document.getElementById('module-compta').classList.add('inactive');
+        if (cache.soldatStatus) document.getElementById('soldat-status').innerHTML = cache.soldatStatus;
+        if (cache.soldatComptaInactive) document.getElementById('soldat-compta').classList.add('inactive');
         if (cache.stockStatus) document.getElementById('stock-status').textContent = cache.stockStatus;
-        if (cache.moduleStockInactive) document.getElementById('module-stock').classList.add('inactive');
+        if (cache.soldatStockInactive) document.getElementById('soldat-stock').classList.add('inactive');
         if (cache.equipeStatus) document.getElementById('equipe-status').textContent = cache.equipeStatus;
-        if (cache.moduleEquipeInactive) document.getElementById('module-equipe').classList.add('inactive');
+        if (cache.soldatEquipeInactive) document.getElementById('soldat-equipe').classList.add('inactive');
 
         // Connections
         if (cache.sheetsConnected) {
@@ -942,7 +942,7 @@
         }
 
         // JavaScript variables
-        if (cache.moduleConfig) moduleConfig = cache.moduleConfig;
+        if (cache.soldatConfig) soldatConfig = cache.soldatConfig;
         if (cache.stockProductCount !== undefined) stockProductCount = cache.stockProductCount;
         if (cache.paieEmployeeCount !== undefined) paieEmployeeCount = cache.paieEmployeeCount;
 
@@ -968,29 +968,29 @@
     let billingData = null;
     let stripe = null;
     let cardElement = null;
-    let moduleConfig = null;
+    let soldatConfig = null;
     let stockProductCount = 0;
     let paieEmployeeCount = 0;
     let isTelegramMode = false;
     let telegramUserId = null;
     let telegramSubscription = null;
     let telegramAuthData = null; // Donnees completes de telegram-auth
-    let currentModuleView = null; // ?soldat= parameter value
+    let currentSoldatView = null; // ?soldat= parameter value
 
     // ========================================
     // MODULES - Charges dynamiquement depuis Supabase
     // ========================================
-    let MODULES_DATA = []; // Charge depuis Supabase
-    let MODULES_CONFIG = {}; // Genere a partir de MODULES_DATA
+    let SOLDATS_DATA = []; // Charge depuis Supabase
+    let SOLDATS_CONFIG = {}; // Genere a partir de SOLDATS_DATA
 
-    // Les templates d'icônes sont dans /js/module-icons.js (source unique)
-    // Utiliser getModuleIcon(iconType, color) ou getModuleIconWithBg(iconType, color, size)
+    // Les templates d'icônes sont dans /js/soldat-icons.js (source unique)
+    // Utiliser getSoldatIcon(iconType, color) ou getSoldatIconWithBg(iconType, color, size)
 
     // Emails admin qui voient tous les modules
     const ADMIN_EMAILS = ['ludovikh@gmail.com'];
 
     // Charger les modules depuis Supabase
-    async function loadModulesFromDB() {
+    async function loadSoldatsFromDB() {
       try {
         // Determiner le role de l'utilisateur
         let isAdmin = false;
@@ -1046,26 +1046,26 @@
 
             if (missingSlugs.length > 0) {
               // Charger les modules manquants (ceux en draft que l'utilisateur a configurés)
-              const { data: missingModules } = await supabaseClient
+              const { data: missingSoldats } = await supabaseClient
                 .from('modules')
                 .select('*')
                 .in('slug', missingSlugs);
 
-              if (missingModules) {
-                data.push(...missingModules);
-                console.log('[Modules] Added', missingModules.length, 'user-configured modules (hidden from public)');
+              if (missingSoldats) {
+                data.push(...missingSoldats);
+                console.log('[Modules] Added', missingSoldats.length, 'user-configured modules (hidden from public)');
               }
             }
           }
         }
         if (error) throw error;
 
-        MODULES_DATA = data || [];
+        SOLDATS_DATA = data || [];
 
-        // Generer MODULES_CONFIG pour compatibilite
-        MODULES_CONFIG = {};
-        MODULES_DATA.forEach(m => {
-          MODULES_CONFIG[m.slug] = {
+        // Generer SOLDATS_CONFIG pour compatibilite
+        SOLDATS_CONFIG = {};
+        SOLDATS_DATA.forEach(m => {
+          SOLDATS_CONFIG[m.slug] = {
             name: m.name,
             color: m.color,
             colorLight: hexToRgba(m.color, 0.15),
@@ -1076,11 +1076,11 @@
           };
         });
 
-        console.log('[Modules] Loaded', MODULES_DATA.length, 'modules from Supabase');
+        console.log('[Modules] Loaded', SOLDATS_DATA.length, 'modules from Supabase');
       } catch (err) {
         console.error('[Modules] Error loading:', err);
-        MODULES_DATA = [];
-        MODULES_CONFIG = {};
+        SOLDATS_DATA = [];
+        SOLDATS_CONFIG = {};
       }
     }
 
@@ -1101,7 +1101,7 @@
     }
 
     // Determiner le badge a afficher pour un module
-    function getModuleBadge(mod) {
+    function getSoldatBadge(mod) {
       // Badge force "none" = pas de badge
       if (mod.badge === 'none') return null;
 
@@ -1121,47 +1121,47 @@
     }
 
     // Rendre les cartes de modules
-    function renderModuleCards(userModuleStatuses) {
-      const container = document.getElementById('modules-container');
-      const addButton = container.querySelector('.add-module');
+    function renderSoldatCards(userSoldatStatuses) {
+      const container = document.getElementById('soldats-container');
+      const addButton = container.querySelector('.add-soldat');
 
       // Vider le conteneur sauf le bouton +
       container.innerHTML = '';
 
       // Generer une carte pour chaque module installe
-      MODULES_DATA.forEach(mod => {
-        const status = userModuleStatuses[mod.slug];
+      SOLDATS_DATA.forEach(mod => {
+        const status = userSoldatStatuses[mod.slug];
         if (!status || !status.installed) return; // Ne montrer que les modules installes
 
         // Utiliser le système d'icônes centralisé
-        const iconHtml = getModuleIconWithBg(mod.icon_type, mod.color, 44);
+        const iconHtml = getSoldatIconWithBg(mod.icon_type, mod.color, 44);
 
         const card = document.createElement('div');
-        card.className = 'module-card';
-        card.id = `module-${mod.slug}`;
-        card.setAttribute('data-module', mod.slug);
+        card.className = 'soldat-card';
+        card.id = `soldat-${mod.slug}`;
+        card.setAttribute('data-soldat', mod.slug);
         // Appliquer styles dynamiques basés sur la couleur du module
         card.style.background = `linear-gradient(145deg, ${mod.color}40, ${mod.color}25)`;
         card.style.borderColor = `${mod.color}66`;
         card.onmouseenter = () => { card.style.borderColor = `${mod.color}99`; card.style.boxShadow = `0 0 30px ${mod.color}33`; };
         card.onmouseleave = () => { card.style.borderColor = `${mod.color}66`; card.style.boxShadow = 'none'; };
-        card.onclick = () => goToModuleDynamic(mod.slug);
+        card.onclick = () => goToSoldatDynamic(mod.slug);
         // Determiner le badge a afficher
         let badgeHtml = '';
-        const moduleBadge = getModuleBadge(mod);
-        if (moduleBadge) {
-          badgeHtml = `<span class="module-badge ${moduleBadge.class}">${moduleBadge.text}</span>`;
+        const soldatBadge = getSoldatBadge(mod);
+        if (soldatBadge) {
+          badgeHtml = `<span class="soldat-badge ${soldatBadge.class}">${soldatBadge.text}</span>`;
         } else if (status.active) {
-          badgeHtml = `<span class="module-badge active">Actif</span>`;
+          badgeHtml = `<span class="soldat-badge active">Actif</span>`;
         }
 
         card.innerHTML = `
           ${badgeHtml}
-          <div class="module-icon" style="background: linear-gradient(180deg, ${mod.color}, ${darkenColor(mod.color)});">
+          <div class="soldat-icon" style="background: linear-gradient(180deg, ${mod.color}, ${darkenColor(mod.color)});">
             ${iconHtml}
           </div>
-          <div class="module-name">${mod.name}</div>
-          <div class="module-status" data-status="${mod.slug}">${status.statusText || 'Chargement...'}</div>
+          <div class="soldat-name">${mod.name}</div>
+          <div class="soldat-status" data-status="${mod.slug}">${status.statusText || 'Chargement...'}</div>
         `;
         container.appendChild(card);
       });
@@ -1171,22 +1171,22 @@
         container.appendChild(addButton);
       } else {
         const newAddBtn = document.createElement('div');
-        newAddBtn.className = 'module-card add-module';
+        newAddBtn.className = 'soldat-card add-soldat';
         newAddBtn.onclick = goToSoldats;
         newAddBtn.innerHTML = `
-          <div class="module-icon" style="background: rgba(255,255,255,0.06);">
+          <div class="soldat-icon" style="background: rgba(255,255,255,0.06);">
             <span style="font-size: 28px; color: rgba(255,255,255,0.4);">+</span>
           </div>
-          <div class="module-name" style="color: rgba(255,255,255,0.4);">Ajouter</div>
-          <div class="module-status" style="color: rgba(255,255,255,0.3);">un soldat</div>
+          <div class="soldat-name" style="color: rgba(255,255,255,0.4);">Ajouter</div>
+          <div class="soldat-status" style="color: rgba(255,255,255,0.3);">un soldat</div>
         `;
         container.appendChild(newAddBtn);
       }
     }
 
     // Navigation dynamique vers un module
-    function goToModuleDynamic(slug) {
-      const mod = MODULES_CONFIG[slug];
+    function goToSoldatDynamic(slug) {
+      const mod = SOLDATS_CONFIG[slug];
       if (!mod) return;
 
       if (isTelegramMode) {
@@ -1201,29 +1201,29 @@
     // ========================================
 
     // Initialize module settings view
-    async function initModuleSettingsView(moduleName) {
-      currentModuleView = moduleName;
-      const moduleConfig = MODULES_CONFIG[moduleName];
-      if (!moduleConfig) {
+    async function initSoldatSettingsView(moduleName) {
+      currentSoldatView = moduleName;
+      const soldatConfig = SOLDATS_CONFIG[moduleName];
+      if (!soldatConfig) {
         console.error('Module not found:', moduleName);
         window.location.href = '/';
         return;
       }
 
       // Set module color CSS variable
-      document.documentElement.style.setProperty('--module-color', moduleConfig.color);
+      document.documentElement.style.setProperty('--soldat-color', soldatConfig.color);
 
       // Update page title
-      document.title = moduleConfig.name + ' - iArmy';
-      document.getElementById('module-page-title').textContent = moduleConfig.name;
-      document.getElementById('module-page-subtitle').textContent = 'Reglages du module';
+      document.title = soldatConfig.name + ' - iArmy';
+      document.getElementById('soldat-page-title').textContent = soldatConfig.name;
+      document.getElementById('soldat-page-subtitle').textContent = 'Réglages du soldat';
 
       // Load module-specific data and status
-      await loadModuleSettingsData(moduleName);
+      await loadSoldatSettingsData(moduleName);
     }
 
     // Load module-specific data
-    async function loadModuleSettingsData(moduleName) {
+    async function loadSoldatSettingsData(moduleName) {
       try {
         // Module-specific loading
         switch (moduleName) {
@@ -1266,17 +1266,17 @@
       }
 
       // Inject HTML template
-      document.getElementById('module-content').innerHTML = getComptaTemplate();
+      document.getElementById('soldat-content').innerHTML = getComptaTemplate();
 
       // Hide the simplified stats/actions, show full compta UI
-      document.getElementById('module-stats-section').style.display = 'none';
-      document.getElementById('module-actions').style.display = 'none';
-      document.getElementById('module-actions-grid').style.display = 'none';
-      document.getElementById('module-footer').style.display = 'none';
+      document.getElementById('soldat-stats-section').style.display = 'none';
+      document.getElementById('soldat-actions').style.display = 'none';
+      document.getElementById('soldat-actions-grid').style.display = 'none';
+      document.getElementById('soldat-footer').style.display = 'none';
 
       // Initialize compta module
       // En mode Telegram, passer la config déjà chargée par telegram-auth pour éviter une requête RLS bloquée
-      await window.initComptaModule(currentUser.id, supabaseClient, isTelegramMode, telegramUserId, moduleConfig);
+      await window.initComptaSoldat(currentUser.id, supabaseClient, isTelegramMode, telegramUserId, soldatConfig);
     }
 
     // Get compta HTML template
@@ -1561,20 +1561,20 @@
         .eq('user_id', currentUser.id);
 
       if (productCount > 0) {
-        document.getElementById('module-stats-section').style.display = 'block';
+        document.getElementById('soldat-stats-section').style.display = 'block';
 
-        document.getElementById('module-stat-1').textContent = productCount || 0;
-        document.getElementById('module-stat-1-label').textContent = 'Produits';
-        document.getElementById('module-stat-2').textContent = cocktailCount || 0;
-        document.getElementById('module-stat-2-label').textContent = 'Cocktails';
-        document.getElementById('module-stat-3').textContent = '-';
-        document.getElementById('module-stat-3-label').textContent = 'Alertes';
+        document.getElementById('soldat-stat-1').textContent = productCount || 0;
+        document.getElementById('soldat-stat-1-label').textContent = 'Produits';
+        document.getElementById('soldat-stat-2').textContent = cocktailCount || 0;
+        document.getElementById('soldat-stat-2-label').textContent = 'Cocktails';
+        document.getElementById('soldat-stat-3').textContent = '-';
+        document.getElementById('soldat-stat-3-label').textContent = 'Alertes';
 
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer le stock';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Produits et cocktails';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer le stock';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(3)').textContent = 'Produits et cocktails';
       } else {
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des produits';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des produits';
       }
     }
 
@@ -1609,19 +1609,19 @@
         .lte('event_date', lastOfMonth);
 
       if (employeeCount > 0) {
-        document.getElementById('module-stats-section').style.display = 'block';
-        document.getElementById('module-stat-1').textContent = employeeCount || 0;
-        document.getElementById('module-stat-1-label').textContent = 'Employes';
-        document.getElementById('module-stat-2').textContent = absCount || 0;
-        document.getElementById('module-stat-2-label').textContent = 'Absences';
-        document.getElementById('module-stat-3').textContent = eventCount || 0;
-        document.getElementById('module-stat-3-label').textContent = 'Ce mois';
+        document.getElementById('soldat-stats-section').style.display = 'block';
+        document.getElementById('soldat-stat-1').textContent = employeeCount || 0;
+        document.getElementById('soldat-stat-1-label').textContent = 'Employes';
+        document.getElementById('soldat-stat-2').textContent = absCount || 0;
+        document.getElementById('soldat-stat-2-label').textContent = 'Absences';
+        document.getElementById('soldat-stat-3').textContent = eventCount || 0;
+        document.getElementById('soldat-stat-3-label').textContent = 'Ce mois';
 
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer l\'equipe';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Voir les employes';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(2)').textContent = 'Gerer l\'equipe';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(3)').textContent = 'Voir les employes';
       } else {
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
-        document.getElementById('module-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des contrats';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(2)').textContent = 'Configurer';
+        document.getElementById('soldat-btn-setup').querySelector('div:nth-child(3)').textContent = 'Ajouter des contrats';
       }
 
       // Load config
@@ -1653,7 +1653,7 @@
       const eventLabels = { absence: '🚫 Absence', late: '⏰ Retard', extra_hours: '➕ Heures sup', reduced_hours: '➖ Heures en moins' };
 
       // Render settings content
-      const content = document.getElementById('module-content');
+      const content = document.getElementById('soldat-content');
       content.innerHTML = `
         <!-- Export auto -->
         <div style="margin-bottom: 28px;">
@@ -1666,7 +1666,7 @@
               </div>
               <label style="position: relative; width: 44px; height: 24px; cursor: pointer;">
                 <input type="checkbox" id="equipe-auto-export" ${equipeConfig.auto_export_enabled ? 'checked' : ''} onchange="saveEquipeConfig()" style="opacity:0;width:0;height:0;">
-                <span style="position: absolute; inset: 0; background: ${equipeConfig.auto_export_enabled ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
+                <span style="position: absolute; inset: 0; background: ${equipeConfig.auto_export_enabled ? 'var(--soldat-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
                 <span style="position: absolute; top: 2px; left: ${equipeConfig.auto_export_enabled ? '22px' : '2px'}; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s;"></span>
               </label>
             </div>
@@ -1706,7 +1706,7 @@
               <div style="font-size: 14px;">Recap hebdomadaire</div>
               <label style="position: relative; width: 44px; height: 24px; cursor: pointer;">
                 <input type="checkbox" id="equipe-notif-weekly" ${equipeConfig.notif_weekly !== false ? 'checked' : ''} onchange="saveEquipeConfig()" style="opacity:0;width:0;height:0;">
-                <span style="position: absolute; inset: 0; background: ${equipeConfig.notif_weekly !== false ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
+                <span style="position: absolute; inset: 0; background: ${equipeConfig.notif_weekly !== false ? 'var(--soldat-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
                 <span style="position: absolute; top: 2px; left: ${equipeConfig.notif_weekly !== false ? '22px' : '2px'}; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s;"></span>
               </label>
             </div>
@@ -1714,7 +1714,7 @@
               <div style="font-size: 14px;">Recap mensuel</div>
               <label style="position: relative; width: 44px; height: 24px; cursor: pointer;">
                 <input type="checkbox" id="equipe-notif-monthly" ${equipeConfig.notif_monthly !== false ? 'checked' : ''} onchange="saveEquipeConfig()" style="opacity:0;width:0;height:0;">
-                <span style="position: absolute; inset: 0; background: ${equipeConfig.notif_monthly !== false ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
+                <span style="position: absolute; inset: 0; background: ${equipeConfig.notif_monthly !== false ? 'var(--soldat-color, #8b5cf6)' : 'rgba(255,255,255,0.1)'}; border-radius: 12px; transition: 0.3s;"></span>
                 <span style="position: absolute; top: 2px; left: ${equipeConfig.notif_monthly !== false ? '22px' : '2px'}; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s;"></span>
               </label>
             </div>
@@ -1756,7 +1756,7 @@
 
         <!-- Envoyer maintenant -->
         <div style="margin-bottom: 28px;">
-          <button onclick="sendEquipeRecapNow()" style="width: 100%; padding: 14px; background: var(--module-color, #8b5cf6); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+          <button onclick="sendEquipeRecapNow()" style="width: 100%; padding: 14px; background: var(--soldat-color, #8b5cf6); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
             📤 Envoyer le recap maintenant
           </button>
         </div>
@@ -1766,13 +1766,13 @@
       document.getElementById('equipe-auto-export')?.addEventListener('change', function() {
         document.getElementById('equipe-export-details').style.display = this.checked ? 'block' : 'none';
         // Update toggle visuals
-        this.parentElement.querySelector('span:first-of-type').style.background = this.checked ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)';
+        this.parentElement.querySelector('span:first-of-type').style.background = this.checked ? 'var(--soldat-color, #8b5cf6)' : 'rgba(255,255,255,0.1)';
         this.parentElement.querySelector('span:last-of-type').style.left = this.checked ? '22px' : '2px';
       });
 
-      document.querySelectorAll('#module-content input[type="checkbox"]').forEach(cb => {
+      document.querySelectorAll('#soldat-content input[type="checkbox"]').forEach(cb => {
         cb.addEventListener('change', function() {
-          this.parentElement.querySelector('span:first-of-type').style.background = this.checked ? 'var(--module-color, #8b5cf6)' : 'rgba(255,255,255,0.1)';
+          this.parentElement.querySelector('span:first-of-type').style.background = this.checked ? 'var(--soldat-color, #8b5cf6)' : 'rgba(255,255,255,0.1)';
           this.parentElement.querySelector('span:last-of-type').style.left = this.checked ? '22px' : '2px';
         });
       });
@@ -1931,10 +1931,10 @@
       window.location.href = '/' + tgParams;
     }
 
-    function goToModuleSetup() {
+    function goToSoldatSetup() {
       const tgParams = isTelegramMode ? `?tg=1&tguid=${telegramUserId}` : '';
       // Redirect to the appropriate setup/config page
-      switch (currentModuleView) {
+      switch (currentSoldatView) {
         case 'compta':
           window.location.href = '/setup/?soldat=compta' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
@@ -1981,12 +1981,12 @@
     }
 
     // Cookie partage entre iarmy.fr et app.iarmy.fr
-    function writeSharedCookie(userName, avatarUrl, installedModules) {
+    function writeSharedCookie(userName, avatarUrl, installedSoldats) {
       try {
         const data = {
           n: userName,
           a: avatarUrl || '',
-          m: installedModules || []
+          m: installedSoldats || []
         };
         const value = btoa(encodeURIComponent(JSON.stringify(data)));
         // Cookie valable 30 jours, accessible sur *.iarmy.fr
@@ -2152,7 +2152,7 @@
         }
 
         // Stocker les donnees de telegram-auth (nouvelle structure)
-        telegramAuthData = authData; // Stocker pour utilisation dans loadModuleDataForTelegram
+        telegramAuthData = authData; // Stocker pour utilisation dans loadSoldatDataForTelegram
         telegramSubscription = authData.subscriptions || {};
 
         // Afficher le badge testeur si applicable
@@ -2172,7 +2172,7 @@
         }
 
         // Charger les modules depuis Supabase
-        await loadModulesFromDB();
+        await loadSoldatsFromDB();
 
         // Telegram est forcement connecte
         document.getElementById('conn-telegram').classList.add('connected');
@@ -2180,14 +2180,14 @@
         document.getElementById('telegram-status').classList.add('ok');
 
         // Module config - utiliser les donnees de telegram-auth (pas de query directe)
-        moduleConfig = authData.moduleConfigs?.compta || authData.moduleConfig || null;
-        await loadModuleDataForTelegram(authData);
+        soldatConfig = authData.soldatConfigs?.compta || authData.soldatConfig || null;
+        await loadSoldatDataForTelegram(authData);
 
         // Verifier si mode module settings (?soldat=)
         const soldatParam = urlParams.get('soldat');
-        if (soldatParam && MODULES_CONFIG[soldatParam]) {
-          currentModuleView = soldatParam;
-          await initModuleSettingsView(soldatParam);
+        if (soldatParam && SOLDATS_CONFIG[soldatParam]) {
+          currentSoldatView = soldatParam;
+          await initSoldatSettingsView(soldatParam);
         }
 
         // Masquer le loader
@@ -2237,12 +2237,12 @@
       }
 
       // Charger les modules depuis Supabase
-      await loadModulesFromDB();
+      await loadSoldatsFromDB();
 
       // Detecter le parametre ?soldat= pour afficher la vue module
       const soldatParam = urlParams.get('soldat');
-      if (soldatParam && MODULES_CONFIG[soldatParam]) {
-        currentModuleView = soldatParam;
+      if (soldatParam && SOLDATS_CONFIG[soldatParam]) {
+        currentSoldatView = soldatParam;
       }
 
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -2307,13 +2307,13 @@
       }
 
       // Load data
-      await loadModuleDataDynamic();
+      await loadSoldatDataDynamic();
       await loadUserStatus();
       await checkPendingDeletion();
 
       // Si mode module settings, initialiser la vue module
-      if (currentModuleView) {
-        await initModuleSettingsView(currentModuleView);
+      if (currentSoldatView) {
+        await initSoldatSettingsView(currentSoldatView);
       }
 
       // Masquer le loader
@@ -2348,30 +2348,30 @@
     }
 
     // Ancienne fonction gardee pour compatibilite
-    async function loadModuleData() {
-      return loadModuleDataDynamic();
+    async function loadSoldatData() {
+      return loadSoldatDataDynamic();
     }
 
-    // Version Telegram de loadModuleData - utilise les donnees de telegram-auth
-    async function loadModuleDataForTelegram(authData) {
-      const userModuleStatuses = {};
+    // Version Telegram de loadSoldatData - utilise les donnees de telegram-auth
+    async function loadSoldatDataForTelegram(authData) {
+      const userSoldatStatuses = {};
 
       try {
         // Utiliser les donnees de telegram-auth (pas de query directe - evite les problemes RLS)
-        const moduleConfigs = authData.moduleConfigs || {};
+        const soldatConfigs = authData.soldatConfigs || {};
         const stockCount = authData.stockProductCount || 0;
         const paieCount = authData.employeesCount || 0;
 
-        console.log('[TG] Module configs from auth:', Object.keys(moduleConfigs));
+        console.log('[TG] Module configs from auth:', Object.keys(soldatConfigs));
 
         // Traiter chaque module configure
-        for (const [slug, config] of Object.entries(moduleConfigs)) {
+        for (const [slug, config] of Object.entries(soldatConfigs)) {
           let statusText = 'Actif';
           if (config.lastEntryAt) {
             statusText += ' · ' + formatRelativeTime(config.lastEntryAt);
           }
 
-          userModuleStatuses[slug] = {
+          userSoldatStatuses[slug] = {
             installed: true,
             active: true,
             statusText: statusText,
@@ -2383,9 +2383,9 @@
             }
           };
 
-          // Garder moduleConfig pour compta (compatibilite)
+          // Garder soldatConfig pour compta (compatibilite)
           if (slug === 'compta' && config.sheetId) {
-            moduleConfig = {
+            soldatConfig = {
               module_name: 'compta',
               sheet_id: config.sheetId,
               config: config.config,
@@ -2400,7 +2400,7 @@
         // Stock - utiliser le count de telegram-auth
         stockProductCount = stockCount;
         if (stockProductCount > 0) {
-          userModuleStatuses['stock'] = {
+          userSoldatStatuses['stock'] = {
             installed: true,
             active: true,
             statusText: stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '')
@@ -2410,27 +2410,27 @@
         // Equipe - utiliser le count de telegram-auth
         paieEmployeeCount = paieCount;
         if (paieEmployeeCount > 0) {
-          userModuleStatuses['equipe'] = {
+          userSoldatStatuses['equipe'] = {
             installed: true,
             active: true,
             statusText: paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '')
           };
         }
 
-        console.log('[TG] User module statuses:', Object.keys(userModuleStatuses));
+        console.log('[TG] User module statuses:', Object.keys(userSoldatStatuses));
 
         // Rendre les cartes de modules dynamiquement
-        renderModuleCards(userModuleStatuses);
+        renderSoldatCards(userSoldatStatuses);
 
       } catch (err) {
         console.error('[Modules TG] Error loading user data:', err);
-        renderModuleCards({});
+        renderSoldatCards({});
       }
     }
 
     // Nouvelle fonction dynamique pour charger les modules
-    async function loadModuleDataDynamic() {
-      const userModuleStatuses = {};
+    async function loadSoldatDataDynamic() {
+      const userSoldatStatuses = {};
 
       try {
         // 1. Charger toutes les configs de modules de l'utilisateur
@@ -2463,16 +2463,16 @@
               statusText += ' · ' + formatRelativeTime(config.last_entry_at);
             }
 
-            userModuleStatuses[slug] = {
+            userSoldatStatuses[slug] = {
               installed: true,
               active: true,
               statusText: statusText,
               config: config
             };
 
-            // Garder moduleConfig pour compta (compatibilite)
+            // Garder soldatConfig pour compta (compatibilite)
             if (slug === 'compta' && config.sheet_id) {
-              moduleConfig = config;
+              soldatConfig = config;
               document.getElementById('conn-sheets').classList.add('connected');
               document.getElementById('sheets-status').innerHTML = '<span class="dot"></span> Connecte';
               document.getElementById('sheets-status').classList.add('ok');
@@ -2490,7 +2490,7 @@
 
         stockProductCount = stockCount || 0;
         if (stockProductCount > 0) {
-          userModuleStatuses['stock'] = {
+          userSoldatStatuses['stock'] = {
             installed: true,
             active: true,
             statusText: stockProductCount + ' produit' + (stockProductCount > 1 ? 's' : '')
@@ -2505,7 +2505,7 @@
 
         paieEmployeeCount = paieCount || 0;
         if (paieEmployeeCount > 0) {
-          userModuleStatuses['equipe'] = {
+          userSoldatStatuses['equipe'] = {
             installed: true,
             active: true,
             statusText: paieEmployeeCount + ' employe' + (paieEmployeeCount > 1 ? 's' : '')
@@ -2513,27 +2513,27 @@
         }
 
         // 6. Ecrire le cookie partage pour iarmy.fr
-        const installedSlugs = Object.keys(userModuleStatuses).filter(slug => userModuleStatuses[slug].installed);
+        const installedSlugs = Object.keys(userSoldatStatuses).filter(slug => userSoldatStatuses[slug].installed);
         const userName = document.getElementById('user-name')?.textContent || '';
         const avatarImg = document.querySelector('#avatar img');
         const avatarUrl = avatarImg ? avatarImg.src : '';
         writeSharedCookie(userName, avatarUrl, installedSlugs);
 
         // 7. Rendre les cartes de modules dynamiquement
-        renderModuleCards(userModuleStatuses);
+        renderSoldatCards(userSoldatStatuses);
 
       } catch (err) {
         console.error('[Modules] Error loading user data:', err);
-        renderModuleCards({});
+        renderSoldatCards({});
       }
     }
 
-    function goToModule() {
+    function goToSoldat() {
       // Unified module settings view with ?soldat=compta
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
-      // Check if configured via moduleConfig (set during init) or card visibility
-      const isConfigured = moduleConfig?.sheetId ||
-        (document.getElementById('module-compta')?.style.display === 'flex');
+      // Check if configured via soldatConfig (set during init) or card visibility
+      const isConfigured = soldatConfig?.sheetId ||
+        (document.getElementById('soldat-compta')?.style.display === 'flex');
       if (isConfigured) {
         window.location.href = '/?soldat=compta' + tgParams;
       } else {
@@ -2541,7 +2541,7 @@
       }
     }
 
-    function goToStockModule() {
+    function goToStockSoldat() {
       // Unified module settings view with ?soldat=stock
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
       // Check variable first, then cache
@@ -2559,7 +2559,7 @@
       }
     }
 
-    function goToEquipeModule() {
+    function goToEquipeSoldat() {
       const tgParams = isTelegramMode ? `&tg=1&tguid=${telegramUserId}` : '';
       let count = paieEmployeeCount;
       if (!count) {
@@ -2629,18 +2629,18 @@
         }
 
         // Charger TOUS les modules de l'utilisateur depuis Supabase
-        const { data: userModules, error } = await supabaseClient
+        const { data: userSoldats, error } = await supabaseClient
           .from('subscriptions')
           .select('*')
           .eq('user_id', currentUser.id);
 
-        console.log('📦 Subscriptions from Supabase:', userModules);
+        console.log('📦 Subscriptions from Supabase:', userSoldats);
         console.log('👤 User ID:', currentUser.id);
 
         if (error) throw error;
 
         // Filtrer les modules avec un statut pertinent
-        const activeModules = (userModules || []).filter(m =>
+        const activeSoldats = (userSoldats || []).filter(m =>
           m.status === 'tester' ||
           m.is_tester ||
           m.status === 'active' ||
@@ -2649,13 +2649,13 @@
           m.status === 'expired'
         );
 
-        console.log('✅ Active modules after filter:', activeModules);
+        console.log('✅ Active modules after filter:', activeSoldats);
 
         // Si au moins un module payant, charger les infos Stripe
-        const hasPaidModule = activeModules.some(m => !m.is_tester && m.status !== 'tester');
+        const hasPaidSoldat = activeSoldats.some(m => !m.is_tester && m.status !== 'tester');
         let stripeData = { paymentMethod: null, invoices: [] };
 
-        if (hasPaidModule && session) {
+        if (hasPaidSoldat && session) {
           try {
             const response = await fetch(SUPABASE_URL + '/functions/v1/stripe-billing', {
               method: 'POST',
@@ -2671,7 +2671,7 @@
         }
 
         billingData = {
-          modules: activeModules,
+          modules: activeSoldats,
           paymentMethod: stripeData.paymentMethod,
           invoices: stripeData.invoices || []
         };
@@ -2690,22 +2690,22 @@
       const modules = billingData.modules || [];
       const pm = billingData.paymentMethod;
       const invoices = billingData.invoices;
-      const listEl = document.getElementById('billing-modules-list');
+      const listEl = document.getElementById('billing-soldats-list');
 
       // Render modules
       if (modules.length === 0) {
-        listEl.innerHTML = '<div class="billing-empty">Aucun module actif</div>';
+        listEl.innerHTML = '<div class="billing-empty">Aucun soldat actif</div>';
       } else {
         listEl.innerHTML = modules.map(mod => {
-          const config = MODULES_CONFIG[mod.module_name] || {
+          const config = SOLDATS_CONFIG[mod.module_name] || {
             name: mod.module_name,
             color: '#FF6B35',
             colorLight: 'rgba(255,107,53,0.15)',
             price: 0
           };
 
-          // Icône dynamique basée sur icon_type du module (depuis module-icons.js)
-          const moduleIcon = getModuleIcon(config.icon_type || 'custom', config.color, 20);
+          // Icône dynamique basée sur icon_type du module (depuis soldat-icons.js)
+          const soldatIcon = getSoldatIcon(config.icon_type || 'custom', config.color, 20);
 
           const isTester = mod.is_tester || mod.status === 'tester';
           const isActive = mod.status === 'active';
@@ -2742,20 +2742,20 @@
           }
 
           return `
-            <div class="billing-module-card" style="border-color: ${config.color}22;">
-              <div class="billing-module-icon" style="background: ${config.colorLight}; color: ${config.color};">
-                ${moduleIcon}
+            <div class="billing-soldat-card" style="border-color: ${config.color}22;">
+              <div class="billing-soldat-icon" style="background: ${config.colorLight}; color: ${config.color};">
+                ${soldatIcon}
               </div>
-              <div class="billing-module-info">
-                <div class="billing-module-header">
-                  <span class="billing-module-name">${config.name}</span>
-                  <span class="billing-module-badge ${badgeClass}">${badgeText}</span>
+              <div class="billing-soldat-info">
+                <div class="billing-soldat-header">
+                  <span class="billing-soldat-name">${config.name}</span>
+                  <span class="billing-soldat-badge ${badgeClass}">${badgeText}</span>
                 </div>
-                <div class="billing-module-details">${detailText}</div>
+                <div class="billing-soldat-details">${detailText}</div>
               </div>
-              <div class="billing-module-price">
-                <div class="billing-module-amount">${priceText}</div>
-                <div class="billing-module-period">${periodText}</div>
+              <div class="billing-soldat-price">
+                <div class="billing-soldat-amount">${priceText}</div>
+                <div class="billing-soldat-period">${periodText}</div>
               </div>
             </div>
           `;
@@ -2763,8 +2763,8 @@
       }
 
       // Payment method (seulement si au moins un module payant)
-      const hasPaidModule = modules.some(m => !m.is_tester && m.status !== 'tester');
-      if (pm && hasPaidModule) {
+      const hasPaidSoldat = modules.some(m => !m.is_tester && m.status !== 'tester');
+      if (pm && hasPaidSoldat) {
         document.getElementById('payment-section').style.display = 'block';
         document.getElementById('card-brand').textContent = pm.brand.toUpperCase();
         document.getElementById('card-details').textContent = '•••• ' + pm.last4 + ' · ' + pm.expMonth + '/' + pm.expYear;

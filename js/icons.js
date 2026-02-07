@@ -2,11 +2,11 @@
  * icons.js - Source UNIQUE pour les icônes de modules iArmy
  *
  * Ce fichier est la SEULE source de vérité pour les icônes des modules.
- * Toutes les pages utilisent getModuleIcon() ou getModuleIconWithBg().
+ * Toutes les pages utilisent getSoldatIcon() ou getSoldatIconWithBg().
  *
  * Usage:
- *   const iconHtml = getModuleIcon('telegram_sheets', '#22c55e');
- *   const iconWithBg = getModuleIconWithBg('bottles_count', '#06b6d4', 44);
+ *   const iconHtml = getSoldatIcon('telegram_sheets', '#22c55e');
+ *   const iconWithBg = getSoldatIconWithBg('bottles_count', '#06b6d4', 44);
  */
 
 // Types d'icônes disponibles (correspondant à icon_type dans la table modules)
@@ -88,7 +88,7 @@ const MODULE_ICON_TEMPLATES = {
  * @param {number} size - Taille optionnelle (défaut: 24)
  * @returns {string} HTML de l'icône SVG
  */
-function getModuleIcon(iconType, color = '#FF6B35', size = 24) {
+function getSoldatIcon(iconType, color = '#FF6B35', size = 24) {
   const template = MODULE_ICON_TEMPLATES[iconType] || MODULE_ICON_TEMPLATES.custom;
   let svg = template(color);
 
@@ -108,9 +108,9 @@ function getModuleIcon(iconType, color = '#FF6B35', size = 24) {
  * @param {number} size - Taille du conteneur (défaut: 44)
  * @returns {string} HTML avec conteneur et icône
  */
-function getModuleIconWithBg(iconType, color = '#FF6B35', size = 44) {
+function getSoldatIconWithBg(iconType, color = '#FF6B35', size = 44) {
   const iconSize = Math.round(size * 0.55);
-  const icon = getModuleIcon(iconType, color, iconSize);
+  const icon = getSoldatIcon(iconType, color, iconSize);
   const bgColor = hexToRgba(color, 0.15);
 
   return `
@@ -366,8 +366,8 @@ if (typeof module !== 'undefined' && module.exports) {
     MINI_ICON_TEMPLATES,
     ANIMATED_ICON_TEMPLATES,
     ANIMATED_ICONS_CSS,
-    getModuleIcon,
-    getModuleIconWithBg,
+    getSoldatIcon,
+    getSoldatIconWithBg,
     getAnimatedIcon,
     injectAnimatedIconsCSS,
     hexToRgba,

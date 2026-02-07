@@ -16,7 +16,7 @@ let comptaAutoSaveTimeout = null;
 
 // Initialize compta module
 // passedConfig: config déjà chargée en mode Telegram (évite requête RLS bloquée)
-async function initComptaModule(userId, supabaseClient, isTelegramMode, telegramUserId, passedConfig) {
+async function initComptaSoldat(userId, supabaseClient, isTelegramMode, telegramUserId, passedConfig) {
   console.log('[Compta] Initializing module for user:', userId, 'passedConfig:', !!passedConfig);
 
   let moduleConfig = null;
@@ -43,7 +43,7 @@ async function initComptaModule(userId, supabaseClient, isTelegramMode, telegram
   if (!moduleConfig || !moduleConfig.sheet_id) {
     // En mode Telegram, afficher un message au lieu de rediriger
     if (isTelegramMode) {
-      const container = document.getElementById('module-content');
+      const container = document.getElementById('soldat-content');
       if (container) {
         const setupUrl = 'https://app.iarmy.fr/setup/?soldat=compta';
         container.innerHTML = `
@@ -1305,4 +1305,4 @@ window.comptaUpdateEmailPreview = comptaUpdateEmailPreview;
 window.comptaValidateExportEmail = comptaValidateExportEmail;
 window.comptaUpdateAutoExportBadge = comptaUpdateAutoExportBadge;
 window.comptaToggleAutoExport = comptaToggleAutoExport;
-window.initComptaModule = initComptaModule;
+window.initComptaSoldat = initComptaSoldat;
