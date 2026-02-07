@@ -2788,7 +2788,7 @@
 
       // For contract type with PDF, use extract-contract (Claude)
       if (isPdf && (type === 'contract' || type === 'employee')) {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.refreshSession();
         if (!session) throw new Error('Non connecté');
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/extract-contract`, {
@@ -2858,7 +2858,7 @@
 
       if (isPdf) {
         // Use extract-contract for PDFs (Claude supports PDF)
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.refreshSession();
         if (!session) throw new Error('Non connecté');
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/extract-contract`, {

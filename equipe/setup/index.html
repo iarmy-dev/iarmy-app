@@ -555,7 +555,7 @@
       progressBar.style.display = 'block';
       progressStatus.style.display = 'block';
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.refreshSession();
       if (!session) {
         showToast('Tu dois être connecté', true);
         uploadZone.classList.remove('uploading');
