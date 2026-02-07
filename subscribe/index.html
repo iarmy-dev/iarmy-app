@@ -178,9 +178,9 @@
 
     // Icons centralises dans /js/icons.js
 
-    // Get module from URL
+    // Get soldat from URL (?soldat= ou ?module= pour compat)
     const urlParams = new URLSearchParams(window.location.search);
-    const moduleName = urlParams.get('module') || 'compta';
+    const moduleName = urlParams.get('soldat') || urlParams.get('module') || 'compta';
 
     let stripe = null;
     let elements = null;
@@ -412,7 +412,7 @@
       document.getElementById('payment-error').style.display = 'none';
 
       try {
-        const returnUrl = window.location.origin + '/subscribe/?module=' + moduleName;
+        const returnUrl = window.location.origin + '/subscribe/?soldat=' + moduleName;
         const result = hasTrial
           ? await stripe.confirmSetup({ elements, confirmParams: { return_url: returnUrl } })
           : await stripe.confirmPayment({ elements, confirmParams: { return_url: returnUrl } });

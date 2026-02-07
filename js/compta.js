@@ -45,7 +45,7 @@ async function initComptaModule(userId, supabaseClient, isTelegramMode, telegram
     if (isTelegramMode) {
       const container = document.getElementById('module-content');
       if (container) {
-        const setupUrl = 'https://app.iarmy.fr/setup/?module=compta';
+        const setupUrl = 'https://app.iarmy.fr/setup/?soldat=compta';
         container.innerHTML = `
           <div style="text-align: center; padding: 60px 20px;">
             <div style="font-size: 48px; margin-bottom: 20px;">⚙️</div>
@@ -58,7 +58,7 @@ async function initComptaModule(userId, supabaseClient, isTelegramMode, telegram
       return false;
     }
     // Redirect to setup
-    window.location.href = '/setup/?module=compta';
+    window.location.href = '/setup/?soldat=compta';
     return false;
   }
 
@@ -843,7 +843,7 @@ async function comptaDoResetConfig() {
   if (!session) return;
 
   await supabaseClient.from('module_configs').delete().eq('user_id', session.user.id).eq('module_name', 'compta');
-  window.location.href = '/setup/?module=compta';
+  window.location.href = '/setup/?soldat=compta';
 }
 
 // Export data manually

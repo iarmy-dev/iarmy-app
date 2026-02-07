@@ -474,7 +474,7 @@
           if (tgParams) url += (url.includes('?') ? '&' : '?') + tgParams;
         } else {
           // Pas configuré → setup
-          url = m.setup_url || `/setup/?module=${m.slug}`;
+          url = m.setup_url || `/setup/?soldat=${m.slug}`;
           if (tgParams) url += (url.includes('?') ? '&' : '?') + tgParams;
         }
 

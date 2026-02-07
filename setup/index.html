@@ -328,7 +328,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="mb-6">
-        <div style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Module</div>
+        <div style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Soldat</div>
         <div style="font-size: 18px; font-weight: 700; color: white; margin-top: 4px;" id="module-name"></div>
       </div>
       <div id="steps-nav"></div>
@@ -482,8 +482,8 @@
     // INITIALISATION
     // ============================================
     async function init() {
-      // Detecter le module depuis l'URL
-      currentModule = getUrlParam('module');
+      // Detecter le soldat depuis l'URL (?soldat= ou ?module= pour compat)
+      currentModule = getUrlParam('soldat') || getUrlParam('module');
       if (!currentModule) {
         window.location.href = '/';
         return;
@@ -521,7 +521,7 @@
         });
         tg.BackButton.show();
 
-        const setupUrl = `https://app.iarmy.fr/setup/?module=${currentModule}`;
+        const setupUrl = `https://app.iarmy.fr/setup/?soldat=${currentModule}`;
         const moduleName = moduleConfig?.name || currentModule;
         document.querySelector('.main-content').innerHTML = `
           <div class="glass-card" style="padding: 48px; text-align: center; margin-top: 40px;">
@@ -2344,8 +2344,8 @@
           },
           body: JSON.stringify({
             moduleName: currentModule,
-            successUrl: window.location.origin + `/setup/?module=${currentModule}&success=1`,
-            cancelUrl: window.location.origin + `/setup/?module=${currentModule}&canceled=1`
+            successUrl: window.location.origin + `/setup/?soldat=${currentModule}&success=1`,
+            cancelUrl: window.location.origin + `/setup/?soldat=${currentModule}&canceled=1`
           })
         });
 
@@ -2795,7 +2795,8 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
           },
           body: JSON.stringify({
             pdf_base64: base64.split(',')[1],
@@ -2864,7 +2865,8 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
           },
           body: JSON.stringify({
             pdf_base64: base64.split(',')[1],
@@ -3074,8 +3076,8 @@
           },
           body: JSON.stringify({
             moduleName: currentModule,
-            successUrl: window.location.origin + `/setup/?module=${currentModule}&success=1`,
-            cancelUrl: window.location.origin + `/setup/?module=${currentModule}&canceled=1`
+            successUrl: window.location.origin + `/setup/?soldat=${currentModule}&success=1`,
+            cancelUrl: window.location.origin + `/setup/?soldat=${currentModule}&canceled=1`
           })
         });
 
@@ -3137,10 +3139,10 @@
     // CHECK PAYMENT RETURN
     // ============================================
     if (getUrlParam('success') === '1') {
-      window.history.replaceState({}, '', `/setup/?module=${getUrlParam('module')}`);
+      window.history.replaceState({}, '', `/setup/?soldat=${getUrlParam('soldat') || getUrlParam('module')}`);
       setTimeout(() => {
         // Find telegram step index (use fallback since moduleConfig not loaded yet)
-        const fallback = FALLBACK_CONFIG[getUrlParam('module')];
+        const fallback = FALLBACK_CONFIG[getUrlParam('soldat') || getUrlParam('module')];
         const steps = fallback?.setup_steps || [];
         const telegramIndex = steps.findIndex(s => s.type === 'telegram_link');
         if (telegramIndex >= 0) {

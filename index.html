@@ -1936,13 +1936,13 @@
       // Redirect to the appropriate setup/config page
       switch (currentModuleView) {
         case 'compta':
-          window.location.href = '/setup/?module=compta' + (tgParams ? '&' + tgParams.substring(1) : '');
+          window.location.href = '/setup/?soldat=compta' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
         case 'stock':
-          window.location.href = '/setup/?module=stock' + (tgParams ? '&' + tgParams.substring(1) : '');
+          window.location.href = '/setup/?soldat=stock' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
         case 'equipe':
-          window.location.href = '/setup/?module=equipe' + (tgParams ? '&' + tgParams.substring(1) : '');
+          window.location.href = '/setup/?soldat=equipe' + (tgParams ? '&' + tgParams.substring(1) : '');
           break;
       }
     }
@@ -2537,7 +2537,7 @@
       if (isConfigured) {
         window.location.href = '/?soldat=compta' + tgParams;
       } else {
-        window.location.href = '/setup/?module=compta' + (tgParams ? '?' + tgParams.substring(1) : '');
+        window.location.href = '/setup/?soldat=compta' + (tgParams ? '?' + tgParams.substring(1) : '');
       }
     }
 
@@ -2555,7 +2555,7 @@
       if (count > 0) {
         window.location.href = '/?soldat=stock' + tgParams;
       } else {
-        window.location.href = '/setup/?module=stock' + (tgParams ? '?' + tgParams.substring(1) : '');
+        window.location.href = '/setup/?soldat=stock' + (tgParams ? '?' + tgParams.substring(1) : '');
       }
     }
 
@@ -2571,7 +2571,7 @@
       if (count > 0) {
         window.location.href = '/?soldat=equipe' + tgParams;
       } else {
-        window.location.href = '/setup/?module=equipe' + tgParams;
+        window.location.href = '/setup/?soldat=equipe' + tgParams;
       }
     }
 
