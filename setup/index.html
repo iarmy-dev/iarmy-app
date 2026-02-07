@@ -2365,16 +2365,37 @@
       btn.textContent = 'Connexion...';
 
       try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const res = await fetch(SUPABASE_URL + '/functions/v1/generate-telegram-link', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + session.access_token
-          }
-        });
+        // Verifier si deja connecte
+        const { data: existingLink } = await supabaseClient
+          .from('telegram_links')
+          .select('telegram_user_id')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
 
-        const { token } = await res.json();
+        if (existingLink && existingLink.telegram_user_id) {
+          // Deja connecte - ouvrir Telegram directement
+          window.open('https://t.me/IArmyBOT', '_blank');
+          btn.disabled = false;
+          btn.textContent = 'Connecter Telegram';
+          showToast('Telegram deja connecte !');
+          return;
+        }
+
+        // Generer un token unique et le stocker dans connection_tokens
+        const token = crypto.randomUUID();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 min
+
+        const { error: insertError } = await supabaseClient
+          .from('connection_tokens')
+          .insert({
+            user_id: currentUser.id,
+            token: token,
+            expires_at: expiresAt,
+            used: false
+          });
+
+        if (insertError) throw new Error(insertError.message);
+
         const telegramLink = 'https://t.me/IArmyBOT?start=' + token;
 
         document.getElementById(`telegram-initial-${index}`).style.display = 'none';
