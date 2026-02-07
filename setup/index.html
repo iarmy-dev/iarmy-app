@@ -2986,7 +2986,7 @@
         email: data.email || null
       };
 
-      const { data: inserted, error } = await supabaseClient.from('employees').insert(employeeData).select().single();
+      const { data: inserted, error } = await supabaseClient.from('employees').upsert(employeeData, { onConflict: 'user_id,name' }).select().single();
       if (error) {
         console.error('Save employee error:', error);
         return null;
